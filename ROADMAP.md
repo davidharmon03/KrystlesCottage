@@ -6,15 +6,17 @@ Prioritized backlog of planned updates. Check items off as they ship.
 
 ## 📍 Current Status — May 2026
 
-- App is fully built and running locally on Windows
+- ✅ **App is live on the internet** — backend + frontend both deployed on Render
+- **Backend:** `https://krystleskitchen.onrender.com` (Node/Express + SQLite, Render Web Service)
+- **Frontend:** `https://krystleskitchen-client.onrender.com` (React/Vite, Render Static Site)
 - All core features complete and functional (tasks 1–12 shipped)
-- Currently in local dev mode — not yet deployed to cloud
-- **Completed this sprint:** Payment Integration (Stripe) · Data Export (ZIP) · Print-Friendly Views
-- **Next build priorities:** PWA Polish (iOS install, safe areas) → Expanded Payment Methods → Security & Bundle Audit
-- Phone/mobile testing deferred until cloud deployment
-- Free/Paid tier enforcement not yet implemented (all features accessible in dev mode)
-- Stripe requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` env vars before going live
+- **Completed this sprint:** Payment Integration (Stripe) · Data Export (ZIP) · Print-Friendly Views · Cloud Deployment
+- **Next build priorities:** Full feature testing (Task 18) → PWA Polish (Task 13) → Security Audit (Task 15)
+- ⚠️ Free Render tier spins down after 15min of inactivity — first request after idle takes ~30–60s to wake up
+- Free/Paid tier enforcement not yet implemented (all features accessible)
+- Stripe requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` env vars before billing goes live
 - Domain name not yet registered
+- Demo accounts removed from login page
 
 ---
 
@@ -209,8 +211,8 @@ Each group member's last sync timestamp is stored server-side and visible to eve
 
 ---
 
-### 10. Payment Integration (Stripe / LemonSqueezy)
-- [ ] **Implement subscription billing for the Group Plan**
+### ✅ 10. Payment Integration (Stripe) *(shipped May 2026)*
+- [x] **Implement subscription billing for the Group Plan**
   - Choose provider: Stripe (more control, more setup) or LemonSqueezy (simpler, handles tax/VAT)
   - Subscription management: create, upgrade, cancel, billing portal
   - Webhook handling: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
@@ -220,8 +222,8 @@ Each group member's last sync timestamp is stored server-side and visible to eve
 
 ---
 
-### 11. Data Export
-- [ ] **Allow users to download their own data**
+### ✅ 11. Data Export *(shipped May 2026)*
+- [x] **Allow users to download their own data**
   - "Download My Data" button in profile/settings
   - Export as ZIP containing: recipes (JSON or CSV), inventory (CSV), spending history (CSV), meal swap history (CSV), uploaded photos
   - Admin can export full group data
@@ -229,8 +231,8 @@ Each group member's last sync timestamp is stored server-side and visible to eve
 
 ---
 
-### 12. Print-Friendly Views
-- [ ] **Add print stylesheets and print buttons for key pages**
+### ✅ 12. Print-Friendly Views *(shipped May 2026)*
+- [x] **Add print stylesheets and print buttons for key pages**
   - Shopping Lists — clean printout with section headers, checkboxes, no nav/sidebar
   - Recipe Detail — formatted recipe card with ingredients, steps, and photo
   - Label Generator — already prints, but verify print CSS is clean
@@ -619,7 +621,7 @@ A complete end-to-end test of every feature in the app. Run this before inviting
 
 ---
 
-### 17. Cloud Deployment — Option A (Railway + Vercel)
+### ✅ 17. Cloud Deployment *(shipped May 2026 — Render for both backend and frontend)*
 
 **Goal:** Move the app off David's local machine and onto cloud infrastructure that runs 24/7, is accessible from any device anywhere, and scales cleanly as the group grows. This is the production-ready path.
 
