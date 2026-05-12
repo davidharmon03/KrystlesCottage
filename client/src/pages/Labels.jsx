@@ -102,7 +102,7 @@ function LabelCard({ label, index, onDelete, qrDataUrl }) {
       )}
 
       {/* Footer */}
-      <p className="text-xs text-slate-300 mt-3 text-center tracking-widest">— Krystle's Brand Hub —</p>
+      <p className="text-xs text-slate-300 mt-3 text-center tracking-widest">— Krystle's Cottage —</p>
     </div>
   )
 }

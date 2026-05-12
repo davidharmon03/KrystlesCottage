@@ -1,4 +1,4 @@
-# Krystle's Brand Hub
+# Krystle's Cottage
 
 > Healthy. Organic. Community-driven meal management.
 

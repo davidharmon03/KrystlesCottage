@@ -108,7 +108,8 @@ router.post('/register', registerValidation, async (req, res) => {
       }
     }
 
-    const accessToken = jwt.sign({ id, name, email }, JWT_SECRET, { expiresIn: '15m' });
+    const newUser = await db.get('SELECT role, plan FROM users WHERE id = ?', [id]);
+    const accessToken = jwt.sign({ id, name, email, role: newUser.role }, JWT_SECRET, { expiresIn: '15m' });
     const refreshTokenValue = crypto.randomBytes(32).toString('hex');
     const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     await db.run(
@@ -120,7 +121,7 @@ router.post('/register', registerValidation, async (req, res) => {
     res.status(201).json({
       token: accessToken,
       refreshToken: refreshTokenValue,
-      user: { id, name, email, groups }
+      user: { id, name, email, role: newUser.role, plan: newUser.plan, groups }
     });
   } catch (err) {
     console.error(err);
@@ -144,7 +145,7 @@ router.post('/login', loginValidation, async (req, res) => {
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
     const accessToken = jwt.sign(
-      { id: user.id, name: user.name, email: user.email },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '15m' }
     );
@@ -160,7 +161,7 @@ router.post('/login', loginValidation, async (req, res) => {
     const payload = {
       token: accessToken,
       refreshToken: refreshTokenValue,
-      user: { id: user.id, name: user.name, email: user.email, groups }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, groups }
     };
     if (user.must_change_password === 1) payload.mustChangePassword = true;
 
@@ -187,11 +188,11 @@ router.post('/refresh', async (req, res) => {
       return res.status(401).json({ error: 'Refresh token expired' });
     }
 
-    const user = await db.get('SELECT id, name, email FROM users WHERE id = ?', [stored.user_id]);
+    const user = await db.get('SELECT id, name, email, role FROM users WHERE id = ?', [stored.user_id]);
     if (!user) return res.status(401).json({ error: 'User not found' });
 
     const accessToken = jwt.sign(
-      { id: user.id, name: user.name, email: user.email },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '15m' }
     );
@@ -248,15 +249,15 @@ router.post('/forgot-password', [
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
     const transport = makeTransport();
     await transport.sendMail({
-      from:    `"Krystle's Brand Hub" <${process.env.EMAIL_USER}>`,
+      from:    `"Krystle's Cottage" <${process.env.EMAIL_USER}>`,
       to:      email,
-      subject: "Reset your Krystle's Brand Hub password",
+      subject: "Reset your Krystle's Cottage password",
       html: `
         <p>Hi ${user.name},</p>
         <p>We received a request to reset your password. Click the link below to set a new password. This link expires in 1 hour.</p>
         <p><a href="${resetLink}">${resetLink}</a></p>
         <p>If you didn't request a password reset, you can ignore this email.</p>
-        <p>— Krystle's Brand Hub</p>
+        <p>— Krystle's Cottage</p>
       `,
     });
 
@@ -304,7 +305,7 @@ router.post('/reset-password', [
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const user = await db.get('SELECT id, name, email, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const groups = await _getUserGroups(db, user.id);
     let social_links = {};
@@ -340,7 +341,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
 
     params.push(req.user.id);
     await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
-    const user = await db.get('SELECT id, name, email, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     const groups = await _getUserGroups(db, user.id);
     let parsed_links = {};
     try { parsed_links = JSON.parse(user.social_links || '{}') } catch {}

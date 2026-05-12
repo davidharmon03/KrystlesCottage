@@ -46,7 +46,7 @@ export default function InstallPrompt() {
           <span className="text-white font-serif font-bold text-lg leading-none">K</span>
         </div>
         <p className="flex-1 text-sm text-slate-700 leading-snug">
-          Install <span className="font-semibold text-moss-700">Brand Hub</span> on your phone for a better experience
+          Install <span className="font-semibold text-moss-700">Cottage</span> on your phone for a better experience
         </p>
         <button
           onClick={handleInstall}

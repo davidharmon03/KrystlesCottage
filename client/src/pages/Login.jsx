@@ -33,7 +33,7 @@ export default function Login() {
           <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mx-auto mb-4 ring-2 ring-white ring-opacity-30">
             <span className="text-white font-serif font-bold text-3xl leading-none">K</span>
           </div>
-          <h1 className="text-white font-serif text-3xl font-semibold">Krystle's Brand Hub</h1>
+          <h1 className="text-white font-serif text-3xl font-semibold">Krystle's Cottage</h1>
           <p className="text-moss-200 text-sm mt-1 italic">Healthy. Organic. Community-driven.</p>
         </div>
 

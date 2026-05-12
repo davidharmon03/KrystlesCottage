@@ -215,7 +215,7 @@ function buildDigestHtml({ group, meals, expiringNext7, bulkRuns, harvests, swap
     ${section('Suggested Sides — From the Kitchen', '🥦', sidesHtml)}
 
     <div style="margin-top:36px;padding-top:20px;border-top:1px solid #e8e4dc;text-align:center;font-size:12px;color:#9a9a96;">
-      Sent by Krystle's Brand Hub · Your group cooking companion
+      Sent by Krystle's Cottage · Your group cooking companion
     </div>
   </div>
 </body>

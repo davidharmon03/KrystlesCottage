@@ -2,7 +2,7 @@
 set -e
 
 echo ""
-echo "🌿 Krystle's Brand Hub — Setup"
+echo "🌿 Krystle's Cottage — Setup"
 echo "================================"
 echo ""
 

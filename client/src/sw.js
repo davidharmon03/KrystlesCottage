@@ -1,7 +1,7 @@
-// Krystle's Brand Hub — Service Worker
+// Krystle's Cottage — Service Worker
 // Uses vanilla Cache API, no workbox imports (avoids Windows path apostrophe bug)
 
-const CACHE_NAME = 'brand-hub-v1'
+const CACHE_NAME = 'cottage-v1'
 const STATIC_ASSETS = ['/', '/index.html']
 
 self.addEventListener('install', event => {

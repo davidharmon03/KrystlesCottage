@@ -24,6 +24,10 @@ import Suggestions from './pages/Suggestions'
 import Orders from './pages/Orders'
 import Chat from './pages/Chat'
 import Billing from './pages/Billing'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminGroups from './pages/admin/AdminGroups'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -31,7 +35,7 @@ function ProtectedRoute({ children }) {
     <div className="min-h-screen bg-cream flex items-center justify-center">
       <div className="text-center">
         <div className="w-10 h-10 border-4 border-moss-300 border-t-moss-600 rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-moss-700 font-serif italic">Loading the hub…</p>
+        <p className="text-moss-700 font-serif italic">Loading the cottage…</p>
       </div>
     </div>
   )
@@ -41,7 +45,15 @@ function ProtectedRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  return user ? <Navigate to="/" replace /> : children
+  return user ? <Navigate to={user.role === 'superadmin' ? '/admin' : '/'} replace /> : children
+}
+
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role !== 'superadmin') return <Navigate to="/" replace />
+  return children
 }
 
 export default function App() {
@@ -55,6 +67,13 @@ export default function App() {
           <Route path="/forgot-password"  element={<PublicRoute><ForgotPassword /></PublicRoute>} />
           <Route path="/reset-password"   element={<ResetPassword />} />
           <Route path="/accept-invite"    element={<AcceptInvite />} />
+          {/* Admin routes */}
+          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+            <Route index          element={<AdminDashboard />} />
+            <Route path="users"   element={<AdminUsers />} />
+            <Route path="groups"  element={<AdminGroups />} />
+          </Route>
+
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index               element={<Dashboard />} />
             <Route path="kitchen"      element={<Kitchen />} />

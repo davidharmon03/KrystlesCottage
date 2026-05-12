@@ -15,8 +15,8 @@ export default defineConfig({
         injectionPoint: undefined
       },
       manifest: {
-        name: "Krystle's Brand Hub",
-        short_name: "Brand Hub",
+        name: "Krystle's Cottage",
+        short_name: "Cottage",
         description: "Meal prep, swaps, garden, and group finance for your crew",
         theme_color: "#6B7C5C",
         background_color: "#ffffff",

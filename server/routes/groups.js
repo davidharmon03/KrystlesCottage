@@ -43,7 +43,7 @@ function inviteEmailHtml({ groupName, inviterName, acceptUrl, isNew }) {
 <body>
   <div class="card">
     <h1>You're invited to join ${groupName}</h1>
-    <p><strong>${inviterName}</strong> has invited you to join their group on <strong>Krystle's Brand Hub</strong> — a shared space for recipes, group finances, inventory, and garden tracking.</p>
+    <p><strong>${inviterName}</strong> has invited you to join their group on <strong>Krystle's Cottage</strong> — a shared space for recipes, group finances, inventory, and garden tracking.</p>
     ${isNew
       ? '<p>You\'ll need to create a free account to accept. It only takes a minute.</p>'
       : '<p>Since you already have an account, just click below and you\'ll be added instantly.</p>'
@@ -207,7 +207,7 @@ router.post('/:id/invite', authMiddleware, async (req, res) => {
       try {
         const transport = makeTransport();
         await transport.sendMail({
-          from: `"Krystle's Brand Hub" <${process.env.EMAIL_USER}>`,
+          from: `"Krystle's Cottage" <${process.env.EMAIL_USER}>`,
           to: email,
           subject: `You're invited to join ${group.name}`,
           html: inviteEmailHtml({ groupName: group.name, inviterName, acceptUrl, isNew: true }),

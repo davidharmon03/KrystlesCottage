@@ -72,7 +72,9 @@ const { suggestionsRouter, featureRouter } = require('./routes/suggestions');
 app.use('/api/suggestions',      suggestionsRouter);
 app.use('/api/feature-requests', featureRouter);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', name: "Krystle\'s Brand Hub" }));
+app.use('/api/admin', require('./routes/admin'));
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok', name: "Krystle\'s Cottage" }));
 
 app.use((err, req, res, next) => {
   console.error(err);
