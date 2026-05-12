@@ -5,7 +5,7 @@ import { useSync } from '../contexts/SyncContext'
 import {
   ChefHat, DollarSign, Package, Leaf, Tag, LayoutDashboard,
   LogOut, Menu, X, Wrench, Calendar, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
-  RefreshCw, Wifi, WifiOff, Clock
+  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck
 } from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
@@ -149,6 +149,15 @@ export default function Layout() {
       <SyncBadge onLinkClick={onLinkClick} />
 
       <div className="px-4 py-2 border-t border-slate-100 space-y-0.5">
+        {user?.role === 'superadmin' && (
+          <NavLink to="/admin" onClick={onLinkClick}
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
+                isActive ? 'text-terra-700 bg-terra-50' : 'text-terra-500 hover:text-terra-700 hover:bg-terra-50'}`}>
+            <ShieldCheck size={14} />
+            Admin Panel
+          </NavLink>
+        )}
         <NavLink to="/help" onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
