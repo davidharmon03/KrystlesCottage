@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
 import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck } from 'lucide-react'
 
@@ -7,10 +8,11 @@ const planBadge = (plan) => plan === 'pro'
   : <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">FREE</span>
 
 export default function AdminUsers() {
+  const [searchParams] = useSearchParams()
   const [users, setUsers]       = useState([])
   const [total, setTotal]       = useState(0)
   const [search, setSearch]     = useState('')
-  const [plan, setPlan]         = useState('all')
+  const [plan, setPlan]         = useState(searchParams.get('plan') || 'all')
   const [page, setPage]         = useState(1)
   const [loading, setLoading]   = useState(true)
   const [expanded, setExpanded] = useState(null)

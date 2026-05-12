@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../api'
-import { Users, CreditCard, UserCheck, Group, TrendingUp, UserPlus } from 'lucide-react'
+import { Users, CreditCard, UserCheck, UsersRound, TrendingUp, UserPlus } from 'lucide-react'
 
-function StatCard({ icon: Icon, label, value, color = 'text-moss-600', bg = 'bg-moss-50' }) {
+function StatCard({ icon: Icon, label, value, color = 'text-moss-600', bg = 'bg-moss-50', onClick }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+    <div
+      onClick={onClick}
+      className={`bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-slate-300 transition-all' : ''}`}
+    >
       <div className={`w-11 h-11 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
         <Icon size={20} className={color} />
       </div>
@@ -19,6 +23,7 @@ function StatCard({ icon: Icon, label, value, color = 'text-moss-600', bg = 'bg-
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     api.get('/admin/stats')
@@ -34,12 +39,12 @@ export default function AdminDashboard() {
       <h1 className="text-xl font-serif font-semibold text-ink mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <StatCard icon={Users}     label="Total Users"    value={stats?.totalUsers}   color="text-slate-600" bg="bg-slate-100" />
-        <StatCard icon={CreditCard} label="Paid (Pro)"    value={stats?.paidUsers}    color="text-moss-600"  bg="bg-moss-50"  />
-        <StatCard icon={UserCheck} label="Free Users"     value={stats?.freeUsers}    color="text-slate-500" bg="bg-slate-50" />
-        <StatCard icon={Group}     label="Active Groups"  value={stats?.totalGroups}  color="text-terra-500" bg="bg-terra-50" />
-        <StatCard icon={TrendingUp} label="Group Members" value={stats?.totalMembers} color="text-moss-600"  bg="bg-moss-50"  />
-        <StatCard icon={UserPlus}  label="New This Week"  value={stats?.newThisWeek}  color="text-terra-500" bg="bg-terra-50" />
+        <StatCard icon={Users}      label="Total Users"    value={stats?.totalUsers}   color="text-slate-600" bg="bg-slate-100" onClick={() => navigate('/admin/users?plan=all')} />
+        <StatCard icon={CreditCard} label="Paid (Pro)"     value={stats?.paidUsers}    color="text-moss-600"  bg="bg-moss-50"   onClick={() => navigate('/admin/users?plan=pro')} />
+        <StatCard icon={UserCheck}  label="Free Users"     value={stats?.freeUsers}    color="text-slate-500" bg="bg-slate-50"  onClick={() => navigate('/admin/users?plan=free')} />
+        <StatCard icon={UsersRound} label="Active Groups"  value={stats?.totalGroups}  color="text-terra-500" bg="bg-terra-50"  onClick={() => navigate('/admin/groups')} />
+        <StatCard icon={TrendingUp} label="Group Members"  value={stats?.totalMembers} color="text-moss-600"  bg="bg-moss-50"   onClick={() => navigate('/admin/groups')} />
+        <StatCard icon={UserPlus}   label="New This Week"  value={stats?.newThisWeek}  color="text-terra-500" bg="bg-terra-50" />
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5">
