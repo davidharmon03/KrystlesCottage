@@ -10,6 +10,9 @@ const { getDb } = require('./db');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust Render's proxy so express-rate-limit can identify real client IPs
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
