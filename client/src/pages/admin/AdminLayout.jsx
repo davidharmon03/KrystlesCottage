@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { LayoutDashboard, Users, Group, LogOut, ChefHat } from 'lucide-react'
+import { LayoutDashboard, Users, UsersRound, LogOut, ChefHat } from 'lucide-react'
 
 export default function AdminLayout() {
   const { user, logout } = useAuth()
@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const nav = [
     { to: '/admin',        label: 'Dashboard',  icon: LayoutDashboard, end: true },
     { to: '/admin/users',  label: 'Users',       icon: Users },
-    { to: '/admin/groups', label: 'Groups',      icon: Group },
+    { to: '/admin/groups', label: 'Groups',      icon: UsersRound },
   ]
 
   return (
