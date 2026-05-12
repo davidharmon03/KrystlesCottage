@@ -62,10 +62,11 @@ function AdminRoute({ children }) {
     // Check if there's already a valid 2FA session
     const token = twoFa.getToken('login')
     if (token) { setVerified(true); setChecking(false); return }
-    // No valid session — request 2FA
+    // No valid session — stop the loading state so modal can show, then request 2FA
+    setChecking(false)
     twoFa.request('login')
-      .then(() => { setVerified(true); setChecking(false) })
-      .catch(() => { setChecking(false) })
+      .then(() => setVerified(true))
+      .catch(() => {})
   }, [user])
 
   if (loading || checking) return null
