@@ -398,7 +398,7 @@ router.post('/reset-password', [
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const user = await db.get('SELECT id, name, email, role, plan, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const groups = await _getUserGroups(db, user.id);
     let social_links = {};
@@ -413,7 +413,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 // PUT /api/auth/profile
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { name, social_links, sync_mode } = req.body;
+    const { name, social_links, sync_mode, phone } = req.body;
     const db = await getDb();
     const updates = [];
     const params = [];
@@ -430,11 +430,15 @@ router.put('/profile', authMiddleware, async (req, res) => {
       updates.push('sync_mode = ?');
       params.push(sync_mode);
     }
+    if (phone !== undefined) {
+      updates.push('phone = ?');
+      params.push(phone ? phone.trim() : null);
+    }
     if (updates.length === 0) return res.status(400).json({ error: 'Nothing to update' });
 
     params.push(req.user.id);
     await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
-    const user = await db.get('SELECT id, name, email, role, plan, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     const groups = await _getUserGroups(db, user.id);
     let parsed_links = {};
     try { parsed_links = JSON.parse(user.social_links || '{}') } catch {}

@@ -657,6 +657,13 @@ async function _init() {
     if (!e.message.includes('duplicate column')) throw e;
   }
 
+  // Phone number field on users
+  try {
+    await db.run(`ALTER TABLE users ADD COLUMN phone TEXT`);
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+
   // Payment Integration: plan + Stripe fields on users
   try {
     await db.run(`ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'`);

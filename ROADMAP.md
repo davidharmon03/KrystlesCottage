@@ -855,6 +855,13 @@ Everything a single user needs to manage their own kitchen and garden:
 
 Tracked ideas from feature implementation docs. Not prioritized — pick up when relevant backlog items are done.
 
+### SMS / Twilio Integration
+- [ ] **Add phone number field to user profiles** — optional, stored on `users` table; shown in Profile settings with a "Verify" button
+- [ ] **Twilio account setup** — sign up at twilio.com, get a phone number (~$1/mo), note `ACCOUNT_SID`, `AUTH_TOKEN`, `FROM_NUMBER` env vars
+- [ ] **SMS 2FA** — swap email code delivery in `POST /api/auth/2fa/send` for Twilio SMS when user has a verified phone number on file; fall back to email if no phone
+- [ ] **Group chat SMS notifications** — when a group member is offline, send an SMS digest of new chat messages (configurable in notification prefs)
+- [ ] **Estimated cost:** ~$0.0075/text via Twilio; suitable once app has paying users to offset the cost
+
 ### Barcode Scanner Enhancements *(from CAMERA_BARCODE_SCANNER.md)*
 - [ ] Upgrade to `quagga2` for better damage/angle tolerance on physical barcodes
 - [ ] Batch scanning mode — scan multiple items without closing the modal

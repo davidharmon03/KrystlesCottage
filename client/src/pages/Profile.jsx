@@ -143,6 +143,7 @@ export default function Profile() {
   const navigate = useNavigate()
 
   const [name,        setName]        = useState(user?.name || '')
+  const [phone,       setPhone]       = useState(user?.phone || '')
   const [links,       setLinks]       = useState({})
   const [saving,      setSaving]      = useState(false)
   const [saved,       setSaved]       = useState(false)
@@ -158,6 +159,7 @@ export default function Profile() {
   useEffect(() => {
     if (user) {
       setName(user.name || '')
+      setPhone(user.phone || '')
       setLinks(user.social_links || {})
     }
   }, [user])
@@ -192,7 +194,7 @@ export default function Profile() {
     setSaving(true)
     setError('')
     try {
-      await api.put('/auth/profile', { name: name.trim(), social_links: links })
+      await api.put('/auth/profile', { name: name.trim(), phone: phone.trim() || null, social_links: links })
       await refreshUser()
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
@@ -266,6 +268,17 @@ export default function Profile() {
                 readOnly
               />
               <p className="text-xs text-slate-400 mt-1">Email cannot be changed</p>
+            </div>
+            <div>
+              <label className="label">Phone number <span className="text-slate-400 font-normal">(optional)</span></label>
+              <input
+                className="input"
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+              />
+              <p className="text-xs text-slate-400 mt-1">Used for SMS notifications when available</p>
             </div>
           </div>
         </div>
