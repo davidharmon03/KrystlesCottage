@@ -35,4 +35,21 @@ function superadminMiddleware(req, res, next) {
   }
 }
 
-module.exports = { authMiddleware, superadminMiddleware, JWT_SECRET };
+async function twoFaMiddleware(req, res, next) {
+  const token = req.headers['x-2fa-token'];
+  if (!token) return res.status(403).json({ error: '2FA required', code: '2FA_REQUIRED' });
+  try {
+    const { getDb } = require('../db');
+    const db = await getDb();
+    const session = await db.get(
+      "SELECT * FROM two_fa_sessions WHERE token = ? AND expires_at > datetime('now')",
+      [token]
+    );
+    if (!session) return res.status(403).json({ error: '2FA session expired', code: '2FA_REQUIRED' });
+    next();
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { authMiddleware, superadminMiddleware, twoFaMiddleware, JWT_SECRET };

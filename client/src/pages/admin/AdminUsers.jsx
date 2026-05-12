@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
+import { useTwoFactor } from '../../hooks/useTwoFactor'
 import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck } from 'lucide-react'
 
 const planBadge = (plan) => plan === 'pro'
@@ -17,12 +18,15 @@ export default function AdminUsers() {
   const [loading, setLoading]   = useState(true)
   const [expanded, setExpanded] = useState(null)
   const [detail, setDetail]     = useState({})
+  const { getToken } = useTwoFactor()
   const LIMIT = 50
+
+  const twoFaHeaders = () => ({ 'x-2fa-token': getToken('login') || '' })
 
   const load = () => {
     setLoading(true)
     const params = { search, plan, page, limit: LIMIT }
-    api.get('/admin/users', { params })
+    api.get('/admin/users', { params, headers: twoFaHeaders() })
       .then(r => { setUsers(r.data.users); setTotal(r.data.total) })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -34,13 +38,13 @@ export default function AdminUsers() {
     if (expanded === userId) { setExpanded(null); return }
     setExpanded(userId)
     if (!detail[userId]) {
-      const r = await api.get(`/admin/users/${userId}`)
+      const r = await api.get(`/admin/users/${userId}`, { headers: twoFaHeaders() })
       setDetail(d => ({ ...d, [userId]: r.data }))
     }
   }
 
   const changePlan = async (userId, newPlan) => {
-    await api.put(`/admin/users/${userId}/plan`, { plan: newPlan })
+    await api.put(`/admin/users/${userId}/plan`, { plan: newPlan }, { headers: twoFaHeaders() })
     setUsers(u => u.map(x => x.id === userId ? { ...x, plan: newPlan } : x))
     if (detail[userId]) {
       setDetail(d => ({ ...d, [userId]: { ...d[userId], user: { ...d[userId].user, plan: newPlan } } }))
@@ -49,7 +53,7 @@ export default function AdminUsers() {
 
   const deleteUser = async (userId, name) => {
     if (!confirm(`Delete ${name}? This cannot be undone.`)) return
-    await api.delete(`/admin/users/${userId}`)
+    await api.delete(`/admin/users/${userId}`, { headers: twoFaHeaders() })
     setUsers(u => u.filter(x => x.id !== userId))
     setTotal(t => t - 1)
   }

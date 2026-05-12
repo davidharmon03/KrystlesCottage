@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../../api'
+import { useTwoFactor } from '../../hooks/useTwoFactor'
 
 const planBadge = (plan) => plan === 'pro'
   ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">PRO</span>
@@ -8,9 +9,10 @@ const planBadge = (plan) => plan === 'pro'
 export default function AdminGroups() {
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
+  const { getToken } = useTwoFactor()
 
   useEffect(() => {
-    api.get('/admin/groups')
+    api.get('/admin/groups', { headers: { 'x-2fa-token': getToken('login') || '' } })
       .then(r => setGroups(r.data.groups))
       .catch(console.error)
       .finally(() => setLoading(false))

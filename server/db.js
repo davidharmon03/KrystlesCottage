@@ -674,6 +674,27 @@ async function _init() {
     if (!e.message.includes('duplicate column')) throw e;
   }
 
+  // 2FA codes table
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS two_fa_codes (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      code       TEXT NOT NULL,
+      purpose    TEXT NOT NULL DEFAULT 'login',
+      expires_at DATETIME NOT NULL,
+      used       INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS two_fa_sessions (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token      TEXT NOT NULL UNIQUE,
+      purpose    TEXT NOT NULL DEFAULT 'login',
+      expires_at DATETIME NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   await _seed(db);
   await _seedProducts(db);
   await _seedPlantGuides(db);

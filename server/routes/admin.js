@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
-const { superadminMiddleware } = require('../middleware/auth');
+const { superadminMiddleware, twoFaMiddleware } = require('../middleware/auth');
 
-// All admin routes require superadmin role
+// All admin routes require superadmin role + valid 2FA session
 router.use(superadminMiddleware);
+router.use(twoFaMiddleware);
 
 // GET /api/admin/stats — platform overview
 router.get('/stats', async (req, res) => {

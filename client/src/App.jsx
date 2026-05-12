@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SyncProvider } from './contexts/SyncContext'
 import Layout from './components/Layout'
@@ -28,6 +29,8 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminGroups from './pages/admin/AdminGroups'
+import TwoFactorModal from './components/TwoFactorModal'
+import { useTwoFactor } from './hooks/useTwoFactor'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -50,10 +53,39 @@ function PublicRoute({ children }) {
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return null
+  const twoFa = useTwoFactor()
+  const [verified, setVerified] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    if (!user || user.role !== 'superadmin') { setChecking(false); return }
+    // Check if there's already a valid 2FA session
+    const token = twoFa.getToken('login')
+    if (token) { setVerified(true); setChecking(false); return }
+    // No valid session — request 2FA
+    twoFa.request('login')
+      .then(() => { setVerified(true); setChecking(false) })
+      .catch(() => { setChecking(false) })
+  }, [user])
+
+  if (loading || checking) return null
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'superadmin') return <Navigate to="/" replace />
-  return children
+  if (!verified && !twoFa.isOpen) return <Navigate to="/" replace />
+
+  return (
+    <>
+      <TwoFactorModal
+        isOpen={twoFa.isOpen}
+        state={twoFa.state}
+        error={twoFa.error}
+        purpose="login"
+        onSubmit={twoFa.submit}
+        onCancel={() => { twoFa.cancel(); window.history.back() }}
+      />
+      {verified ? children : null}
+    </>
+  )
 }
 
 export default function App() {

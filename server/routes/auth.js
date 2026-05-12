@@ -219,6 +219,99 @@ router.post('/logout', async (req, res) => {
   }
 });
 
+// POST /api/auth/2fa/send — send a 2FA code to the logged-in user's email
+router.post('/2fa/send', authMiddleware, async (req, res) => {
+  try {
+    const { purpose = 'login' } = req.body;
+    const db = await getDb();
+    const user = await db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Generate 6-digit code
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
+
+    // Invalidate any previous unused codes for this user+purpose
+    await db.run("UPDATE two_fa_codes SET used = 1 WHERE user_id = ? AND purpose = ? AND used = 0", [user.id, purpose]);
+
+    await db.run(
+      'INSERT INTO two_fa_codes (user_id, code, purpose, expires_at) VALUES (?,?,?,?)',
+      [user.id, code, purpose, expires]
+    );
+
+    const transport = makeTransport();
+    await transport.sendMail({
+      from: `Krystle's Cottage <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: `Your verification code — ${code}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+          <h2 style="color:#6B7C5C">Krystle's Cottage</h2>
+          <p>Hi ${user.name},</p>
+          <p>Your verification code is:</p>
+          <div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#3d4d30;padding:20px 0">${code}</div>
+          <p style="color:#666">This code expires in <strong>10 minutes</strong>. If you didn't request this, you can ignore this email.</p>
+        </div>
+      `
+    });
+
+    res.json({ sent: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to send code' });
+  }
+});
+
+// POST /api/auth/2fa/verify — verify the code and return a 2FA session token
+router.post('/2fa/verify', authMiddleware, async (req, res) => {
+  try {
+    const { code, purpose = 'login' } = req.body;
+    if (!code) return res.status(400).json({ error: 'Code required' });
+
+    const db = await getDb();
+    const record = await db.get(
+      "SELECT * FROM two_fa_codes WHERE user_id = ? AND purpose = ? AND used = 0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1",
+      [req.user.id, purpose]
+    );
+
+    if (!record || record.code !== String(code)) {
+      return res.status(401).json({ error: 'Invalid or expired code' });
+    }
+
+    // Mark code as used
+    await db.run('UPDATE two_fa_codes SET used = 1 WHERE id = ?', [record.id]);
+
+    // Create a 2FA session token (30 min)
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    await db.run(
+      'INSERT INTO two_fa_sessions (user_id, token, purpose, expires_at) VALUES (?,?,?,?)',
+      [req.user.id, token, purpose, expires]
+    );
+
+    res.json({ verified: true, twoFaToken: token, expiresAt: expires });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to verify code' });
+  }
+});
+
+// GET /api/auth/2fa/check — check if a 2FA session token is still valid
+router.get('/2fa/check', authMiddleware, async (req, res) => {
+  try {
+    const token = req.headers['x-2fa-token'];
+    if (!token) return res.json({ valid: false });
+    const db = await getDb();
+    const session = await db.get(
+      "SELECT * FROM two_fa_sessions WHERE token = ? AND user_id = ? AND expires_at > datetime('now')",
+      [token, req.user.id]
+    );
+    res.json({ valid: !!session });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /api/auth/forgot-password
 router.post('/forgot-password', [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),

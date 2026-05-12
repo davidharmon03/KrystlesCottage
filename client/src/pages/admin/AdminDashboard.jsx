@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api'
+import { useTwoFactor } from '../../hooks/useTwoFactor'
 import { Users, CreditCard, UserCheck, UsersRound, TrendingUp, UserPlus } from 'lucide-react'
 
 function StatCard({ icon: Icon, label, value, color = 'text-moss-600', bg = 'bg-moss-50', onClick }) {
@@ -24,9 +25,11 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { getToken } = useTwoFactor()
 
   useEffect(() => {
-    api.get('/admin/stats')
+    const token = getToken('login')
+    api.get('/admin/stats', { headers: { 'x-2fa-token': token || '' } })
       .then(r => setStats(r.data))
       .catch(console.error)
       .finally(() => setLoading(false))
