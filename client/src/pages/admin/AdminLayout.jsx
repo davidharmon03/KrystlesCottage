@@ -48,8 +48,15 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className="px-4 py-4 border-t border-slate-700">
-          <p className="text-xs text-slate-400 truncate mb-2">{user?.email}</p>
+        <div className="px-4 py-4 border-t border-slate-700 space-y-2">
+          <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors"
+          >
+            <LayoutDashboard size={13} />
+            Back to App
+          </button>
           <button
             onClick={() => logout().then(() => navigate('/login'))}
             className="flex items-center gap-2 text-xs text-slate-400 hover:text-red-400 transition-colors"
