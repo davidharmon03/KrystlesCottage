@@ -716,6 +716,7 @@ async function _init() {
   }
 
   await _seed(db);
+  await _seedSuperadmin(db);
   await _seedProducts(db);
   await _seedPlantGuides(db);
   return db;
@@ -1360,6 +1361,27 @@ async function _seedPlantGuides(db) {
     ]);
   }
   console.log(`Seeded ${guides.length} plant guides.`);
+}
+
+async function _seedSuperadmin(db) {
+  const ADMIN_EMAIL = 'davidharmon03@gmail.com';
+  const existing = await db.get('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
+
+  if (!existing) {
+    const hash = await bcrypt.hash('KrystleAdmin2026!', 10);
+    await db.run(
+      `INSERT INTO users (id, name, email, password, role, must_change_password)
+       VALUES (?, ?, ?, ?, 'superadmin', 0)`,
+      [uuidv4(), 'David', ADMIN_EMAIL, hash]
+    );
+    console.log('Superadmin seeded: davidharmon03@gmail.com');
+  } else if (existing.role !== 'superadmin') {
+    await db.run(
+      `UPDATE users SET role = 'superadmin', must_change_password = 0 WHERE email = ?`,
+      [ADMIN_EMAIL]
+    );
+    console.log('Superadmin seeded: davidharmon03@gmail.com');
+  }
 }
 
 module.exports = { getDb };
