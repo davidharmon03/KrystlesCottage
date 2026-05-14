@@ -52,10 +52,10 @@ export default function Corner() {
     if (!gid) return
     setLoading(true)
     Promise.all([
-      api.get(`/korner/${gid}/receipts`),
-      api.get(`/korner/${gid}/equalizer`),
-      api.get(`/korner/${gid}/meal-credits`),
-      api.get(`/korner/${gid}/stats`),
+      api.get(`/corner/${gid}/receipts`),
+      api.get(`/corner/${gid}/equalizer`),
+      api.get(`/corner/${gid}/meal-credits`),
+      api.get(`/corner/${gid}/stats`),
     ]).then(([r, e, c, s]) => {
       setReceipts(r.data)
       setEqualizer(e.data)
@@ -156,7 +156,7 @@ export default function Corner() {
       fd.append('amount', rForm.amount)
       fd.append('description', rForm.description)
       if (rForm.image) fd.append('image', rForm.image)
-      await api.post(`/korner/${gid}/receipts`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await api.post(`/corner/${gid}/receipts`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setRForm({ amount: '', description: '', image: null })
       loadAll()
     } catch (err) {
@@ -166,7 +166,7 @@ export default function Corner() {
 
   const deleteReceipt = async id => {
     if (!confirm('Delete this receipt?')) return
-    await api.delete(`/korner/${gid}/receipts/${id}`)
+    await api.delete(`/corner/${gid}/receipts/${id}`)
     loadAll()
   }
 
@@ -174,7 +174,7 @@ export default function Corner() {
     e.preventDefault()
     setCLoading(true)
     try {
-      await api.post(`/korner/${gid}/meal-credits`, cForm)
+      await api.post(`/corner/${gid}/meal-credits`, cForm)
       setCForm({ credits: '', note: '' })
       loadAll()
     } catch { } finally { setCLoading(false) }

@@ -581,7 +581,7 @@ function BulkRunDetail({ run, members, gid, onBack, onRunUpdated }) {
   const loadItems = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await api.get(`/kuzine/${gid}/bulk-buys/${run.id}/items`)
+      const res = await api.get(`/cuisine/${gid}/bulk-buys/${run.id}/items`)
       setItems(res.data)
     } catch {} finally { setLoading(false) }
   }, [gid, run.id])
@@ -589,26 +589,26 @@ function BulkRunDetail({ run, members, gid, onBack, onRunUpdated }) {
   useEffect(() => { loadItems() }, [loadItems])
 
   const addItem = async form => {
-    await api.post(`/kuzine/${gid}/bulk-buys/${run.id}/items`, form)
+    await api.post(`/cuisine/${gid}/bulk-buys/${run.id}/items`, form)
     await loadItems()
   }
   const deleteItem = async id => {
     if (!confirm('Remove item?')) return
-    await api.delete(`/kuzine/${gid}/bulk-buys/${run.id}/items/${id}`)
+    await api.delete(`/cuisine/${gid}/bulk-buys/${run.id}/items/${id}`)
     await loadItems()
   }
   const saveActualCost = async item => {
-    await api.put(`/kuzine/${gid}/bulk-buys/${run.id}/items/${item.id}`, { actual_cost: costVal === '' ? null : parseFloat(costVal) })
+    await api.put(`/cuisine/${gid}/bulk-buys/${run.id}/items/${item.id}`, { actual_cost: costVal === '' ? null : parseFloat(costVal) })
     setEditingCost(null)
     await loadItems()
   }
   const fetchSettlement = async () => {
-    const res = await api.get(`/kuzine/${gid}/bulk-buys/${run.id}/settlement`)
+    const res = await api.get(`/cuisine/${gid}/bulk-buys/${run.id}/settlement`)
     setSettlement(res.data)
     setShowSettlement(true)
   }
   const saveRunEdits = async () => {
-    const res = await api.put(`/kuzine/${gid}/bulk-buys/${run.id}`, runForm)
+    const res = await api.put(`/cuisine/${gid}/bulk-buys/${run.id}`, runForm)
     onRunUpdated(res.data)
     setEditRun(false)
   }
@@ -1093,9 +1093,9 @@ export default function Cuisine() {
     setLoading(true)
     try {
       const [iRes, vRes, rRes, mRes] = await Promise.all([
-        api.get(`/kuzine/${gid}/inventory`),
-        api.get(`/kuzine/${gid}/vacuum-log`),
-        api.get(`/kuzine/${gid}/bulk-buys`),
+        api.get(`/cuisine/${gid}/inventory`),
+        api.get(`/cuisine/${gid}/vacuum-log`),
+        api.get(`/cuisine/${gid}/bulk-buys`),
         api.get(`/groups/${gid}/members`),
       ])
       setInv(iRes.data)
@@ -1112,32 +1112,32 @@ export default function Cuisine() {
 
   const addInv = async form => {
     setAddingInv(true)
-    try { await api.post(`/kuzine/${gid}/inventory`, form); await load() }
+    try { await api.post(`/cuisine/${gid}/inventory`, form); await load() }
     finally { setAddingInv(false) }
   }
   const deleteInv = async id => {
     if (!confirm('Remove item?')) return
-    await api.delete(`/kuzine/${gid}/inventory/${id}`)
+    await api.delete(`/cuisine/${gid}/inventory/${id}`)
     setInv(v => v.filter(i => i.id !== id))
   }
   const addVs = async form => {
     setAddingVs(true)
-    try { await api.post(`/kuzine/${gid}/vacuum-log`, form); await load() }
+    try { await api.post(`/cuisine/${gid}/vacuum-log`, form); await load() }
     finally { setAddingVs(false) }
   }
   const deleteVs = async id => {
     if (!confirm('Remove log entry?')) return
-    await api.delete(`/kuzine/${gid}/vacuum-log/${id}`)
+    await api.delete(`/cuisine/${gid}/vacuum-log/${id}`)
     setVsLog(v => v.filter(i => i.id !== id))
   }
   const addRun = async form => {
-    const res = await api.post(`/kuzine/${gid}/bulk-buys`, form)
+    const res = await api.post(`/cuisine/${gid}/bulk-buys`, form)
     await load()
     return res.data
   }
   const deleteRun = async run => {
     if (!confirm(`Delete "${run.name}"?`)) return
-    await api.delete(`/kuzine/${gid}/bulk-buys/${run.id}`)
+    await api.delete(`/cuisine/${gid}/bulk-buys/${run.id}`)
     await load()
   }
 

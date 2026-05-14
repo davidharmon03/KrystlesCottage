@@ -71,7 +71,7 @@ router.post('/:groupId/inventory', authMiddleware, async (req, res) => {
       type: 'meal_added',
       title: 'New inventory item added',
       message: `${created.added_by_name} added "${itemName}" to the group inventory.`,
-      link: '/kuzine'
+      link: '/cuisine'
     });
     res.status(201).json(created);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
@@ -280,7 +280,7 @@ router.post('/:groupId/bulk-buys', authMiddleware, async (req, res) => {
       type: 'bulk_buy_posted',
       title: 'New bulk buy run posted',
       message: `${created.created_by_name} created a new bulk buy run: "${name}" on ${run_date}.`,
-      link: '/kuzine'
+      link: '/cuisine'
     });
     res.status(201).json(created);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }

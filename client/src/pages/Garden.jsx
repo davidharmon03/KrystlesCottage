@@ -485,9 +485,9 @@ export default function Garden() {
     if (!gid) return
     setLoading(true)
     Promise.all([
-      api.get(`/kultivate/${gid}/plants`),
-      api.get(`/kultivate/${gid}/harvests`),
-      api.get(`/kultivate/${gid}/calendar`),
+      api.get(`/garden/${gid}/plants`),
+      api.get(`/garden/${gid}/harvests`),
+      api.get(`/garden/${gid}/calendar`),
     ]).then(([p, h, c]) => {
       setPlants(p.data)
       setHarvests(h.data)
@@ -514,25 +514,25 @@ export default function Garden() {
 
   const addPlant = async e => {
     e.preventDefault()
-    await api.post(`/kultivate/${gid}/plants`, plantForm)
+    await api.post(`/garden/${gid}/plants`, plantForm)
     setPlantForm({ plant_name: '', date_planted: '', expected_harvest: '', status: 'growing', notes: '', plant_guide_id: null })
     setShowAddPlant(false)
     loadAll()
   }
 
   const updatePlant = async (id, updates) => {
-    await api.put(`/kultivate/${gid}/plants/${id}`, updates)
+    await api.put(`/garden/${gid}/plants/${id}`, updates)
     loadAll()
   }
 
   const deletePlant = async id => {
     if (!confirm('Remove this plant?')) return
-    await api.delete(`/kultivate/${gid}/plants/${id}`)
+    await api.delete(`/garden/${gid}/plants/${id}`)
     loadAll()
   }
 
   const logHarvest = async form => {
-    await api.post(`/kultivate/${gid}/harvests`, form)
+    await api.post(`/garden/${gid}/harvests`, form)
     loadAll()
   }
 

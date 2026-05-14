@@ -139,7 +139,7 @@ router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
       type: 'harvest_logged',
       title: 'Harvest logged!',
       message: `${created.added_by_name} logged a harvest: ${yield_amount} of ${plant_name}.`,
-      link: '/kultivate'
+      link: '/garden'
     });
     res.status(201).json(created);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
