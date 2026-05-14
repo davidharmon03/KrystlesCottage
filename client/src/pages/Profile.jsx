@@ -19,7 +19,7 @@ const PREF_GROUPS = [
       { key: 'in_app_swap',      label: 'Meal Swap',   desc: 'New swap weeks and entrée-ready alerts' },
       { key: 'in_app_korner',    label: 'Corner',      desc: 'Bulk buy runs posted to the group' },
       { key: 'in_app_kuzine',    label: 'Cuisine',     desc: 'Meals and inventory activity' },
-      { key: 'in_app_kultivate', label: 'Garden',      desc: 'Harvest logs from group members' },
+      { key: 'in_app_garden',    label: 'Garden',      desc: 'Harvest logs from group members' },
       { key: 'in_app_orders',    label: 'Kitchen Orders', desc: 'Order requests, ready alerts, and declines' },
     ],
   },

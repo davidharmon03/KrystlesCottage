@@ -21,7 +21,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
   in_app_swap:      true,
   in_app_korner:    true,
   in_app_kuzine:    true,
-  in_app_kultivate: true,
+  in_app_garden:    true,
   in_app_orders:    true,
   expiry_reminders: true,
 };

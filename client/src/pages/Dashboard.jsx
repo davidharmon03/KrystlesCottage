@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import {
   ChefHat, DollarSign, Package, Leaf, Tag,
-  Users, Plus, ArrowRight, Copy, Check
+  Users, Plus, ArrowRight, Copy, Check, AlertTriangle, ShieldCheck, User
 } from 'lucide-react'
 
 function relativeTime(iso) {
@@ -111,6 +111,93 @@ export default function Dashboard() {
           Good {getGreeting()}, {user?.name?.split(' ')[0]} 🌿
         </h1>
         <p className="text-slate-500 mt-1 text-sm md:text-base">Welcome to your brand hub. What are we prepping today?</p>
+      </div>
+
+      {/* Account Status Card */}
+      <div className="card mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {/* Avatar */}
+          <div className="w-11 h-11 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+            <span className="text-slate-600 font-semibold text-base">{user?.name?.[0]?.toUpperCase()}</span>
+          </div>
+
+          {/* Identity + group status */}
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <span className="font-semibold text-ink">{user?.name}</span>
+
+              {/* System role badge */}
+              {user?.role === 'superadmin' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-terra-100 text-terra-700 border border-terra-200">
+                  <ShieldCheck size={11} /> Superadmin
+                </span>
+              )}
+              {user?.role === 'admin' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-moss-100 text-moss-700 border border-moss-200">
+                  <ShieldCheck size={11} /> Admin
+                </span>
+              )}
+              {(!user?.role || user?.role === 'member') && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                  <User size={11} /> Member
+                </span>
+              )}
+
+              {/* Group membership badge */}
+              {activeGroup ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <Check size={11} /> Group Member
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
+                  Free Account
+                </span>
+              )}
+            </div>
+
+            <p className="text-sm text-slate-500">{user?.email}</p>
+
+            {/* Group detail */}
+            {activeGroup ? (
+              <p className="text-sm text-slate-600 mt-1">
+                <span className="text-slate-400">Member of:</span>{' '}
+                <span className="font-medium text-ink">{activeGroup.name}</span>
+                {activeGroup.role && (
+                  <span className="ml-2 text-xs text-slate-400 capitalize">· {activeGroup.role}</span>
+                )}
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500 mt-1">
+                Not in a group yet — join or create one to unlock Kitchen, Corner, Cuisine, and Garden features.
+              </p>
+            )}
+
+            {/* Password warning */}
+            {user?.must_change_password && (
+              <Link to="/profile" className="inline-flex items-center gap-1.5 text-amber-600 text-sm mt-1.5 hover:text-amber-700 font-medium">
+                <AlertTriangle size={13} /> Please update your password
+              </Link>
+            )}
+          </div>
+
+          {/* CTA for no-group state */}
+          {!activeGroup && (
+            <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => setShowJoinModal(true)}
+                className="btn-ghost text-sm flex-1 sm:flex-none"
+              >
+                Enter code
+              </button>
+              <button
+                onClick={() => navigate('/create-group')}
+                className="btn-terra text-sm flex items-center gap-1.5 flex-1 sm:flex-none justify-center"
+              >
+                <Users size={15} /> Create or Join
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Group Banner */}

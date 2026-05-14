@@ -704,6 +704,19 @@ async function _init() {
     );
   `);
 
+  // Migrate notification pref key: in_app_kultivate → in_app_garden
+  const _usersWithPrefs = await db.all("SELECT id, notification_prefs FROM users WHERE notification_prefs LIKE '%in_app_kultivate%'");
+  for (const u of _usersWithPrefs) {
+    try {
+      const prefs = JSON.parse(u.notification_prefs || '{}');
+      if ('in_app_kultivate' in prefs) {
+        prefs.in_app_garden = prefs.in_app_kultivate;
+        delete prefs.in_app_kultivate;
+        await db.run('UPDATE users SET notification_prefs = ? WHERE id = ?', [JSON.stringify(prefs), u.id]);
+      }
+    } catch {}
+  }
+
   await _seed(db);
   await _seedProducts(db);
   await _seedPlantGuides(db);

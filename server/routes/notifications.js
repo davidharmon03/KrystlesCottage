@@ -13,7 +13,7 @@ const TYPE_TO_PREF = {
   order_request:     'in_app_orders',
   order_ready:       'in_app_orders',
   order_declined:    'in_app_orders',
-  harvest_logged:    'in_app_kultivate',
+  harvest_logged:    'in_app_garden',
   meal_added:        'in_app_kuzine',
   bulk_buy_posted:   'in_app_korner',
 };

@@ -456,7 +456,7 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function Garden() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const activeGroup = user?.groups?.[0]
   const gid = activeGroup?.id
 
@@ -535,6 +535,13 @@ export default function Garden() {
     await api.post(`/garden/${gid}/harvests`, form)
     loadAll()
   }
+
+  // Wait for auth to resolve before deciding the user has no group
+  if (authLoading) return (
+    <div className="flex justify-center py-16">
+      <div className="w-8 h-8 border-4 border-moss-200 border-t-moss-600 rounded-full animate-spin" />
+    </div>
+  )
 
   if (!activeGroup) return <NoGroup />
 
