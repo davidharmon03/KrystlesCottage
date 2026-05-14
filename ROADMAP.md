@@ -16,6 +16,10 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **Page Renames** — Korner → Corner, Kuzine → Cuisine, Kultivate → Garden; source files renamed, routes updated, nav labels cleaned
 - ✅ **Render Cloud Deployment** — render.yaml Blueprint, backend + static client live at krystleskitchen.onrender.com / krystleskitchen-client.onrender.com
 - ✅ **GitHub Repo Cleanup** — .gitignore improved, README rewritten clean
+- ✅ **App Renamed to Krystle's Cottage** — "Krystle's Brand Hub" → "Krystle's Cottage" across all files
+- ✅ **Server Route File Renames** — korner.js→corner.js, kuzine.js→cuisine.js, kultivate.js→garden.js; API paths updated end-to-end including all frontend axios calls
+- ✅ **Garden Page Fix** — calendar endpoint was querying wrong table; `in_app_kultivate` notif pref key → `in_app_garden`; auth loading guard added
+- ✅ **Dashboard Account Status Card** — shows name, email, system role badge (Superadmin/Admin/Member), group membership status (Free Account vs Group Member ✓), group name + role, password change warning, Create/Join group CTA when ungrouped
 
 ---
 
