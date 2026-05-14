@@ -1,10 +1,13 @@
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-const DB_PATH = path.join(__dirname, 'data.db');
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data.db');
+// Ensure the directory exists before SQLite tries to open it
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 let _dbPromise = null;
 
 async function getDb() {
