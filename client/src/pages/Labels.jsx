@@ -5,7 +5,7 @@ import QRCode from 'qrcode'
 
 const BLANK_LABEL = {
   item_name: '',
-  source: "Grown in Krystle's Garden",
+  source: "Grown in the Garden",
   cook_temp: '',
   cook_time: '',
   date_sealed: new Date().toISOString().split('T')[0],
@@ -42,7 +42,7 @@ function LabelCard({ label, index, onDelete, qrDataUrl }) {
             <div className="w-6 h-6 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-xs">K</span>
             </div>
-            <span className="text-xs font-semibold text-moss-700 uppercase tracking-widest">Krystle's Cuisine</span>
+            <span className="text-xs font-semibold text-moss-700 uppercase tracking-widest">Cuisine</span>
           </div>
           <p className="text-xs text-terra-600 italic">Healthy · Organic · Community-Driven</p>
         </div>
@@ -209,7 +209,7 @@ export default function Labels() {
             </div>
             <div>
               <label className="label">Source</label>
-              <input className="input" placeholder="e.g. Grown in Krystle's Garden" value={activeLabel.source} onChange={set('source')} />
+              <input className="input" placeholder="e.g. Grown in the Garden" value={activeLabel.source} onChange={set('source')} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

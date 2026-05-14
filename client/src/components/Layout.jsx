@@ -95,11 +95,11 @@ export default function Layout() {
   const activeGroup = user?.groups?.[0]
 
   const channels = [
-    { to: '/kitchen',     label: `${fn}'s Kitchen`,   icon: ChefHat,         color: 'text-terra-500' },
-    { to: '/korner',      label: `${fn}'s Corner`,     icon: DollarSign,      color: 'text-moss-600'  },
-    { to: '/kuzine',      label: `${fn}'s Cuisine`,    icon: Package,         color: 'text-slate-600' },
+    { to: '/kitchen',     label: 'Kitchen',            icon: ChefHat,         color: 'text-terra-500' },
+    { to: '/corner',      label: 'Corner',             icon: DollarSign,      color: 'text-moss-600'  },
+    { to: '/cuisine',     label: 'Cuisine',            icon: Package,         color: 'text-slate-600' },
     { to: '/orders',      label: 'Kitchen Orders',     icon: ShoppingBag,     color: 'text-moss-600'  },
-    { to: '/kultivate',   label: `${fn}'s Garden`,     icon: Leaf,            color: 'text-moss-500'  },
+    { to: '/garden',      label: 'Garden',             icon: Leaf,            color: 'text-moss-500'  },
     { to: '/equipment',   label: 'Equipment',          icon: Wrench,          color: 'text-terra-400' },
     { to: '/labels',      label: 'Label Generator',    icon: Tag,             color: 'text-slate-400' },
     { to: '/calendar',    label: 'Group Calendar',     icon: Calendar,        color: 'text-moss-500'  },

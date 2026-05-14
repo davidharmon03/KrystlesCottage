@@ -8,7 +8,6 @@ import {
   Loader, Pencil, Users, DollarSign, ChevronLeft, ShoppingBag,
   Search, Scan, Camera, Printer
 } from 'lucide-react'
-import { firstName } from '../utils/userName'
 
 const CATEGORIES    = ['protein', 'produce', 'staple', 'dairy', 'grain', 'condiment', 'other']
 const STORAGE_TYPES = ['vacuum sealed', 'frozen', 'fresh', 'canned', 'dry storage']
@@ -1071,12 +1070,11 @@ function ShoppingListTab({ gid }) {
   )
 }
 
-// ── Main Kuzine page ──────────────────────────────────────────────────────────
+// ── Main Cuisine page ──────────────────────────────────────────────────────────
 const TABS = ['Shopping', 'Inventory', 'Vacuum Seal', 'Bulk Buy']
 
-export default function Kuzine() {
+export default function Cuisine() {
   const { user }  = useAuth()
-  const fn        = firstName(user)
   const [tab, setTab]   = useState(0)
   const [inv, setInv]   = useState([])
   const [vsLog, setVsLog] = useState([])
@@ -1145,7 +1143,7 @@ export default function Kuzine() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4 md:space-y-6 overflow-x-hidden">
-      <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold">{fn}'s Cuisine</h1>
+      <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold">Cuisine</h1>
 
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
         {TABS.map((t, i) => (
@@ -1275,3 +1273,4 @@ export default function Kuzine() {
     </div>
   )
 }
+                                                                                         

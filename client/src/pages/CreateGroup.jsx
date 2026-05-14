@@ -157,7 +157,7 @@ export default function CreateGroup() {
               <label className="label">Group name</label>
               <input
                 className="input"
-                placeholder="e.g. Krystle's Crew"
+                placeholder="e.g. Sunday Crew"
                 value={groupName}
                 onChange={e => { setGroupName(e.target.value); setNameError('') }}
                 autoFocus

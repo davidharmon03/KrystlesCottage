@@ -26,33 +26,31 @@ function syncDotColor(iso) {
   if (days < 3)  return 'bg-amber-400'
   return 'bg-red-400'
 }
-import { firstName } from '../utils/userName'
 import SocialLinks from '../components/SocialLinks'
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const fn = firstName(user)
   const channels = [
     {
-      to: '/kitchen', label: `${fn}'s Kitchen`, sub: 'Recipes & How-Tos',
+      to: '/kitchen', label: 'Kitchen', sub: 'Recipes & How-Tos',
       icon: ChefHat, bg: 'bg-terra-50', border: 'border-terra-200',
       iconBg: 'bg-terra-100', iconColor: 'text-terra-600',
       description: 'Healthy organic recipes, freezer-friendly cooking, and professional prep techniques.',
     },
     {
-      to: '/korner', label: `${fn}'s Corner`, sub: 'Group Finance Hub',
+      to: '/corner', label: 'Corner', sub: 'Group Finance Hub',
       icon: DollarSign, bg: 'bg-moss-50', border: 'border-moss-200',
       iconBg: 'bg-moss-100', iconColor: 'text-moss-600',
       description: 'Receipt tracking, The Equalizer, and Meal Credits — split costs fairly across your group.',
     },
     {
-      to: '/kuzine', label: `${fn}'s Cuisine`, sub: 'Prep & Inventory',
+      to: '/cuisine', label: 'Cuisine', sub: 'Prep & Inventory',
       icon: Package, bg: 'bg-slate-50', border: 'border-slate-200',
       iconBg: 'bg-slate-100', iconColor: 'text-slate-600',
       description: 'Inventory management, bulk-buy coordination, and vacuum seal logging.',
     },
     {
-      to: '/kultivate', label: `${fn}'s Garden`, sub: 'Plants & Harvests',
+      to: '/garden', label: 'Garden', sub: 'Plants & Harvests',
       icon: Leaf, bg: 'bg-moss-50', border: 'border-moss-200',
       iconBg: 'bg-moss-100', iconColor: 'text-moss-500',
       description: 'Track your garden plants, log harvests, and auto-stock inventory from your Garden.',

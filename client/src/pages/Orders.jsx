@@ -718,7 +718,7 @@ function ClientView({ groupId, userId }) {
             <div className="card p-10 text-center">
               <ChefHat size={40} className="mx-auto text-slate-300 mb-3" />
               <p className="text-slate-500 font-medium">Menu is empty</p>
-              <p className="text-slate-400 text-sm mt-1">Check back soon — Krystle will add meals here when available.</p>
+              <p className="text-slate-400 text-sm mt-1">Check back soon — new meals will be added here when available.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -802,7 +802,7 @@ export default function Orders() {
       <div className="card p-10 text-center max-w-lg mx-auto mt-10">
         <ShoppingBag size={40} className="mx-auto text-slate-300 mb-3" />
         <p className="font-serif font-semibold text-ink text-lg">No group found</p>
-        <p className="text-slate-500 text-sm mt-1">You need to be in a group to use Krystle's Kitchen Orders.</p>
+        <p className="text-slate-500 text-sm mt-1">You need to be in a group to use Kitchen Orders.</p>
       </div>
     )
   }
@@ -816,7 +816,7 @@ export default function Orders() {
         </div>
         <div>
           <h1 className="font-serif font-bold text-ink text-2xl leading-tight">
-            Krystle's Kitchen Orders
+            Kitchen Orders
           </h1>
           <p className="text-sm text-slate-500">
             {isAdmin

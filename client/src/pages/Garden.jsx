@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { firstName } from '../utils/userName'
 import api from '../api'
 import {
   Leaf, Plus, Trash2, Calendar, Sprout, X, BookOpen,
@@ -456,7 +455,7 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function Kultivate() {
+export default function Garden() {
   const { user } = useAuth()
   const activeGroup = user?.groups?.[0]
   const gid = activeGroup?.id
@@ -561,7 +560,7 @@ export default function Kultivate() {
             <Leaf size={20} className="text-moss-500" />
           </div>
           <div>
-            <h1 className="page-title">{firstName(user)}'s Garden</h1>
+            <h1 className="page-title">Garden</h1>
             <p className="text-sm text-slate-500">Plants & Harvests — {activeGroup.name}</p>
           </div>
         </div>
@@ -840,3 +839,4 @@ export default function Kultivate() {
     </div>
   )
 }
+                                                                  

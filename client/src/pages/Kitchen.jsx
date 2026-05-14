@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { firstName } from '../utils/userName'
 import { scaleIngredients } from '../utils/scaleIngredients'
 import api from '../api'
 import PhotoUpload, { photoUrl } from '../components/PhotoUpload'
@@ -565,7 +564,7 @@ export default function Kitchen() {
             <ChefHat size={20} className="text-terra-600" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold leading-tight">{firstName(user)}'s Kitchen</h1>
+            <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold leading-tight">Kitchen</h1>
             <p className="text-xs md:text-sm text-slate-500">Entrées, skills & freezer-friendly cooking</p>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { firstName } from '../utils/userName'
 import {
   HelpCircle, ChefHat, DollarSign, Package, Leaf, Wrench, Tag,
   Calendar, Camera, ArrowLeftRight, Bell, User, Mail,
@@ -65,7 +64,6 @@ function Tip({ children }) {
 
 export default function Help() {
   const { user } = useAuth()
-  const name = firstName(user)
   const navRef = useRef(null)
 
   const scroll = id => {
@@ -115,8 +113,8 @@ export default function Help() {
           <Tip>Groups max out at 5 members. If you need to remove someone, a group admin can do that from group settings.</Tip>
         </Section>
 
-        <Section id="kitchen" icon={ChefHat} title={`${name}'s Kitchen — Recipes & Cooking`}>
-          <P>{name}'s Kitchen is your personal and group recipe library. Every recipe can be public (visible to all Hub users) or group-only.</P>
+        <Section id="kitchen" icon={ChefHat} title="Kitchen — Recipes & Cooking">
+          <P>Kitchen is your personal and group recipe library. Every recipe can be public (visible to all Hub users) or group-only.</P>
           <H>Adding a recipe</H>
           <P>Click "New Recipe" in the top-right corner. Fill in the title, description, ingredients (one per line), and steps (one per line). Tag it with recipe tags like "freezer-friendly" or "vegan," and skill tags like "batch prep" or "vacuum seal." Toggle it public if you want the wider community to see it.</P>
           <H>Tags</H>
@@ -127,8 +125,8 @@ export default function Help() {
           <P>While viewing a recipe (not in edit mode), hit "Add to Shopping List" at the bottom. A modal lets you pick which shopping list to add to and choose a serving multiplier (1×, 2×, 3×, or 5×). Every ingredient gets parsed and added — if any match products in the catalog they'll be auto-categorized by store section.</P>
         </Section>
 
-        <Section id="korner" icon={DollarSign} title={`${name}'s Corner — Group Finance Hub`}>
-          <P>{name}'s Corner is where your group keeps tabs on who paid for what. It has three tabs: Receipts, The Equalizer, and Meal Credits.</P>
+        <Section id="korner" icon={DollarSign} title="Corner — Group Finance Hub">
+          <P>Corner is where your group keeps tabs on who paid for what. It has three tabs: Receipts, The Equalizer, and Meal Credits.</P>
           <H>Receipts</H>
           <P>Any member can log a receipt — enter the amount, a short description, and optionally upload a photo of the receipt. Every purchase lives here chronologically. Photos are stored and viewable from the receipt card.</P>
           <H>The Equalizer</H>
@@ -139,8 +137,8 @@ export default function Help() {
           <P>The "Send Digest" button in the Corner header fires off a summary email to every group member. It covers inventory added, items expiring soon, upcoming bulk buy runs, the next swap schedule, and recent garden harvests. A cron job also auto-sends this every Sunday morning — the button is there for on-demand sends outside the weekly schedule.</P>
         </Section>
 
-        <Section id="kuzine" icon={Package} title={`${name}'s Cuisine — Inventory, Shopping & Bulk Buys`}>
-          <P>{name}'s Cuisine is your shared pantry and freezer manager. It has four tabs: Inventory, Vacuum Seal Log, Shopping Lists, and Bulk Buy Runs.</P>
+        <Section id="kuzine" icon={Package} title="Cuisine — Inventory, Shopping & Bulk Buys">
+          <P>Cuisine is your shared pantry and freezer manager. It has four tabs: Inventory, Vacuum Seal Log, Shopping Lists, and Bulk Buy Runs.</P>
           <H>Inventory</H>
           <P>Add any food item your group has on hand — name, quantity, category (protein, produce, pantry, etc.), and storage type (fresh, vacuum sealed, frozen, etc.). The app automatically calculates a use-by date based on storage type: fresh items get 5 days, vacuum sealed get 14, frozen get 90, and so on. To find a product quickly, use the search bar — it checks your local catalog first and falls back to the Open Food Facts database if there's no local match. You can also scan a barcode with your device camera to look up store-bought items instantly.</P>
           <H>Vacuum Seal Log</H>
@@ -152,8 +150,8 @@ export default function Help() {
           <Tip>Harvest something in your Garden? If you tick "Add to inventory" at log time, it auto-creates an entry here — no manual entry needed.</Tip>
         </Section>
 
-        <Section id="kultivate" icon={Leaf} title={`${name}'s Garden — Plants & Harvest Tracking`}>
-          <P>{name}'s Garden is your group's garden notebook. It has four tabs: Garden, Harvest Log, Calendar, and Growing Guides.</P>
+        <Section id="kultivate" icon={Leaf} title="Garden — Plants & Harvest Tracking">
+          <P>Garden is your group's garden notebook. It has four tabs: Garden, Harvest Log, Calendar, and Growing Guides.</P>
           <H>Garden tab — tracking plants</H>
           <P>Add each plant with its name, planting date, expected harvest date, and current status (growing, flowering, harvesting, harvested, or dormant). When you type a plant name, the Hub searches the built-in growing guides and suggests matches — selecting one links the guide to your plant so you can pull up care details at any time with the book icon on the plant card.</P>
           <H>Harvest Log</H>

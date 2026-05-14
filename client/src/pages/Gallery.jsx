@@ -110,7 +110,7 @@ function PhotoCard({ photo, userId, onDelete, onCaptionSave }) {
   const linkTo = photo.recipe_id
     ? '/kitchen'
     : photo.inventory_item_id || photo.vacuum_seal_id
-      ? '/kuzine'
+      ? '/cuisine'
       : null
 
   return (

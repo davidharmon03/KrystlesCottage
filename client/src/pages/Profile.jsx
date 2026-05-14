@@ -216,7 +216,7 @@ export default function Profile() {
       const url  = URL.createObjectURL(res.data)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `krystles-hub-export-${new Date().toISOString().split('T')[0]}.zip`
+      a.download = `cottage-export-${new Date().toISOString().split('T')[0]}.zip`
       a.click()
       URL.revokeObjectURL(url)
     } catch {

@@ -9,9 +9,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Kitchen from './pages/Kitchen'
-import Korner from './pages/Korner'
-import Kuzine from './pages/Kuzine'
-import Kultivate from './pages/Kultivate'
+import Corner from './pages/Corner'
+import Cuisine from './pages/Cuisine'
+import Garden from './pages/Garden'
 import Labels from './pages/Labels'
 import Equipment from './pages/Equipment'
 import CreateGroup from './pages/CreateGroup'
@@ -110,9 +110,9 @@ export default function App() {
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index               element={<Dashboard />} />
             <Route path="kitchen"      element={<Kitchen />} />
-            <Route path="korner"       element={<Korner />} />
-            <Route path="kuzine"       element={<Kuzine />} />
-            <Route path="kultivate"    element={<Kultivate />} />
+            <Route path="corner"       element={<Corner />} />
+            <Route path="cuisine"      element={<Cuisine />} />
+            <Route path="garden"       element={<Garden />} />
             <Route path="equipment"    element={<Equipment />} />
             <Route path="labels"       element={<Labels />} />
             <Route path="calendar"     element={<GroupCalendar />} />

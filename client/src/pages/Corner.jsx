@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { firstName } from '../utils/userName'
 import api from '../api'
 import { Chart, registerables } from 'chart.js'
 import { DollarSign, Plus, Upload, ArrowRight, TrendingUp, TrendingDown, Minus, Trash2, X, Mail, Loader, BarChart2 } from 'lucide-react'
@@ -20,7 +19,7 @@ function NoGroup() {
   )
 }
 
-export default function Korner() {
+export default function Corner() {
   const { user } = useAuth()
   const activeGroup = user?.groups?.[0]
   const [tab, setTab] = useState('equalizer')
@@ -219,7 +218,7 @@ export default function Korner() {
             <DollarSign size={20} className="text-moss-600" />
           </div>
           <div>
-            <h1 className="page-title">{firstName(user)}'s Corner</h1>
+            <h1 className="page-title">Corner</h1>
             <p className="text-sm text-slate-500">Group Finance Hub — {activeGroup.name}</p>
           </div>
         </div>
@@ -505,3 +504,4 @@ export default function Korner() {
     </div>
   )
 }
+                                                                  
