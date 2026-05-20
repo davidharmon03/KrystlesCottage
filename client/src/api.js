@@ -18,7 +18,7 @@ const processQueue = (error, token = null) => {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://krystlescottage-server.onrender.com/api',
 })
 
 // Request interceptor — attach access token
