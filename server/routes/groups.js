@@ -287,3 +287,11 @@ router.delete('/:id/members/:userId', authMiddleware, async (req, res) => {
     if (!group) return res.status(404).json({ error: 'Group not found' });
     if (group.owner_id !== req.user.id && req.params.userId !== req.user.id)
       return res.status(403).json({ error: 'Not authorized' });
+
+    await db.run('DELETE FROM group_members WHERE group_id = ? AND user_id = ?',
+      [req.params.id, req.params.userId]);
+    res.json({ message: 'Member removed' });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+module.exports = router;

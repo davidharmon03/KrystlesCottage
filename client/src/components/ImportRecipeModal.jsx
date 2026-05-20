@@ -381,3 +381,19 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                 <p className="text-xs text-slate-400 text-center pt-1">
                   Imported from{' '}
                   <a
+                    href={form.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-slate-600"
+                  >
+                    {sourceDomain}
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

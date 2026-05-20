@@ -374,4 +374,18 @@ router.post('/import-url', authMiddleware, async (req, res) => {
       prepTime:    null,
       cookTime:    null,
       imageUrl:    ogImage,
-      t
+      tags:        [],
+      skill_tags:  [],
+      sides:       '',
+      is_public:   false,
+      source_url:  url,
+      _partial:    true, // signal to client that fields need manual fill-in
+    });
+  }
+
+  return res.status(400).json({
+    error: "We couldn't find recipe data on that page. Try a different URL or copy the recipe manually.",
+  });
+});
+
+module.exports = router;

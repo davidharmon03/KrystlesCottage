@@ -281,4 +281,13 @@ export default function Help() {
           <H>Keep the calendar visible during planning</H>
           <P>The Group Calendar pulls from every module — inventory expiry, harvests, bulk buy runs. Open it on a second screen or a tablet when you're planning an entrée swap week or a warehouse run so you can see what's coming due without switching tabs.</P>
         </Section>
-
+
+      </div>
+
+      <div className="text-center py-10 text-slate-400 text-sm">
+        <HelpCircle size={20} className="mx-auto mb-2 opacity-40" />
+        <p>Have a question that's not covered here? Drop a note in your group chat and we'll add it.</p>
+      </div>
+    </div>
+  )
+}

@@ -172,4 +172,15 @@ router.get('/', authMiddleware, async (req, res) => {
         type: 'harvest',
         label: `${h.plant_name} harvested`,
         sublabel: h.yield_amount,
-        source: 'harvest'
+        source: 'harvest',
+      });
+    }
+
+    res.json({ events });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+module.exports = router;

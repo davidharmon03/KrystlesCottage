@@ -278,4 +278,12 @@ function EventItem({ event }) {
   return (
     <div className={`flex items-start gap-2.5 p-2.5 rounded-lg ${cfg.bg}`}>
       <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${cfg.dot}`} />
-  
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-medium leading-snug ${cfg.text}`}>{event.label}</p>
+        {event.sublabel && (
+          <p className="text-xs text-slate-500 mt-0.5 truncate">{event.sublabel}</p>
+        )}
+      </div>
+    </div>
+  )
+}

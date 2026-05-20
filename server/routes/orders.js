@@ -269,4 +269,16 @@ router.put('/requests/:id/status', authMiddleware, async (req, res) => {
         type:     'order_declined',
         title:    'Meal request declined',
         message:  `Your ${recipeTitle} request was declined.`,
-        link:     '/or
+        link:     '/orders',
+      });
+    }
+
+    const updated = await db.get('SELECT * FROM meal_requests WHERE id = ?', [req.params.id]);
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+module.exports = router;

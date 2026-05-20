@@ -366,3 +366,11 @@ function statusLabel(r) {
   switch (r.status) {
     case 'added':            return 'Added to group'
     case 'invited':          return 'Invite email sent'
+    case 'invited_no_email': return 'Invite created (email not sent — check SMTP config)'
+    case 'already_member':   return 'Already a member'
+    case 'already_invited':  return 'Already invited'
+    case 'skipped':          return r.reason || 'Skipped'
+    case 'error':            return r.reason || 'Error'
+    default:                 return r.status
+  }
+}

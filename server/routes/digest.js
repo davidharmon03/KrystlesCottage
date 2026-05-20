@@ -287,4 +287,13 @@ router.post('/send', authMiddleware, async (req, res) => {
     res.json({ ok: true, results });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message || 'Serv
+    res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// Export buildDigestData + buildDigestHtml for cron use
+module.exports = router;
+module.exports.buildDigestData = buildDigestData;
+module.exports.buildDigestHtml = buildDigestHtml;
+module.exports.weekLabel = weekLabel;
+module.exports.makeTransport = makeTransport;

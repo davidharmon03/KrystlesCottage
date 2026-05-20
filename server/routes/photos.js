@@ -131,4 +131,8 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     const filePath = path.join(__dirname, '..', photo.image_path);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     await db.run('DELETE FROM meal_photos WHERE id = ?', [req.params.id]);
-    res.json({ message: 
+    res.json({ message: 'Deleted' });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+module.exports = router;

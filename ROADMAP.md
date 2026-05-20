@@ -40,4 +40,8 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ## 📋 Backlog
 
-- 🔲 **Image Compression** — sharp/WebP on upload (deferred until i
+- 🔲 **Image Compression** — sharp/WebP on upload (deferred until images are in use)
+
+---
+
+*Last updated: May 2026*

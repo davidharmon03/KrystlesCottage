@@ -122,4 +122,6 @@ router.put('/read-all', authMiddleware, async (req, res) => {
   }
 });
 
-module.export
+module.exports = router;
+module.exports.createNotification = createNotification;
+module.exports.notifyGroupMembers = notifyGroupMembers;

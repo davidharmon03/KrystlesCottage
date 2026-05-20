@@ -105,4 +105,10 @@ export function SyncProvider({ children }) {
   }, [syncMode, pendingCount, syncNow])
 
   return (
-    <SyncContext.Provider value={{ syncMode, setSyncMode, syncStatus, lastSyncedAt, pendingCount, syncNow }}
+    <SyncContext.Provider value={{ syncMode, setSyncMode, syncStatus, lastSyncedAt, pendingCount, syncNow }}>
+      {children}
+    </SyncContext.Provider>
+  )
+}
+
+export const useSync = () => useContext(SyncContext)

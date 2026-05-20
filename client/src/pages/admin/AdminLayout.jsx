@@ -72,4 +72,10 @@ export default function AdminLayout() {
         <header className="bg-white border-b border-slate-200 px-6 py-4 flex-shrink-0">
           <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Super Admin</p>
         </header>
-        <main className="flex-1 overflow-y-auto
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  )
+}

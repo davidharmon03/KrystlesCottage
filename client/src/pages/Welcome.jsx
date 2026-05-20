@@ -135,4 +135,13 @@ export default function Welcome() {
         <p className="text-center">
           <button
             onClick={() => navigate('/')}
-            className="text-moss-200 hover:text-white text-sm underline un
+            className="text-moss-200 hover:text-white text-sm underline underline-offset-2 transition-colors"
+          >
+            Skip for now
+          </button>
+        </p>
+
+      </div>
+    </div>
+  )
+}

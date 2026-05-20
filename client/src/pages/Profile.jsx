@@ -491,4 +491,20 @@ export default function Profile() {
               ? <><Loader size={14} className="animate-spin" /> Preparing…</>
               : <><Download size={14} /> Download</>
             }
-    
+          </button>
+        </div>
+      </div>
+
+      {/* Sign out */}
+      <div className="mt-8 pt-6 border-t border-slate-200 flex justify-center">
+        <button
+          onClick={() => logout().then(() => navigate('/login'))}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={15} />
+          Sign out
+        </button>
+      </div>
+    </div>
+  )
+}

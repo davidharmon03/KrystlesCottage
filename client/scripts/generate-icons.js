@@ -145,4 +145,7 @@ function makeIcon(size) {
 const sizes = [192, 512]
 for (const s of sizes) {
   const outPath = path.join(ICONS_DIR, `icon-${s}.png`)
-  
+  fs.writeFileSync(outPath, makeIcon(s))
+  console.log(`✓  ${outPath}`)
+}
+console.log('\nDone. Replace with real branded icons before deploying.')

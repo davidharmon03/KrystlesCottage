@@ -292,4 +292,14 @@ export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
         )}
       </div>
 
-      {/* Scan-line keyframe — prefixed to avoid co
+      {/* Scan-line keyframe — prefixed to avoid collisions */}
+      <style>{`
+        @keyframes kkScanline {
+          0%   { transform: translateY(-60px); opacity: 0.3; }
+          50%  { transform: translateY(0px);   opacity: 1;   }
+          100% { transform: translateY(60px);  opacity: 0.3; }
+        }
+      `}</style>
+    </div>
+  )
+}

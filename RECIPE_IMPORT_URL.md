@@ -195,4 +195,10 @@ Possible improvements (not implemented):
 
 - No external dependencies needed for basic JSON-LD parsing (built-in JSON.parse)
 - User-Agent header helps with sites that block default requests
-- Timeout set to 10s to prevent han
+- Timeout set to 10s to prevent hanging on slow/blocked sites
+- Parsed recipe is human-editable before commit to database
+- Integrates with existing photo upload, tag system, and public/private toggle
+
+---
+
+*Last updated: May 2026*

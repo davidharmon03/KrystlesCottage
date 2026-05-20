@@ -119,4 +119,8 @@ export function scaleIngredients(ingredients, originalServings, targetServings) 
     const parsed = parseLeadingNumber(ing)
     if (!parsed) return ing
 
-    con
+    const scaled    = parsed.value * ratio
+    const formatted = formatNumber(scaled)
+    return formatted + parsed.rest
+  })
+}

@@ -493,4 +493,19 @@ router.put('/notification-prefs', authMiddleware, async (req, res) => {
     }
     await db.run('UPDATE users SET notification_prefs = ? WHERE id = ?',
       [JSON.stringify(merged), req.user.id]);
-    res.json({ ...DEFAULT
+    res.json({ ...DEFAULT_NOTIFICATION_PREFS, ...merged });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+async function _getUserGroups(db, userId) {
+  return db.all(`
+    SELECT g.id, g.name, g.invite_code, g.owner_id,
+           (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count
+    FROM groups g
+    JOIN group_members gm ON gm.group_id = g.id
+    WHERE gm.user_id = ?
+    ORDER BY g.created_at DESC
+  `, [userId]);
+}
+
+module.exports = router;

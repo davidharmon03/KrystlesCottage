@@ -168,4 +168,13 @@ export default function Billing() {
               >
                 {loading
                   ? <><Loader size={15} className="animate-spin" /> Opening portal…</>
-            
+                  : <><CreditCard size={15} /> Open Billing Portal</>
+                }
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}

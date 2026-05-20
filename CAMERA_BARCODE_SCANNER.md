@@ -151,4 +151,9 @@ client/
 
 - jsQR uses **UMD build** from CDN for runtime detection
 - No build step required for barcode detection
-- Compatible wit
+- Compatible with existing barcode database/Open Food Facts integration
+- Safe to deploy — graceful degradation if jsQR CDN unavailable
+
+---
+
+*Last updated: May 2026*

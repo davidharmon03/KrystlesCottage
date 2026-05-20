@@ -261,4 +261,18 @@ export default function Layout() {
             <span className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</span>
           </div>
 
-          <div className=
+          <div className="flex-1" />
+          <NotificationBell />
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+          <Outlet />
+        </main>
+
+      </div>
+
+      <InstallPrompt />
+    </div>
+  )
+}

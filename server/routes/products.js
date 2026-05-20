@@ -170,4 +170,11 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
     [id, name, brand || '', category || 'other', store_section || 'pantry',
      unit_type || '', unit_size || '', description || '',
      finalImgUrl, image_path, barcode || null,
-     source || 'custom', off_id || null
+     source || 'custom', off_id || null, req.user.id, is_public ? 1 : 1]
+  );
+
+  const row = await db.get('SELECT * FROM products WHERE id = ?', [id]);
+  res.status(201).json(row);
+});
+
+module.exports = router;

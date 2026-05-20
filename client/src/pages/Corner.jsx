@@ -489,4 +489,18 @@ export default function Corner() {
                   <div className="mt-4 grid grid-cols-2 gap-2">
                     {stats.spendByMember.map((m, i) => (
                       <div key={m.name} className="flex items-center gap-2 text-sm">
-                        <span className="w-3 h-3 r
+                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: BRAND_COLORS[i % BRAND_COLORS.length] }} />
+                        <span className="text-slate-600 truncate">{m.name}</span>
+                        <span className="ml-auto font-semibold text-ink flex-shrink-0">${Number(m.total).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

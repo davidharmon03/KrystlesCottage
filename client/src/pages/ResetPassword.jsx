@@ -156,4 +156,14 @@ export default function ResetPassword() {
               </form>
 
               <p className="text-center text-sm text-slate-500 mt-5">
-                <Link to="/login" className="font-medium hover:underline" style={{ color: '#6B7C5
+                <Link to="/login" className="font-medium hover:underline" style={{ color: '#6B7C5C' }}>
+                  Back to Sign In
+                </Link>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

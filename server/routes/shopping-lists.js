@@ -182,4 +182,12 @@ router.put('/:id/complete', requireAuth, async (req, res) => {
   if (!list) return res.status(404).json({ error: 'List not found' });
 
   await requireMember(req, res, list.group_id, async () => {
-    aw
+    await db.run(
+      "UPDATE shopping_lists SET completed_at = datetime('now') WHERE id = ?",
+      [req.params.id]
+    );
+    res.json({ ok: true });
+  });
+});
+
+module.exports = router;

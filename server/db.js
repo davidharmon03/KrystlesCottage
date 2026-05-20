@@ -1359,4 +1359,39 @@ async function _seedPlantGuides(db) {
       INSERT INTO plant_guides
         (common_name, scientific_name, type, description, planting_seasons, usda_zones,
          days_to_germinate, days_to_harvest, space_needed_sqft, spacing_between_plants_inches,
-         row_spacing_inches, sunlight, water_frequency, soil_type, companion_plant
+         row_spacing_inches, sunlight, water_frequency, soil_type, companion_plants,
+         avoid_planting_with, tips, image_url, resource_links)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `, [
+      g.common_name, g.scientific_name, g.type, g.description,
+      g.planting_seasons, g.usda_zones, g.days_to_germinate, g.days_to_harvest,
+      g.space_needed_sqft, g.spacing_between_plants_inches, g.row_spacing_inches,
+      g.sunlight, g.water_frequency, g.soil_type, g.companion_plants,
+      g.avoid_planting_with, g.tips, g.image_url, g.resource_links,
+    ]);
+  }
+  console.log(`Seeded ${guides.length} plant guides.`);
+}
+
+async function _seedSuperadmin(db) {
+  const ADMIN_EMAIL = 'davidharmon03@gmail.com';
+  const existing = await db.get('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
+
+  if (!existing) {
+    const hash = await bcrypt.hash('KrystleAdmin2026!', 10);
+    await db.run(
+      `INSERT INTO users (id, name, email, password, role, must_change_password)
+       VALUES (?, ?, ?, ?, 'superadmin', 0)`,
+      [uuidv4(), 'David', ADMIN_EMAIL, hash]
+    );
+    console.log('Superadmin seeded: davidharmon03@gmail.com');
+  } else if (existing.role !== 'superadmin') {
+    await db.run(
+      `UPDATE users SET role = 'superadmin', must_change_password = 0 WHERE email = ?`,
+      [ADMIN_EMAIL]
+    );
+    console.log('Superadmin seeded: davidharmon03@gmail.com');
+  }
+}
+
+module.exports = { getDb };

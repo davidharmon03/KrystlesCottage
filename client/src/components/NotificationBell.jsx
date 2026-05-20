@@ -147,4 +147,14 @@ export default function NotificationBell() {
                         <p className="text-xs text-slate-500 leading-snug mt-0.5 line-clamp-2">{n.message}</p>
                       )}
                       <p className="text-[10px] text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
-              
+                    </div>
+                  </button>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

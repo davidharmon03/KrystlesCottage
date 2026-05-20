@@ -703,4 +703,25 @@ function CreateSwapModal({ members, recipes, onSave, onClose }) {
                         className="input text-sm"
                         placeholder="Notes (optional)"
                         value={entreeRows[idx]?.notes || ''}
-                        onChange={e => updateRow(idx, 'n
+                        onChange={e => updateRow(idx, 'notes', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 px-5 py-4 border-t border-slate-100">
+            <div className="flex-1" />
+            <button type="button" onClick={onClose} className="btn-ghost px-4">Cancel</button>
+            <button type="submit" disabled={saving} className="btn-primary px-4 flex items-center gap-1.5">
+              {saving ? <Loader size={14} className="animate-spin" /> : <Check size={14} />}
+              Create Swap Week
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}

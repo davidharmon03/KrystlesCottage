@@ -135,4 +135,10 @@ async function webhookHandler(req, res) {
     }
   } catch (err) {
     console.error('[billing] Webhook DB error:', err)
-    return res.sta
+    return res.status(500).json({ error: 'Webhook processing failed' })
+  }
+
+  res.json({ received: true })
+}
+
+module.exports = { router, webhookHandler }

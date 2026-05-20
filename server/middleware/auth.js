@@ -52,4 +52,4 @@ async function twoFaMiddleware(req, res, next) {
   }
 }
 
-module.exports = { authMiddleware,
+module.exports = { authMiddleware, superadminMiddleware, twoFaMiddleware, JWT_SECRET };

@@ -292,4 +292,20 @@ export default function Gallery() {
               photo={photo}
               userId={user?.id}
               onDelete={handleDelete}
-              onCaptio
+              onCaptionSave={handleCaptionSave}
+            />
+          ))}
+        </div>
+      )}
+
+      {showUpload && (
+        <UploadModal
+          gid={gid}
+          userId={user?.id}
+          onClose={() => setShowUpload(false)}
+          onUploaded={handleUploaded}
+        />
+      )}
+    </div>
+  )
+}

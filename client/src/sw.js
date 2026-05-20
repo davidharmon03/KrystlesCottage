@@ -51,4 +51,9 @@ self.addEventListener('fetch', event => {
       return fetch(request).then(response => {
         if (!response || response.status !== 200 || response.type === 'opaque') return response
         const clone = response.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(request, cl
+        caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+        return response
+      })
+    })
+  )
+})

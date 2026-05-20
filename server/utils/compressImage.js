@@ -31,4 +31,4 @@ async function compressImage(buffer, outputDir, basename, opts = {}) {
   return filename;
 }
 
-mod
+module.exports = { compressImage };

@@ -69,4 +69,6 @@ export function useTwoFactor() {
     if (!s || new Date(s.expiresAt) <= new Date()) return null
     return s.token
   }
-
+
+  return { request, submit, cancel, isOpen, state, error, getToken }
+}

@@ -288,4 +288,12 @@ featureRouter.put('/:id', authMiddleware, async (req, res) => {
     const request = await db.get('SELECT id FROM feature_requests WHERE id = ?', [req.params.id]);
     if (!request) return res.status(404).json({ error: 'Feature request not found' });
 
-    await db
+    await db.run('UPDATE feature_requests SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ id: req.params.id, status });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+module.exports = { suggestionsRouter, featureRouter };

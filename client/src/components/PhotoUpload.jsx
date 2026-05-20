@@ -175,4 +175,12 @@ export default function PhotoUpload({
           </div>
           <div className="text-center">
             <p className="text-sm font-medium text-slate-600">Drag a photo here or click to browse</p>
-            <p className="text-xs text-slate-400 mt-0.5">JPEG, PNG, WEBP — up to
+            <p className="text-xs text-slate-400 mt-0.5">JPEG, PNG, WEBP — up to 10 MB</p>
+          </div>
+        </div>
+      )}
+
+      <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleInputChange} />
+    </div>
+  )
+}

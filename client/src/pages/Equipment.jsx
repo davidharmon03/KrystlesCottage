@@ -630,4 +630,21 @@ function ModalActions({ saving, onClose, label }) {
   )
 }
 
-f
+function NoGroup() {
+  return (
+    <div className="card text-center py-10 border-terra-200 bg-terra-50">
+      <Users size={32} className="mx-auto mb-3 text-terra-400" />
+      <p className="font-semibold text-terra-800">You need a group to use this tab.</p>
+      <p className="text-sm text-terra-600 mt-1">Create or join a group from the dashboard first.</p>
+      <Link to="/" className="inline-block mt-4 btn-terra text-sm">Go to Dashboard</Link>
+    </div>
+  )
+}
+
+function Spinner() {
+  return (
+    <div className="flex justify-center py-10">
+      <Loader size={24} className="animate-spin text-moss-500" />
+    </div>
+  )
+}

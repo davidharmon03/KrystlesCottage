@@ -87,4 +87,11 @@ export default function TwoFactorModal({ isOpen, state, error, onSubmit, onCance
                   {state === 'verifying' ? <Loader size={14} className="animate-spin" /> : null}
                   Verify
                 </button>
-       
+              </div>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
