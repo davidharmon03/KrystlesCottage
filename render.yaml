@@ -12,6 +12,8 @@ services:
         generateValue: true
       - key: PORT
         value: 3001
+      - key: DB_PATH
+        value: /mnt/data/data.db
       - key: EMAIL_HOST
         sync: false
       - key: EMAIL_PORT
