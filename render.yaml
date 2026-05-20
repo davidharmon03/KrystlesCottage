@@ -3,7 +3,7 @@ services:
     name: krystlescottage-server
     env: node
     rootDir: server
-    buildCommand: npm install
+    buildCommand: npm ci --omit=dev
     startCommand: node index.js
     envVars:
       - key: NODE_ENV
