@@ -15,6 +15,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **JWT Auto-Refresh** — 15min access token + 7-day refresh token, axios interceptor with 401 queue, silent refresh, server-side revocation on logout
 - ✅ **Page Renames** — Korner → Corner, Kuzine → Cuisine, Kultivate → Garden; source files renamed, routes updated, nav labels cleaned
 - ✅ **Render Cloud Deployment** — render.yaml Blueprint, backend + static client live at krystlescottage-server.onrender.com / krystlescottage-client.onrender.com
+- ✅ **Render Production Setup** — Node 18.20.4, cheerio 1.0.0, sqlite3 5.1.6 for compatibility; 5 GB persistent disk for database; DB_PATH env var pointing to /mnt/data/data.db; custom domain configured; both services on paid tier
 - ✅ **GitHub Repo Cleanup** — .gitignore improved, README rewritten clean
 - ✅ **App Renamed to Krystle's Cottage** — "Krystle's Brand Hub" → "Krystle's Cottage" across all files
 - ✅ **Server Route File Renames** — korner.js→corner.js, kuzine.js→cuisine.js, kultivate.js→garden.js; API paths updated end-to-end including all frontend axios calls
@@ -33,8 +34,8 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ## 🔧 Next Up
 
-- 🔲 **Full Project Rename** — KrystlesKitchen → KrystlesCottage (GitHub repo, Render services, all hardcoded URLs, render.yaml, README, env vars, local folder)
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
+- 🔲 **Feature Development** — TBD (next phase)
 
 ---
 
