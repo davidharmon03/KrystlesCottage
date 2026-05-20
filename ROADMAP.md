@@ -14,32 +14,33 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **PWA Setup** — vite-plugin-pwa, hand-written sw.js (bypasses Workbox apostrophe-in-path bug), manifest, install prompt, tested on real phone over WiFi
 - ✅ **JWT Auto-Refresh** — 15min access token + 7-day refresh token, axios interceptor with 401 queue, silent refresh, server-side revocation on logout
 - ✅ **Page Renames** — Korner → Corner, Kuzine → Cuisine, Kultivate → Garden; source files renamed, routes updated, nav labels cleaned
-- ✅ **Render Cloud Deployment** — render.yaml Blueprint, backend + static client live at krystleskitchen.onrender.com / krystleskitchen-client.onrender.com
+- ✅ **Render Cloud Deployment** — render.yaml Blueprint, backend + static client live at krystlescottage-server.onrender.com / krystlescottage-client.onrender.com
 - ✅ **GitHub Repo Cleanup** — .gitignore improved, README rewritten clean
 - ✅ **App Renamed to Krystle's Cottage** — "Krystle's Brand Hub" → "Krystle's Cottage" across all files
 - ✅ **Server Route File Renames** — korner.js→corner.js, kuzine.js→cuisine.js, kultivate.js→garden.js; API paths updated end-to-end including all frontend axios calls
 - ✅ **Garden Page Fix** — calendar endpoint was querying wrong table; `in_app_kultivate` notif pref key → `in_app_garden`; auth loading guard added
 - ✅ **Dashboard Account Status Card** — shows name, email, system role badge (Superadmin/Admin/Member), group membership status (Free Account vs Group Member ✓), group name + role, password change warning, Create/Join group CTA when ungrouped
+- ✅ **Group Chat** — full stack (Chat.jsx, chat route, messages table)
+- ✅ **Notification Preferences** — NotificationBell, prefs in Profile.jsx, DB column + API endpoints
+- ✅ **Group Sync Mode** — SyncContext.jsx, sync-ping endpoint, last_synced_at tracking
+- ✅ **Payment Integration** — Stripe, billing route, Billing.jsx
+- ✅ **Data Export** — export route + ZIP download button in Profile.jsx
+- ✅ **Print-Friendly Views** — @media print CSS, print button in Kitchen.jsx
+- ✅ **Superadmin User Management** — admin users list with role badges, inline role editing
+- ✅ **Onboarding Flow** — Welcome.jsx, post-registration redirect, Dashboard cleanup
 
 ---
 
-## 🔧 In Progress / Next Up
+## 🔧 Next Up
 
-- 🔲 **Vercel Disconnect + Git History Squash** — manual steps provided to user; pending user action
-- 🔲 **Image Compression** — server-side sharp/WebP conversion on upload
+- 🔲 **Full Project Rename** — KrystlesKitchen → KrystlesCottage (GitHub repo, Render services, all hardcoded URLs, render.yaml, README, env vars, local folder)
+- 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
 
 ---
 
 ## 📋 Backlog
 
-- 🔲 **Group Chat** — in-app message thread per group
-- 🔲 **Notification Preferences** — per-user toggles for which notifications fire
-- 🔲 **Group Sync Mode** — auto/manual sync with last-synced visibility per member
-- 🔲 **Payment Integration** — Stripe subscription billing for the Group Plan
-- 🔲 **Data Export** — ZIP download of user/group data (recipes, inventory, spending, photos)
-- 🔲 **Print-Friendly Views** — @media print stylesheets for shopping lists and recipe cards
-- 🔲 **Cross-device Responsive Testing** — PC, Android, iPhone, Galaxy Z Fold, iPad, Mac
-- 🔲 Onboarding Process Cleanup — new user flow needs polish (group join/create after registration, account status clarity)
+- 🔲 **Image Compression** — sharp/WebP on upload (deferred until images are in use)
 
 ---
 

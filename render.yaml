@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: krystles-brand-hub-server
+    name: krystlescottage-server
     env: node
     rootDir: server
     buildCommand: npm install
@@ -24,7 +24,7 @@ services:
         sync: false
 
   - type: web
-    name: krystles-brand-hub-client
+    name: krystlescottage-client
     env: static
     rootDir: client
     buildCommand: npm install --legacy-peer-deps && npm run build
