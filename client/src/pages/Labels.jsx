@@ -262,16 +262,4 @@ export default function Labels() {
           <div ref={printRef} className="space-y-4">
             {labels.map((l, i) => (
               <LabelCard
-                key={i}
-                label={l}
-                index={i}
-                qrDataUrl={qrUrls[i] || null}
-                onDelete={labels.length > 1 ? deleteLabel : null}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+                key

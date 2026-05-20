@@ -33,8 +33,4 @@ export default function AcceptInvite() {
     <div className="min-h-screen bg-cream flex items-center justify-center">
       <div className="text-center">
         <div className="w-10 h-10 border-4 border-moss-300 border-t-moss-600 rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-moss-700 font-serif italic">Accepting invitation…</p>
-      </div>
-    </div>
-  )
-}
+        <p className="text-moss-700 font-serif italic">Accepting invitation…

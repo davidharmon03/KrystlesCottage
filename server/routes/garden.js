@@ -203,9 +203,4 @@ router.delete('/:groupId/calendar/:id', authMiddleware, async (req, res) => {
     if (!await requireMember(req.params.groupId, req.user.id))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    await db.run('DELETE FROM seasonal_calendar WHERE id = ? AND group_id = ?', [req.params.id, req.params.groupId]);
-    res.json({ message: 'Deleted' });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
-});
-
-module.exports = router;
+    await db.run('DELETE FROM seasonal_calendar WHERE id = ? AND group

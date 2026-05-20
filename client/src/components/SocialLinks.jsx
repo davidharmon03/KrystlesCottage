@@ -111,11 +111,4 @@ export default function SocialLinks({ links = {}, size = 'sm', className = '' })
           rel="noopener noreferrer"
           title={p.label}
           className={`w-${dim} h-${dim} flex-shrink-0 transition-opacity opacity-70 hover:opacity-100 ${p.color}`}
-          onClick={e => e.stopPropagation()}
-        >
-          {p.icon}
-        </a>
-      ))}
-    </div>
-  )
-}
+ 

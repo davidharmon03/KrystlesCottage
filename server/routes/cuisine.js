@@ -432,19 +432,4 @@ router.get('/:groupId/bulk-buys/:runId/settlement', authMiddleware, async (req, 
     for (const item of items) {
       const cost = item.actual_cost ?? item.est_cost ?? 0;
       const rid = item.requested_by;
-      if (!totals[rid]) totals[rid] = { user_id: rid, name: item.requester_name, total: 0 };
-      totals[rid].total += cost;
-      grandTotal += cost;
-    }
-
-    res.json({
-      run,
-      items,
-      settlement: Object.values(totals),
-      grand_total: grandTotal,
-      buyer_user_id: run.buyer_user_id,
-    });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
-});
-
-module.exports = router;
+   

@@ -107,7 +107,4 @@ router.delete('/:groupId/:messageId', authMiddleware, async (req, res) => {
 
     await db.run('UPDATE messages SET deleted = 1 WHERE id = ?', [req.params.messageId]);
     res.json({ ok: true });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
-});
-
-module.exports = router;
+  } catch 

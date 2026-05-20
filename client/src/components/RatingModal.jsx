@@ -129,13 +129,4 @@ export default function RatingModal({ isOpen, entree, weekId, onClose, onSave })
                 </>
               ) : (
                 <>
-                  <Star size={14} /> Submit Rating
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
+                  <Star size={14} /> Submi

@@ -64,8 +64,4 @@ router.get('/:id', async (req, res) => {
     res.json(parseGuide(row));
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-module.exports = router;
+    res.status(500).j

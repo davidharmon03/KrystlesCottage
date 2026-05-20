@@ -91,12 +91,4 @@ export default function Login() {
           <p className="text-center text-sm text-slate-500 mt-5">
             New here?{' '}
             <Link to="/register" className="text-moss-600 font-medium hover:text-moss-700">
-              Create an account
-            </Link>
-          </p>
-
-        </div>
-      </div>
-    </div>
-  )
-}
+              Create

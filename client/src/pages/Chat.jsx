@@ -324,14 +324,4 @@ export default function Chat() {
         <button
           onClick={send}
           disabled={!input.trim() || sending}
-          className="flex-shrink-0 w-11 h-11 rounded-xl bg-moss-500 hover:bg-moss-600 disabled:bg-slate-200 disabled:text-slate-400 text-white flex items-center justify-center transition-colors shadow-sm self-end"
-          title="Send"
-        >
-          {sending
-            ? <Loader2 size={16} className="animate-spin" />
-            : <Send size={16} />}
-        </button>
-      </div>
-    </div>
-  )
-}
+          className="flex-shrink-0 w-11 h-11 rounded-xl bg-moss-500 hover:bg-moss-6

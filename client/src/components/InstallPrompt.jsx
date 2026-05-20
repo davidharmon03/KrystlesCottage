@@ -60,9 +60,4 @@ export default function InstallPrompt() {
           className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors p-1"
           aria-label="Dismiss"
         >
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-  )
-}
+          <X

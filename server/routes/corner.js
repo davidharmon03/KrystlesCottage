@@ -212,11 +212,4 @@ router.get('/:groupId/stats', authMiddleware, async (req, res) => {
       FROM receipts r JOIN users u ON u.id = r.user_id
       WHERE r.group_id = ?
       GROUP BY r.user_id, u.name
-      ORDER BY total DESC
-    `, [req.params.groupId]);
-
-    res.json({ monthlySpend, spendByMember });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
-});
-
-module.exports = router;
+      ORD

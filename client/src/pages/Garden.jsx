@@ -815,34 +815,4 @@ export default function Garden() {
             </div>
           ) : (
             <>
-              <p className="text-xs text-slate-400 mb-3">{filteredGuides.length} plant{filteredGuides.length !== 1 ? 's' : ''}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredGuides.map(g => (
-                  <GuideCard key={g.id} guide={g} onClick={setOpenGuideId} />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Harvest modal */}
-      {harvestTarget && (
-        <HarvestModal
-          plant={harvestTarget}
-          groupId={gid}
-          onClose={() => setHarvestTarget(null)}
-          onHarvest={logHarvest}
-        />
-      )}
-
-      {/* Guide detail modal */}
-      {openGuideId && (
-        <GuideModal
-          guideId={openGuideId}
-          onClose={() => setOpenGuideId(null)}
-        />
-      )}
-    </div>
-  )
-}
+              <p className="text-xs text-sl

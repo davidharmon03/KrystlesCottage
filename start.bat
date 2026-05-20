@@ -6,4 +6,4 @@ start "Frontend - npm run dev" powershell -NoExit -WorkingDirectory "%~dp0client
 
 timeout /t 8 /nobreak >nul
 
-start http://localhost:5173
+start http://localho

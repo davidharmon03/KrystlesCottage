@@ -31,5 +31,4 @@ npm-debug.log*
 .idea/
 
 # ── PWA generated files (built at deploy time) ────────────────
-client/public/sw.js
-client/public/workbox-*.js
+client/public/

@@ -71,10 +71,4 @@ api.interceptors.response.use(
       clearRefreshToken()
       window.location.href = '/login'
       return Promise.reject(refreshError)
-    } finally {
-      isRefreshing = false
-    }
-  }
-)
-
-export default api
+  

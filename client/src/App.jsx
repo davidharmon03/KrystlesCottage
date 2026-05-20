@@ -126,11 +126,4 @@ export default function App() {
             <Route path="chat"         element={<Chat />} />
             <Route path="billing"      element={<Billing />} />
             <Route path="help"         element={<Help />} />
-            <Route path="create-group" element={<CreateGroup />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-      </SyncProvider>
-    </AuthProvider>
-  )
-}
+            <Route path="create-group" element={

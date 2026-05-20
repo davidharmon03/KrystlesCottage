@@ -55,9 +55,4 @@ export default function ProductCard({ product, className = '' }) {
           )}
           {product.unit_size && (
             <span className="text-xs text-slate-400">· {product.unit_size}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+ 

@@ -183,14 +183,4 @@
   .print-shopping .list-item .check-box {
     width: 10pt;
     height: 10pt;
-    border: 0.75pt solid #555;
-    flex-shrink: 0;
-    display: inline-block;
-  }
-
-  /* Avoid orphaned headers */
-  .print-section {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-}
+    borde

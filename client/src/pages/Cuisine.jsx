@@ -1244,32 +1244,4 @@ export default function Cuisine() {
                             use by {entry.use_by_date}</span>}
                           {entry.storage_location && <span>📍 {entry.storage_location}</span>}
                         </div>
-                        {entry.notes && <p className="text-xs text-slate-300 mt-0.5">{entry.notes}</p>}
-                      </div>
-                      <MealPhotoButton
-                        gid={gid} itemId={entry.id} field="vacuum_seal_id"
-                        existingPath={entry.meal_photo_path}
-                        onUploaded={photo => setVsLog(prev => prev.map(e => e.id === entry.id ? { ...e, meal_photo_path: photo.image_path } : e))}
-                      />
-                      <button onClick={() => deleteVs(entry.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
-                        <Trash2 size={14} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tab 3: Bulk Buy */}
-          {tab === 3 && (
-            selectedRun
-              ? <BulkRunDetail run={selectedRun} members={members} gid={gid}
-                  onBack={() => setSelectedRun(null)} onRunUpdated={updated => setSelectedRun(updated)} />
-              : <BulkRunList runs={runs} members={members} loading={false}
-                  onSelect={setSelectedRun} onAdd={addRun} onDelete={deleteRun} />
-          )}
-        </>
-      )}
-    </div>
-  )
-}
+                        {entry.notes 

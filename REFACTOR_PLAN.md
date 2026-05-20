@@ -269,18 +269,4 @@ const ENTREE_SELECT = `
 - `client/src/pages/Kitchen.jsx` - if applicable
 - `client/src/components/RatingDisplay.jsx` - optional updates
 
-**Documentation:**
-- `RECIPE_IMPORT_URL.md` - if mentions meal structure
-- Update README/API docs
-
----
-
-## Estimated Effort
-
-- Database migration: 30 min
-- Backend routes: 1 hour
-- Frontend updates: 1.5 hours
-- Sides feature: 1.5 hours
-- Testing: 1 hour
-- **Total: ~5.5 hours**
-
+**Docume

@@ -305,13 +305,4 @@ export default function AdminUsers() {
               className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
               Previous
             </button>
-            <button disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+           

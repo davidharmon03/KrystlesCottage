@@ -135,11 +135,4 @@ async function run() {
   const db = await getDb();
   await updateDbPaths(db);
 
-  console.log('\nDone. Originals preserved — delete manually once verified.');
-  process.exit(0);
-}
-
-run().catch(err => {
-  console.error('Migration failed:', err);
-  process.exit(1);
-});
+  console.log('\nDone. Originals preserved — delete

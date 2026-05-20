@@ -811,29 +811,4 @@ export default function Orders() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-moss-500 flex items-center justify-center flex-shrink-0">
-          <ShoppingBag size={20} className="text-white" />
-        </div>
-        <div>
-          <h1 className="font-serif font-bold text-ink text-2xl leading-tight">
-            Kitchen Orders
-          </h1>
-          <p className="text-sm text-slate-500">
-            {isAdmin
-              ? 'Manage your menu and incoming meal requests'
-              : 'Browse available meals and submit a request'}
-          </p>
-        </div>
-        {isAdmin && (
-          <span className="ml-auto tag bg-moss-100 text-moss-700 font-medium">Admin</span>
-        )}
-      </div>
-
-      {isAdmin ? (
-        <AdminView groupId={groupId} />
-      ) : (
-        <ClientView groupId={groupId} userId={user?.id} />
-      )}
-    </div>
-  )
-}
+        <div className=

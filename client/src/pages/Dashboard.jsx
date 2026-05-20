@@ -306,12 +306,4 @@ export default function Dashboard() {
       <div className="mt-6 card border-parchment bg-parchment flex items-center gap-4">
         <Tag size={28} className="text-terra-500 flex-shrink-0" />
         <div className="flex-1">
-          <h3 className="font-serif font-semibold text-ink">Label Generator</h3>
-          <p className="text-sm text-slate-600 mt-0.5">Print parchment-ready instruction cards for vacuum-sealed bags.</p>
-        </div>
-        <Link to="/labels" className="btn-terra text-sm flex-shrink-0">Open</Link>
-      </div>
-
-    </div>
-  )
-}
+          <h3 className="

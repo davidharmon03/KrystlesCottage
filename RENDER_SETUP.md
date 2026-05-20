@@ -67,6 +67,4 @@ To avoid this:
 - Use a free uptime monitor like [UptimeRobot](https://uptimerobot.com) to ping `/api/health` every 10 minutes
 
 ## Step 8 — Ongoing deploys
-After any code change: push to GitHub → Render auto-deploys both services.
-
-Check **Logs** under each service for startup errors.
+After any code change: push to GitHub → Render auto-deploys b

@@ -142,12 +142,4 @@ export default function Register() {
 
           <p className="text-center text-sm text-slate-500 mt-5">
             Already have an account?{' '}
-            <Link to={inviteToken ? `/login?invite=${inviteToken}` : '/login'} className="text-moss-600 font-medium hover:text-moss-700">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
+            <Link to={inviteToken ? `/login?invite=${inviteToken}` : '/login'} className="text-m

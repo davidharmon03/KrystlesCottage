@@ -58,9 +58,3 @@ export default function AdminGroups() {
                 </tr>
               ))}
             </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  )
-}

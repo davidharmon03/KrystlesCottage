@@ -56,9 +56,4 @@ export default function AdminDashboard() {
           {stats?.paidUsers} paying customer{stats?.paidUsers !== 1 ? 's' : ''} with{' '}
           {stats?.totalGroups} group{stats?.totalGroups !== 1 ? 's' : ''} and{' '}
           {stats?.totalMembers} total member{stats?.totalMembers !== 1 ? 's' : ''}.
-          {' '}{stats?.freeUsers} user{stats?.freeUsers !== 1 ? 's are' : ' is'} on the free tier.
-        </p>
-      </div>
-    </div>
-  )
-}
+          {' '}{stats?.freeUsers} user{stats?.freeUsers !== 1 ? 's are' : ' is'} on 

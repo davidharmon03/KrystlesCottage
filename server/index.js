@@ -128,12 +128,4 @@ async function start() {
     await getDb();
     app.listen(PORT, () => {
       console.log('Server running on http://localhost:' + PORT);
-      startCron();
-    });
-  } catch (err) {
-    console.error('Failed to initialize database:', err);
-    process.exit(1);
-  }
-}
-
-start();
+      star

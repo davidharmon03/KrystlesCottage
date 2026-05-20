@@ -97,12 +97,4 @@ export default function ForgotPassword() {
                 Remember your password?{' '}
                 <Link to="/login" className="font-medium hover:underline" style={{ color: '#6B7C5C' }}>
                   Sign In
-                </Link>
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+                </

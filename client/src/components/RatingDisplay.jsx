@@ -44,9 +44,4 @@ export default function RatingDisplay({ recipeId, showCount = true, size = 'sm' 
       </div>
       {showCount && (
         <span className="text-slate-400">
-          · {rating.rating_count} {rating.rating_count === 1 ? 'rating' : 'ratings'}
-        </span>
-      )}
-    </div>
-  )
-}
+          · {rating.rating_count} {rating.rating_count === 1 ? 'rating' : 'rating

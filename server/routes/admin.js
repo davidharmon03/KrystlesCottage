@@ -203,14 +203,4 @@ router.get('/groups', async (req, res) => {
              u.id AS owner_id, u.name AS owner_name, u.email AS owner_email, u.plan AS owner_plan,
              (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id) AS member_count
       FROM groups g
-      JOIN users u ON u.id = g.owner_id
-      ORDER BY g.created_at DESC
-    `);
-    res.json({ groups });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to load groups' });
-  }
-});
-
-module.exports = router;
+      JOIN users u ON u.id = g.owner_id

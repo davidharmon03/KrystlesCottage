@@ -661,26 +661,4 @@ export default function Suggestions() {
       {/* Tab bar */}
       <div className="flex gap-0 border-b border-slate-200 mb-6">
         {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === t.key
-                ? 'text-moss-700 border-moss-600'
-                : 'text-slate-500 border-transparent hover:text-ink hover:border-slate-300'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {tab === 'meals' ? (
-        <MealIdeasTab user={user} activeGroup={activeGroup} isAdmin={isAdmin} />
-      ) : (
-        <AppFeedbackTab user={user} isAdmin={isAdmin} />
-      )}
-    </div>
-  )
-}
+          <

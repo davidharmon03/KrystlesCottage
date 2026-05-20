@@ -416,17 +416,4 @@ router.delete('/:weekId/entrees/:entreeId/sides/:sideId', authMiddleware, async 
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
-    const isAdmin = await requireAdmin(week.group_id, req.user.id);
-    if (entree.user_id !== req.user.id && !isAdmin)
-      return res.status(403).json({ error: 'You can only update your own entree' });
-
-    await db.run('DELETE FROM entree_sides WHERE id = ?', [req.params.sideId]);
-
-    res.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-module.exports = router;
+    const isAdmin = await 

@@ -105,8 +105,3 @@ router.get('/my-data', authMiddleware, async (req, res) => {
     await archive.finalize()
   } catch (err) {
     console.error('[export] error:', err)
-    if (!res.headersSent) res.status(500).json({ error: 'Export failed' })
-  }
-})
-
-module.exports = router
