@@ -1,4 +1,4 @@
-# Krystle's Kitchen — Roadmap
+# Krystle's Cottage — Roadmap
 
 Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render. This is a working dev doc — not a changelog.
 
@@ -31,6 +31,13 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **Onboarding Flow** — Welcome.jsx, post-registration redirect, Dashboard cleanup
 - ✅ **Cuisine → Pantry Rename** — server/routes/pantry.js created, all API endpoints updated, client/src/pages/Pantry.jsx with all API calls updated, imports and navigation labels across App.jsx, Layout.jsx, Dashboard.jsx, Gallery.jsx updated; deployment pending
 - ✅ **Cottage Laws Page** — CottageLaws.jsx with Tennessee Food Freedom Act summary, allowed/prohibited foods table, labeling requirements, frozen food guide (non-perishable vs perishable TCS foods), sales/distribution rules, links to official TN Dept of Agriculture + CottageFoodLicense.com; deployment pending
+- ✅ **Full Project Rename** — KrystlesKitchen → KrystlesCottage across GitHub repo, local folder, render.yaml, and all file references
+- ✅ **Freemium Tier** — paid gate on group creation; free users can join via invite code; 5-member base cap; upgrade modal with Coming Soon payment placeholder
+- ✅ **Expandable Group Slots** — group owners can add +5 member slots in packs (Coming Soon payment); `max_members` column on groups table
+- ✅ **Superadmin-Only Account Creation** — only superadmins can create superadmin accounts; temp password generated and displayed on creation; `must_change_password` enforced
+- ✅ **Admin Groups View** — superadmins can see all groups, member counts, expandable member lists with roles and join dates
+- ✅ **Print Center** — expanded Label Generator to full Print Center with 4 print types: Bag Labels, Weekly Menu, Shopping List, Meal Cards
+- ✅ **Dashboard Group Card Redesign** — group members displayed inside the group card with dividers; superadmin sees correct "Admin Access" badge and group CTA
 
 ---
 
@@ -38,6 +45,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 - 🔄 **Deploy Pending Changes** — (Pantry rename + Cottage Laws) pending `git push` from Windows (git index.lock issue in Linux sandbox); after push, redeploy both Render services
 - 🔄 **Live App Testing** — in progress; found 404 on first load (resolves on refresh, due to Pantry not yet deployed); continue testing registration, login, core features; fix any bugs in production
+- 🔲 **Payment Processor Integration** — wire Stripe into the existing freemium gate and group slot expansion (placeholders already in place)
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
 - 🔲 **Feature Development** — TBD (next phase)
 
@@ -49,4 +57,4 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ---
 
-*Last updated: May 2026*
+*Last updated: May 21, 2026*
