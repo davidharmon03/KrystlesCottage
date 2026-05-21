@@ -5,7 +5,7 @@ import { useSync } from '../contexts/SyncContext'
 import {
   ChefHat, DollarSign, Package, Leaf, Tag, LayoutDashboard,
   LogOut, Menu, X, Wrench, Calendar, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
-  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck, FileText
+  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck, FileText, Printer
 } from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
@@ -101,7 +101,7 @@ export default function Layout() {
     { to: '/orders',      label: 'Kitchen Orders',     icon: ShoppingBag,     color: 'text-moss-600'  },
     { to: '/garden',      label: 'Garden',             icon: Leaf,            color: 'text-moss-500'  },
     { to: '/equipment',   label: 'Equipment',          icon: Wrench,          color: 'text-terra-400' },
-    { to: '/labels',      label: 'Label Generator',    icon: Tag,             color: 'text-slate-400' },
+    { to: '/labels',      label: 'Print Center',       icon: Printer,         color: 'text-slate-400' },
     { to: '/calendar',    label: 'Group Calendar',     icon: Calendar,        color: 'text-moss-500'  },
     { to: '/gallery',     label: 'Meal Gallery',       icon: Camera,          color: 'text-terra-400' },
     { to: '/swap',        label: 'Meal Swap',          icon: ArrowLeftRight,  color: 'text-moss-600'  },
