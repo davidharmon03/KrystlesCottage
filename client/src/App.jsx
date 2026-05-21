@@ -21,6 +21,7 @@ import Gallery from './pages/Gallery'
 import Profile from './pages/Profile'
 import MealSwap from './pages/MealSwap'
 import Help from './pages/Help'
+import CottageLaws from './pages/CottageLaws'
 import Suggestions from './pages/Suggestions'
 import Orders from './pages/Orders'
 import Chat from './pages/Chat'
@@ -126,6 +127,7 @@ export default function App() {
             <Route path="chat"         element={<Chat />} />
             <Route path="billing"      element={<Billing />} />
             <Route path="help"         element={<Help />} />
+            <Route path="cottage-laws" element={<CottageLaws />} />
             <Route path="create-group" element={<CreateGroup />} />
           </Route>
         </Routes>

@@ -5,7 +5,7 @@ import { useSync } from '../contexts/SyncContext'
 import {
   ChefHat, DollarSign, Package, Leaf, Tag, LayoutDashboard,
   LogOut, Menu, X, Wrench, Calendar, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
-  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck
+  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck, FileText
 } from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
@@ -158,6 +158,13 @@ export default function Layout() {
             Admin Panel
           </NavLink>
         )}
+        <NavLink to="/cottage-laws" onClick={onLinkClick}
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
+              isActive ? 'text-moss-700 bg-moss-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}>
+          <FileText size={14} />
+          Cottage Laws
+        </NavLink>
         <NavLink to="/help" onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
