@@ -204,41 +204,86 @@ export default function Dashboard() {
 
       {/* Group Banner */}
       {activeGroup ? (
-        <div className="card border-moss-200 bg-moss-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
-            <Users size={18} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-moss-800 font-serif">{activeGroup.name}</h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-moss-600 text-sm">Invite code:</span>
-              <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded text-moss-700 text-sm border border-moss-200">
-                {activeGroup.invite_code}
-              </span>
-              <button onClick={copyCode} className="flex items-center gap-1 text-xs text-moss-500 hover:text-moss-700">
-                {copiedCode ? <Check size={12} /> : <Copy size={12} />}
-                {copiedCode ? 'Copied' : 'Copy'}
-              </button>
-              <span className="text-moss-400 text-xs">
-                {activeGroup.member_count}/{groupDetail?.max_members ?? activeGroup.max_members ?? 5} members
-              </span>
+        <div className="card border-moss-200 bg-moss-50 mb-8">
+          {/* Header row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
+              <Users size={18} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-moss-800 font-serif">{activeGroup.name}</h3>
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                <span className="text-moss-600 text-sm">Invite code:</span>
+                <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded text-moss-700 text-sm border border-moss-200">
+                  {activeGroup.invite_code}
+                </span>
+                <button onClick={copyCode} className="flex items-center gap-1 text-xs text-moss-500 hover:text-moss-700">
+                  {copiedCode ? <Check size={12} /> : <Copy size={12} />}
+                  {copiedCode ? 'Copied' : 'Copy'}
+                </button>
+                <span className="text-moss-400 text-xs">
+                  {activeGroup.member_count}/{groupDetail?.max_members ?? activeGroup.max_members ?? 5} members
+                </span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
-              <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
-                <Plus size={15} /> Invite more
-              </Link>
-            )}
-            {activeGroup.owner_id === user?.id && (
-              <button
-                onClick={() => setShowExpandModal(true)}
-                className="btn-ghost text-sm flex items-center gap-1.5"
-              >
-                <Plus size={15} /> Expand Group
-              </button>
-            )}
-          </div>
+
+          {/* Member list */}
+          {groupMembers.length > 0 && (
+            <>
+              <div className="border-t border-moss-200 mt-4 mb-3" />
+              <div className="flex flex-wrap gap-3">
+                {groupMembers.map(m => {
+                  const isMe = m.id === user?.id
+                  return (
+                    <div key={m.id} className="flex items-center gap-2.5 bg-white border border-moss-200 rounded-xl px-3 py-2.5">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-moss-100 flex items-center justify-center">
+                          <span className="text-moss-700 font-semibold text-sm">{m.name?.[0]?.toUpperCase()}</span>
+                        </div>
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${syncDotColor(m.last_synced_at)}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-ink leading-tight">
+                          {m.name}{isMe && <span className="ml-1.5 text-xs text-slate-400 font-normal">you</span>}
+                        </p>
+                        {m.last_synced_at ? (
+                          <p className={`text-[10px] mt-0.5 ${
+                            (Date.now() - new Date(m.last_synced_at).getTime()) / 86_400_000 >= 3
+                              ? 'text-amber-500' : 'text-slate-400'
+                          }`}>
+                            Synced {relativeTime(m.last_synced_at)}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-slate-300 mt-0.5">Never synced</p>
+                        )}
+                        <SocialLinks links={m.social_links} size="sm" className="mt-1" />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Action buttons */}
+          {(activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) || activeGroup.owner_id === user?.id) && (
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-moss-200">
+              {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
+                <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
+                  <Plus size={15} /> Invite more
+                </Link>
+              )}
+              {activeGroup.owner_id === user?.id && (
+                <button
+                  onClick={() => setShowExpandModal(true)}
+                  className="btn-ghost text-sm flex items-center gap-1.5"
+                >
+                  <Plus size={15} /> Expand Group
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ) : user?.role !== 'admin' ? (
         <div className="card border-terra-200 bg-terra-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -262,44 +307,6 @@ export default function Dashboard() {
           </div>
         </div>
       ) : null}
-
-      {/* Group members */}
-      {groupMembers.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Group Members</h2>
-          <div className="flex flex-wrap gap-3">
-            {groupMembers.map(m => {
-              const isMe = m.id === user?.id
-              return (
-                <div key={m.id} className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-3 py-2.5">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-moss-100 flex items-center justify-center">
-                      <span className="text-moss-700 font-semibold text-sm">{m.name?.[0]?.toUpperCase()}</span>
-                    </div>
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${syncDotColor(m.last_synced_at)}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-ink leading-tight">
-                      {m.name}{isMe && <span className="ml-1.5 text-xs text-slate-400 font-normal">you</span>}
-                    </p>
-                    {m.last_synced_at ? (
-                      <p className={`text-[10px] mt-0.5 ${
-                        (Date.now() - new Date(m.last_synced_at).getTime()) / 86_400_000 >= 3
-                          ? 'text-amber-500' : 'text-slate-400'
-                      }`}>
-                        Synced {relativeTime(m.last_synced_at)}
-                      </p>
-                    ) : (
-                      <p className="text-[10px] text-slate-300 mt-0.5">Never synced</p>
-                    )}
-                    <SocialLinks links={m.social_links} size="sm" className="mt-1" />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Channel cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
