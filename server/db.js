@@ -565,6 +565,15 @@ async function _init() {
   if (!_userCols.find(c => c.name === 'social_links'))  await db.run("ALTER TABLE users ADD COLUMN social_links TEXT DEFAULT '{}'");
   if (!_userCols.find(c => c.name === 'avatar_path'))   await db.run("ALTER TABLE users ADD COLUMN avatar_path TEXT");
   if (!_userCols.find(c => c.name === 'role'))          await db.run("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'member'");
+  if (!_userCols.find(c => c.name === 'account_tier'))  await db.run("ALTER TABLE users ADD COLUMN account_tier TEXT NOT NULL DEFAULT 'free'");
+  // Ensure all admin/superadmin users are on the paid tier
+  await db.run("UPDATE users SET account_tier = 'paid' WHERE role IN ('admin', 'superadmin') AND account_tier != 'paid'");
+
+  // groups migration: max_members
+  const _groupCols = await db.all('PRAGMA table_info(groups)');
+  if (!_groupCols.find(c => c.name === 'max_members')) {
+    await db.run('ALTER TABLE groups ADD COLUMN max_members INTEGER NOT NULL DEFAULT 5');
+  }
 
   // garden_plants migration: plant_guide_id FK
   const _gpCols = await db.all('PRAGMA table_info(garden_plants)');
@@ -1375,19 +1384,19 @@ async function _seedPlantGuides(db) {
 
 async function _seedSuperadmin(db) {
   const ADMIN_EMAIL = 'davidharmon03@gmail.com';
-  const existing = await db.get('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
+  const existing = await db.get('SELECT id, role, account_tier FROM users WHERE email = ?', [ADMIN_EMAIL]);
 
   if (!existing) {
     const hash = await bcrypt.hash('KrystleAdmin2026!', 10);
     await db.run(
-      `INSERT INTO users (id, name, email, password, role, must_change_password)
-       VALUES (?, ?, ?, ?, 'superadmin', 0)`,
+      `INSERT INTO users (id, name, email, password, role, must_change_password, account_tier)
+       VALUES (?, ?, ?, ?, 'superadmin', 0, 'paid')`,
       [uuidv4(), 'David', ADMIN_EMAIL, hash]
     );
     console.log('Superadmin seeded: davidharmon03@gmail.com');
-  } else if (existing.role !== 'superadmin') {
+  } else if (existing.role !== 'superadmin' || existing.account_tier !== 'paid') {
     await db.run(
-      `UPDATE users SET role = 'superadmin', must_change_password = 0 WHERE email = ?`,
+      `UPDATE users SET role = 'superadmin', must_change_password = 0, account_tier = 'paid' WHERE email = ?`,
       [ADMIN_EMAIL]
     );
     console.log('Superadmin seeded: davidharmon03@gmail.com');

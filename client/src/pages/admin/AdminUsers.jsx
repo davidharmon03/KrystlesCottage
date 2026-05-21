@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
 import { useTwoFactor } from '../../hooks/useTwoFactor'
-import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck, Pencil, Check, X } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck, Pencil, Check, X, UserPlus, Copy, Eye, EyeOff } from 'lucide-react'
 
 const roleBadge = (role) => {
   if (role === 'superadmin') return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 whitespace-nowrap">SUPERADMIN</span>
@@ -14,6 +14,160 @@ const planBadge = (plan) => plan === 'pro'
   ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">PRO</span>
   : <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">FREE</span>
 
+// Modal: Create new user
+function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
+  const [name, setName]       = useState('')
+  const [email, setEmail]     = useState('')
+  const [role, setRole]       = useState('member')
+  const [saving, setSaving]   = useState(false)
+  const [error, setError]     = useState('')
+  const [result, setResult]   = useState(null) // { user, tempPassword }
+  const [copied, setCopied]   = useState(false)
+  const [showPw, setShowPw]   = useState(false)
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setError('')
+    setSaving(true)
+    try {
+      const res = await api.post('/admin/users', { name, email, role }, { headers: twoFaHeaders() })
+      setResult(res.data)
+      onCreated(res.data.user)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create user')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const copyPassword = () => {
+    if (!result?.tempPassword) return
+    navigator.clipboard.writeText(result.tempPassword).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={!result ? onClose : undefined} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md z-10">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <h2 className="font-serif font-semibold text-ink text-lg">
+            {result ? 'User Created' : 'Create User'}
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-6">
+          {result ? (
+            /* Success state — show temp password */
+            <div className="space-y-4">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                <p className="text-sm font-semibold text-emerald-800 mb-1">
+                  ✓ Account created for {result.user.name}
+                </p>
+                <p className="text-xs text-emerald-700">
+                  {result.user.email} · {result.user.role} · must change password on first login
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Temporary Password — share this with the user
+                </p>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                  <span className="flex-1 font-mono text-sm text-ink tracking-widest">
+                    {showPw ? result.tempPassword : '•'.repeat(result.tempPassword.length)}
+                  </span>
+                  <button
+                    onClick={() => setShowPw(v => !v)}
+                    className="text-slate-400 hover:text-slate-600"
+                    title={showPw ? 'Hide' : 'Show'}
+                  >
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                  <button
+                    onClick={copyPassword}
+                    className="flex items-center gap-1 text-xs text-moss-600 hover:text-moss-800 font-medium"
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mt-2">
+                  This password is shown once. The user will be prompted to set a new password on first login.
+                </p>
+              </div>
+
+              <button onClick={onClose} className="btn-primary w-full">Done</button>
+            </div>
+          ) : (
+            /* Create form */
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">{error}</div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Name</label>
+                <input
+                  className="input w-full"
+                  required
+                  placeholder="Full name"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Email</label>
+                <input
+                  type="email"
+                  className="input w-full"
+                  required
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Role</label>
+                <select
+                  className="input w-full bg-white"
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Superadmin</option>
+                </select>
+                {role === 'superadmin' && (
+                  <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
+                    ⚠ Superadmin accounts have full platform access. Confirm before proceeding.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+                <button type="submit" disabled={saving} className="btn-terra flex-1">
+                  {saving ? 'Creating…' : 'Create & Get Password'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminUsers() {
   const [searchParams] = useSearchParams()
   const [users, setUsers]           = useState([])
@@ -24,9 +178,10 @@ export default function AdminUsers() {
   const [loading, setLoading]       = useState(true)
   const [expanded, setExpanded]     = useState(null)
   const [detail, setDetail]         = useState({})
-  const [editingRole, setEditingRole] = useState(null)   // userId being edited
+  const [editingRole, setEditingRole] = useState(null)
   const [roleValue, setRoleValue]   = useState('')
   const [roleSaving, setRoleSaving] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const { getToken } = useTwoFactor()
   const LIMIT = 50
 
@@ -90,13 +245,32 @@ export default function AdminUsers() {
     setTotal(t => t - 1)
   }
 
+  const handleUserCreated = (newUser) => {
+    setUsers(u => [newUser, ...u])
+    setTotal(t => t + 1)
+  }
+
   return (
     <div>
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleUserCreated}
+          twoFaHeaders={twoFaHeaders}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-serif font-semibold text-ink">
           Users{' '}
           <span className="text-slate-400 text-base font-sans font-normal">{total} total</span>
         </h1>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-terra-600 text-white rounded-xl hover:bg-terra-700 transition-colors font-medium"
+        >
+          <UserPlus size={15} /> Create User
+        </button>
       </div>
 
       {/* Filters */}

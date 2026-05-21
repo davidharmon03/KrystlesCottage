@@ -2,7 +2,49 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import { Users, Hash } from 'lucide-react'
+import { Users, Hash, Lock, X } from 'lucide-react'
+
+function UpgradeModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm z-10">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="w-12 h-12 rounded-xl bg-terra-100 flex items-center justify-center mb-4">
+          <Lock size={22} className="text-terra-600" />
+        </div>
+
+        <h2 className="font-serif font-semibold text-ink text-xl mb-2">Upgrade to Premium</h2>
+        <p className="text-slate-600 text-sm leading-relaxed mb-4">
+          A Premium account lets you create and manage a group of up to 5 people — unlocking the Corner, Cuisine, and Garden channels for everyone in your group.
+        </p>
+
+        <button
+          disabled
+          className="w-full py-3 px-4 rounded-xl bg-slate-100 text-slate-400 font-medium text-sm cursor-not-allowed border border-slate-200 mb-4"
+        >
+          Coming Soon
+        </button>
+
+        <p className="text-center text-xs text-slate-400">
+          Already have an invite code?{' '}
+          <button onClick={onClose} className="text-moss-600 hover:text-moss-700 font-medium underline">
+            Join a group above for free.
+          </button>
+        </p>
+      </div>
+    </div>
+  )
+}
 
 export default function Welcome() {
   const { user, refreshUser } = useAuth()
@@ -16,6 +58,10 @@ export default function Welcome() {
   const [createError, setCreateError]     = useState('')
   const [createLoading, setCreateLoading] = useState(false)
 
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+
+  const isPaid = user?.account_tier === 'paid'
+
   const handleJoin = async e => {
     e.preventDefault()
     setJoinError('')
@@ -25,7 +71,12 @@ export default function Welcome() {
       await refreshUser()
       navigate('/')
     } catch (err) {
-      setJoinError(err.response?.data?.error || 'Invalid invite code')
+      const code = err.response?.data?.error
+      if (code === 'group_full') {
+        setJoinError('That group is already full (5 members max).')
+      } else {
+        setJoinError(code || 'Invalid invite code')
+      }
     } finally {
       setJoinLoading(false)
     }
@@ -33,6 +84,10 @@ export default function Welcome() {
 
   const handleCreate = async e => {
     e.preventDefault()
+    if (!isPaid) {
+      setShowUpgradeModal(true)
+      return
+    }
     setCreateError('')
     setCreateLoading(true)
     try {
@@ -40,7 +95,12 @@ export default function Welcome() {
       await refreshUser()
       navigate('/')
     } catch (err) {
-      setCreateError(err.response?.data?.error || 'Could not create group')
+      const code = err.response?.data?.error
+      if (code === 'paid_required') {
+        setShowUpgradeModal(true)
+      } else {
+        setCreateError(code || 'Could not create group')
+      }
     } finally {
       setCreateLoading(false)
     }
@@ -50,6 +110,8 @@ export default function Welcome() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-moss-900 via-moss-700 to-moss-500 flex items-center justify-center p-4">
+      {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
+
       <div className="w-full max-w-xl">
 
         {/* Header */}
@@ -106,28 +168,39 @@ export default function Welcome() {
             </div>
             <h2 className="font-serif font-semibold text-ink text-lg mb-1">Create a Group</h2>
             <p className="text-sm text-slate-500 mb-4 flex-1">
-              Start a new group and invite up to 4 others once you're in.
+              {isPaid
+                ? 'Start a new group and invite up to 4 others once you\'re in.'
+                : 'Premium feature — upgrade to start your own group and invite up to 4 others.'}
             </p>
             {createError && (
               <p className="text-red-600 text-sm mb-3">{createError}</p>
             )}
-            <form onSubmit={handleCreate} className="space-y-3">
-              <input
-                className="input"
-                required
-                placeholder="The Harmon House"
-                value={groupName}
-                onChange={e => setGroupName(e.target.value)}
-                maxLength={60}
-              />
+            {isPaid ? (
+              <form onSubmit={handleCreate} className="space-y-3">
+                <input
+                  className="input"
+                  required
+                  placeholder="The Harmon House"
+                  value={groupName}
+                  onChange={e => setGroupName(e.target.value)}
+                  maxLength={60}
+                />
+                <button
+                  type="submit"
+                  disabled={createLoading}
+                  className="btn-terra w-full"
+                >
+                  {createLoading ? 'Creating…' : 'Create Group'}
+                </button>
+              </form>
+            ) : (
               <button
-                type="submit"
-                disabled={createLoading}
-                className="btn-terra w-full"
+                onClick={() => setShowUpgradeModal(true)}
+                className="btn-terra w-full flex items-center justify-center gap-2"
               >
-                {createLoading ? 'Creating…' : 'Create Group'}
+                <Lock size={15} /> Upgrade to Create
               </button>
-            </form>
+            )}
           </div>
         </div>
 

@@ -67,6 +67,8 @@ export default function Dashboard() {
   const [recentRecipes, setRecentRecipes] = useState([])
   const [groupMembers,  setGroupMembers]  = useState([])
   const [copiedCode, setCopiedCode] = useState(false)
+  const [showExpandModal, setShowExpandModal] = useState(false)
+  const [groupDetail, setGroupDetail] = useState(null)
 
   const activeGroup = user?.groups?.[0]
 
@@ -76,7 +78,10 @@ export default function Dashboard() {
         .then(r => setRecentRecipes(r.data.slice(0, 3)))
         .catch(() => {})
       api.get(`/groups/${activeGroup.id}`)
-        .then(r => setGroupMembers(r.data.members || []))
+        .then(r => {
+          setGroupMembers(r.data.members || [])
+          setGroupDetail(r.data)
+        })
         .catch(() => {})
     }
   }, [activeGroup?.id])
@@ -129,10 +134,18 @@ export default function Dashboard() {
                 </span>
               )}
 
-              {/* Group membership badge */}
+              {/* Group / tier badge */}
               {activeGroup ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <Check size={11} /> Group Member
+                  <Check size={11} /> Group Member ✓
+                </span>
+              ) : (user?.role === 'superadmin' || user?.role === 'admin') ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <ShieldCheck size={11} /> Admin Access
+                </span>
+              ) : user?.account_tier === 'paid' ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-terra-50 text-terra-700 border border-terra-200">
+                  Premium — No Group Yet
                 </span>
               ) : (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
@@ -166,34 +179,31 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* CTA for no-group state */}
-          {!activeGroup && (
+          {/* CTA for no-group state — hide for admins/superadmins */}
+          {!activeGroup && user?.role !== 'superadmin' && user?.role !== 'admin' && (
             <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-              <button
-                onClick={() => navigate('/welcome')}
-                className="btn-terra text-sm flex items-center gap-1.5 flex-1 sm:flex-none justify-center"
-              >
-                <Users size={15} /> Join or Create
-              </button>
+              {user?.account_tier === 'paid' ? (
+                <button
+                  onClick={() => navigate('/welcome')}
+                  className="btn-terra text-sm flex items-center gap-1.5 flex-1 sm:flex-none justify-center"
+                >
+                  <Users size={15} /> Join or Create
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/welcome')}
+                  className="btn-primary text-sm flex items-center gap-1.5 flex-1 sm:flex-none justify-center"
+                >
+                  <Users size={15} /> Join a Group
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
 
       {/* Group Banner */}
-      {!activeGroup ? (
-        <div className="card border-terra-200 bg-terra-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex-1">
-            <h3 className="font-semibold text-terra-800 font-serif">No group yet</h3>
-            <p className="text-terra-700 text-sm mt-0.5">Create or join a group of up to 5 to unlock the Corner, Cuisine, and Garden channels.</p>
-          </div>
-          <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-            <button onClick={() => navigate('/welcome')} className="btn-terra flex items-center gap-2 flex-1 sm:flex-none justify-center">
-              <Users size={16} /> Join or Create
-            </button>
-          </div>
-        </div>
-      ) : (
+      {activeGroup ? (
         <div className="card border-moss-200 bg-moss-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
             <Users size={18} className="text-white" />
@@ -209,16 +219,49 @@ export default function Dashboard() {
                 {copiedCode ? <Check size={12} /> : <Copy size={12} />}
                 {copiedCode ? 'Copied' : 'Copy'}
               </button>
-              <span className="text-moss-400 text-xs">{activeGroup.member_count}/5 members</span>
+              <span className="text-moss-400 text-xs">
+                {activeGroup.member_count}/{groupDetail?.max_members ?? activeGroup.max_members ?? 5} members
+              </span>
             </div>
           </div>
-          {activeGroup.member_count < 5 && (
-            <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5 flex-shrink-0">
-              <Plus size={15} /> Invite more
-            </Link>
-          )}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
+              <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
+                <Plus size={15} /> Invite more
+              </Link>
+            )}
+            {activeGroup.owner_id === user?.id && (
+              <button
+                onClick={() => setShowExpandModal(true)}
+                className="btn-ghost text-sm flex items-center gap-1.5"
+              >
+                <Plus size={15} /> Expand Group
+              </button>
+            )}
+          </div>
         </div>
-      )}
+      ) : user?.role !== 'superadmin' && user?.role !== 'admin' ? (
+        <div className="card border-terra-200 bg-terra-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <h3 className="font-semibold text-terra-800 font-serif">No group yet</h3>
+            {user?.account_tier === 'paid'
+              ? <p className="text-terra-700 text-sm mt-0.5">Create or join a group of up to 5 to unlock the Corner, Cuisine, and Garden channels.</p>
+              : <p className="text-terra-700 text-sm mt-0.5">Join a group with an invite code to unlock the Corner, Cuisine, and Garden channels.</p>
+            }
+          </div>
+          <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+            {user?.account_tier === 'paid' ? (
+              <button onClick={() => navigate('/welcome')} className="btn-terra flex items-center gap-2 flex-1 sm:flex-none justify-center">
+                <Users size={16} /> Join or Create
+              </button>
+            ) : (
+              <button onClick={() => navigate('/welcome')} className="btn-primary flex items-center gap-2 flex-1 sm:flex-none justify-center">
+                <Users size={16} /> Join a Group
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {/* Group members */}
       {groupMembers.length > 0 && (
@@ -311,6 +354,50 @@ export default function Dashboard() {
         </div>
         <Link to="/labels" className="btn-terra text-sm flex-shrink-0">Open</Link>
       </div>
+
+      {/* Expand Group Modal */}
+      {showExpandModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowExpandModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-moss-100 flex items-center justify-center flex-shrink-0">
+                <Users size={20} className="text-moss-600" />
+              </div>
+              <div>
+                <h2 className="font-serif font-semibold text-ink text-lg">Expand Your Group</h2>
+                <p className="text-xs text-slate-400">Add 5 more member slots</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-2">
+              Group expansions come in packs of 5. Your group currently supports up to{' '}
+              <strong>{groupDetail?.max_members ?? activeGroup?.max_members ?? 5} members</strong>.
+            </p>
+            <p className="text-sm text-slate-600 mb-6">
+              Expanding to <strong>{(groupDetail?.max_members ?? activeGroup?.max_members ?? 5) + 5} members</strong> will be available for purchase soon.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                disabled
+                className="btn-terra w-full opacity-60 cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                Purchase — Coming Soon
+              </button>
+              <button
+                onClick={() => setShowExpandModal(false)}
+                className="btn-ghost w-full text-sm text-center"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

@@ -63,6 +63,12 @@ router.post('/', authMiddleware, async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Group name is required' });
 
     const db = await getDb();
+
+    // Freemium gate: only paid users can create a group
+    const userRecord = await db.get('SELECT account_tier FROM users WHERE id = ?', [req.user.id]);
+    if (!userRecord || userRecord.account_tier !== 'paid') {
+      return res.status(403).json({ error: 'paid_required' });
+    }
     let invite_code, attempts = 0;
     do {
       invite_code = generateCode();
@@ -139,7 +145,7 @@ router.post('/join', authMiddleware, async (req, res) => {
     if (already) return res.status(409).json({ error: 'Already a member' });
 
     const count = await db.get('SELECT COUNT(*) AS c FROM group_members WHERE group_id = ?', [group.id]);
-    if (count.c >= MAX_MEMBERS) return res.status(403).json({ error: 'Group is full (max 5 members)' });
+    if (count.c >= (group.max_members || 5)) return res.status(400).json({ error: 'group_full' });
 
     await db.run('INSERT INTO group_members (id, group_id, user_id) VALUES (?,?,?)',
       [uuidv4(), group.id, req.user.id]);
@@ -291,6 +297,19 @@ router.delete('/:id/members/:userId', authMiddleware, async (req, res) => {
     await db.run('DELETE FROM group_members WHERE group_id = ? AND user_id = ?',
       [req.params.id, req.params.userId]);
     res.json({ message: 'Member removed' });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+// PATCH /api/groups/:id/expand — add 5 member slots (owner only, payment coming soon)
+router.patch('/:id/expand', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    const group = await db.get('SELECT * FROM groups WHERE id = ?', [req.params.id]);
+    if (!group) return res.status(404).json({ error: 'Group not found' });
+    if (group.owner_id !== req.user.id) return res.status(403).json({ error: 'Owner only' });
+    const newMax = (group.max_members || 5) + 5;
+    await db.run('UPDATE groups SET max_members = ? WHERE id = ?', [newMax, req.params.id]);
+    res.json({ max_members: newMax });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 

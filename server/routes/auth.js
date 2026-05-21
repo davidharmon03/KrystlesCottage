@@ -108,7 +108,7 @@ router.post('/register', registerValidation, async (req, res) => {
       }
     }
 
-    const newUser = await db.get('SELECT role, plan FROM users WHERE id = ?', [id]);
+    const newUser = await db.get('SELECT role, plan, account_tier FROM users WHERE id = ?', [id]);
     const accessToken = jwt.sign({ id, name, email, role: newUser.role }, JWT_SECRET, { expiresIn: '15m' });
     const refreshTokenValue = crypto.randomBytes(32).toString('hex');
     const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -121,7 +121,7 @@ router.post('/register', registerValidation, async (req, res) => {
     res.status(201).json({
       token: accessToken,
       refreshToken: refreshTokenValue,
-      user: { id, name, email, role: newUser.role, plan: newUser.plan, groups }
+      user: { id, name, email, role: newUser.role, plan: newUser.plan, account_tier: newUser.account_tier, groups }
     });
   } catch (err) {
     console.error(err);
@@ -161,7 +161,7 @@ router.post('/login', loginValidation, async (req, res) => {
     const payload = {
       token: accessToken,
       refreshToken: refreshTokenValue,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, groups }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, account_tier: user.account_tier, groups }
     };
     if (user.must_change_password === 1) payload.mustChangePassword = true;
 
@@ -398,7 +398,7 @@ router.post('/reset-password', [
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const user = await db.get('SELECT id, name, email, role, plan, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, account_tier, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const groups = await _getUserGroups(db, user.id);
     let social_links = {};
@@ -438,7 +438,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
 
     params.push(req.user.id);
     await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
-    const user = await db.get('SELECT id, name, email, role, plan, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, account_tier, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
     const groups = await _getUserGroups(db, user.id);
     let parsed_links = {};
     try { parsed_links = JSON.parse(user.social_links || '{}') } catch {}

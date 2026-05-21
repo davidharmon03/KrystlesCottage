@@ -1,11 +1,60 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { getDb } = require('../db');
 const { superadminMiddleware, twoFaMiddleware } = require('../middleware/auth');
 
 // All admin routes require superadmin role + valid 2FA session
 router.use(superadminMiddleware);
 router.use(twoFaMiddleware);
+
+// POST /api/admin/users — create a new user (superadmin only)
+// Returns the generated temp password so the superadmin can share credentials.
+router.post('/users', async (req, res) => {
+  try {
+    const db = await getDb();
+    const { name, email, role = 'member' } = req.body;
+
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+    if (!email || !email.trim()) return res.status(400).json({ error: 'Email is required' });
+    if (!['member', 'admin', 'superadmin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    // Only superadmins can assign the superadmin role (middleware already enforces
+    // that callers are superadmins, but we guard explicitly for clarity)
+    if (role === 'superadmin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Only superadmins can create superadmin accounts' });
+    }
+
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (existing) return res.status(409).json({ error: 'Email already registered' });
+
+    // Generate a readable temporary password
+    const tempPassword = crypto.randomBytes(5).toString('hex').toUpperCase() + '!k9';
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
+    const id = uuidv4();
+    const account_tier = ['admin', 'superadmin'].includes(role) ? 'paid' : 'free';
+
+    await db.run(
+      `INSERT INTO users (id, name, email, password, role, account_tier, must_change_password)
+       VALUES (?, ?, ?, ?, ?, ?, 1)`,
+      [id, name.trim(), email.toLowerCase().trim(), passwordHash, role, account_tier]
+    );
+
+    const created = await db.get(
+      'SELECT id, name, email, role, account_tier, must_change_password, created_at FROM users WHERE id = ?',
+      [id]
+    );
+
+    res.status(201).json({ user: created, tempPassword });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+});
 
 // GET /api/admin/stats — platform overview
 router.get('/stats', async (req, res) => {
@@ -169,9 +218,19 @@ router.patch('/users/:id/role', async (req, res) => {
     if (!['member', 'admin', 'superadmin'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
+    // Only superadmins may assign the superadmin role
+    if (role === 'superadmin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Only superadmins can assign the superadmin role' });
+    }
     const user = await db.get("SELECT role FROM users WHERE id = ?", [req.params.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    await db.run("UPDATE users SET role = ? WHERE id = ?", [role, req.params.id]);
+    // Promote admins/superadmins to paid tier automatically
+    const account_tier = ['admin', 'superadmin'].includes(role) ? 'paid' : undefined;
+    if (account_tier) {
+      await db.run("UPDATE users SET role = ?, account_tier = ? WHERE id = ?", [role, account_tier, req.params.id]);
+    } else {
+      await db.run("UPDATE users SET role = ? WHERE id = ?", [role, req.params.id]);
+    }
     res.json({ success: true });
   } catch (err) {
     console.error(err);
