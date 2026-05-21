@@ -89,6 +89,54 @@ export default function CottageLaws() {
           </div>
         </section>
 
+        {/* Freezing & Storage */}
+        <section className="mb-10">
+          <h2 className="text-2xl font-serif font-bold text-ink mb-4">Freezing & Frozen Food</h2>
+          <p className="text-slate-700 mb-4">Tennessee does not prohibit freezing as a preservation method, but what you freeze determines how you can sell it.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+            {/* Non-Perishable Frozen Foods */}
+            <div className="card p-5 bg-moss-50 border border-moss-200">
+              <p className="font-semibold text-moss-700 mb-3 flex items-center gap-2">
+                <CheckCircle size={18} />
+                Non-Perishable Frozen Foods
+              </p>
+              <p className="text-sm text-slate-700 mb-3">Freeze these freely — full distribution rights:</p>
+              <ul className="space-y-2 text-sm ml-4">
+                <li>• Frozen baked goods (breads, cakes, cookies, pies)</li>
+                <li>• Frozen jams, jellies, preserves</li>
+                <li>• Frozen nuts, nut butters, granola</li>
+                <li>• Frozen honey, maple syrup</li>
+                <li>• Frozen candies, fudge, chocolates</li>
+              </ul>
+              <p className="text-xs font-semibold text-moss-600 mt-3 pt-3 border-t border-moss-200">✓ Can wholesale | ✓ Can ship in-state | ✓ Direct-to-consumer</p>
+            </div>
+
+            {/* Perishable Frozen Foods */}
+            <div className="card p-5 bg-amber-50 border border-amber-200">
+              <p className="font-semibold text-amber-700 mb-3 flex items-center gap-2">
+                <AlertTriangle size={18} />
+                Perishable Frozen Foods
+              </p>
+              <p className="text-sm text-slate-700 mb-3">Can freeze but sales are restricted:</p>
+              <ul className="space-y-2 text-sm ml-4">
+                <li>• Frozen pasteurized dairy (butter, yogurt, hard cheese, kefir)</li>
+                <li>• Frozen eggs</li>
+                <li>• Frozen poultry dishes (rotisserie chicken, soups, pot pies)</li>
+                <li>• Any frozen prepared/cooked meals</li>
+              </ul>
+              <p className="text-xs font-semibold text-amber-600 mt-3 pt-3 border-t border-amber-200">✗ No wholesaling | ✗ No shipping | ✓ Direct-to-consumer only</p>
+            </div>
+          </div>
+
+          <div className="card p-4 bg-slate-50 border border-slate-200">
+            <p className="font-semibold text-slate-700 mb-2">Key Point: "Perishable" (TCS) vs "Non-Perishable"</p>
+            <p className="text-sm text-slate-700">
+              <strong>Perishable (TCS) foods</strong> are those that require Time/Temperature Control for Safety — they can spoil or grow harmful bacteria if not kept cold. Even frozen, they fall under these sales restrictions. <strong>Non-perishable foods</strong> like baked goods, jams, and nuts are stable at room temperature and have no sales restrictions once frozen.
+            </p>
+          </div>
+        </section>
+
         {/* Sales & Distribution */}
         <section className="mb-10">
           <h2 className="text-2xl font-serif font-bold text-ink mb-4">Sales & Distribution</h2>
