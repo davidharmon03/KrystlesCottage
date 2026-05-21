@@ -39,17 +39,19 @@ router.get('/users', async (req, res) => {
     const { search, plan, page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    let where = "WHERE u.role != 'superadmin'";
+    let conditions = [];
     const params = [];
 
     if (search) {
-      where += " AND (u.name LIKE ? OR u.email LIKE ?)";
+      conditions.push("(u.name LIKE ? OR u.email LIKE ?)");
       params.push(`%${search}%`, `%${search}%`);
     }
     if (plan && plan !== 'all') {
-      where += " AND u.plan = ?";
+      conditions.push("u.plan = ?");
       params.push(plan);
     }
+
+    const where = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
     const users = await db.all(`
       SELECT
