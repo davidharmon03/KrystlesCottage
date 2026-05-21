@@ -49,7 +49,7 @@ function ProtectedRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  return user ? <Navigate to={user.role === 'superadmin' ? '/admin' : '/'} replace /> : children
+  return user ? <Navigate to="/" replace /> : children
 }
 
 function AdminRoute({ children }) {
