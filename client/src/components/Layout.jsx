@@ -97,7 +97,7 @@ export default function Layout() {
   const channels = [
     { to: '/kitchen',     label: 'Kitchen',            icon: ChefHat,         color: 'text-terra-500' },
     { to: '/corner',      label: 'Corner',             icon: DollarSign,      color: 'text-moss-600'  },
-    { to: '/cuisine',     label: 'Cuisine',            icon: Package,         color: 'text-slate-600' },
+    { to: '/pantry',      label: 'Pantry',             icon: Package,         color: 'text-slate-600' },
     { to: '/orders',      label: 'Kitchen Orders',     icon: ShoppingBag,     color: 'text-moss-600'  },
     { to: '/garden',      label: 'Garden',             icon: Leaf,            color: 'text-moss-500'  },
     { to: '/equipment',   label: 'Equipment',          icon: Wrench,          color: 'text-terra-400' },

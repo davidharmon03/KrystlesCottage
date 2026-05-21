@@ -64,7 +64,7 @@ app.use('/api/auth',           require('./routes/auth'));
 app.use('/api/groups',         require('./routes/groups'));
 app.use('/api/recipes',        require('./routes/recipes'));
 app.use('/api/corner',         require('./routes/corner'));
-app.use('/api/cuisine',         require('./routes/cuisine'));
+app.use('/api/pantry',         require('./routes/pantry'));
 app.use('/api/garden',      require('./routes/garden'));
 app.use('/api/users',          require('./routes/users'));
 app.use('/api/equipment',      require('./routes/equipment'));

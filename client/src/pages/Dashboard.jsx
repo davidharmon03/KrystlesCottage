@@ -51,7 +51,7 @@ export default function Dashboard() {
       description: 'Receipt tracking, The Equalizer, and Meal Credits — split costs fairly across your group.',
     },
     {
-      to: '/cuisine', label: 'Cuisine', sub: 'Prep & Inventory',
+      to: '/pantry', label: 'Pantry', sub: 'Prep & Inventory',
       icon: Package, bg: 'bg-slate-50', border: 'border-slate-200',
       iconBg: 'bg-slate-100', iconColor: 'text-slate-600',
       description: 'Inventory management, bulk-buy coordination, and vacuum seal logging.',

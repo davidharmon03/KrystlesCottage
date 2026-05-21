@@ -10,7 +10,7 @@ import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Kitchen from './pages/Kitchen'
 import Corner from './pages/Corner'
-import Cuisine from './pages/Cuisine'
+import Pantry from './pages/Pantry'
 import Garden from './pages/Garden'
 import Labels from './pages/Labels'
 import Equipment from './pages/Equipment'
@@ -113,7 +113,7 @@ export default function App() {
             <Route index               element={<Dashboard />} />
             <Route path="kitchen"      element={<Kitchen />} />
             <Route path="corner"       element={<Corner />} />
-            <Route path="cuisine"      element={<Cuisine />} />
+            <Route path="pantry"       element={<Pantry />} />
             <Route path="garden"       element={<Garden />} />
             <Route path="equipment"    element={<Equipment />} />
             <Route path="labels"       element={<Labels />} />
