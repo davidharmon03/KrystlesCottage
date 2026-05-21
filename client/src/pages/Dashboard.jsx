@@ -179,8 +179,8 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* CTA for no-group state — hide for admins/superadmins */}
-          {!activeGroup && user?.role !== 'superadmin' && user?.role !== 'admin' && (
+          {/* CTA for no-group state — hide for admins, show for superadmins (they're always paid) */}
+          {!activeGroup && user?.role !== 'admin' && (
             <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
               {user?.account_tier === 'paid' ? (
                 <button
@@ -240,7 +240,7 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-      ) : user?.role !== 'superadmin' && user?.role !== 'admin' ? (
+      ) : user?.role !== 'admin' ? (
         <div className="card border-terra-200 bg-terra-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
             <h3 className="font-semibold text-terra-800 font-serif">No group yet</h3>

@@ -255,19 +255,61 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
-// GET /api/admin/groups — all groups with owner and member info
+// GET /api/admin/groups — all groups with owner info and per-group member list
 router.get('/groups', async (req, res) => {
   try {
     const db = await getDb();
+
     const groups = await db.all(`
-      SELECT g.id, g.name, g.invite_code, g.created_at,
-             u.id AS owner_id, u.name AS owner_name, u.email AS owner_email, u.plan AS owner_plan,
+      SELECT g.id, g.name, g.invite_code, g.max_members, g.created_at,
+             u.id AS owner_id, u.name AS owner_name, u.email AS owner_email,
              (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id) AS member_count
       FROM groups g
       JOIN users u ON u.id = g.owner_id
       ORDER BY g.created_at DESC
     `);
-    res.json({ groups });
+
+    // Fetch all members for all groups in one query
+    const allMembers = await db.all(`
+      SELECT gm.group_id, gm.joined_at,
+             u.id, u.name, u.email
+      FROM group_members gm
+      JOIN users u ON u.id = gm.user_id
+      ORDER BY gm.joined_at ASC
+    `);
+
+    const membersByGroup = {};
+    for (const m of allMembers) {
+      if (!membersByGroup[m.group_id]) membersByGroup[m.group_id] = [];
+      membersByGroup[m.group_id].push(m);
+    }
+
+    const result = groups.map(g => {
+      const raw = membersByGroup[g.id] || [];
+      const members = raw.map(m => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        group_role: m.id === g.owner_id ? 'owner' : 'member',
+        joined_at: m.joined_at,
+      }));
+      // owner first
+      members.sort((a, b) => (a.group_role === 'owner' ? -1 : 1));
+
+      return {
+        id: g.id,
+        name: g.name,
+        invite_code: g.invite_code,
+        owner_name: g.owner_name,
+        owner_email: g.owner_email,
+        member_count: g.member_count,
+        max_members: g.max_members,
+        created_at: g.created_at,
+        members,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to load groups' });
