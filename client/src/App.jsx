@@ -60,7 +60,7 @@ function AdminRoute({ children }) {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    if (!user || user.role !== 'superadmin') { setChecking(false); return }
+    if (!user || !['admin', 'superadmin'].includes(user.role)) { setChecking(false); return }
     // Check if there's already a valid 2FA session
     const token = twoFa.getToken('login')
     if (token) { setVerified(true); setChecking(false); return }
@@ -73,7 +73,7 @@ function AdminRoute({ children }) {
 
   if (loading || checking) return null
   if (!user) return <Navigate to="/login" replace />
-  if (user.role !== 'superadmin') return <Navigate to="/" replace />
+  if (!['admin', 'superadmin'].includes(user.role)) return <Navigate to="/" replace />
   if (!verified && !twoFa.isOpen) return <Navigate to="/" replace />
 
   return (

@@ -149,7 +149,7 @@ export default function Layout() {
       <SyncBadge onLinkClick={onLinkClick} />
 
       <div className="px-4 py-2 border-t border-slate-100 space-y-0.5">
-        {user?.role === 'superadmin' && (
+        {['admin', 'superadmin'].includes(user?.role) && (
           <NavLink to="/admin" onClick={onLinkClick}
             className={({ isActive }) =>
               `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
