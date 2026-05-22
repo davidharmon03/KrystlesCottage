@@ -33,6 +33,7 @@ import AdminUsers from './pages/admin/AdminUsers'
 import AdminGroups from './pages/admin/AdminGroups'
 import TwoFactorModal from './components/TwoFactorModal'
 import { useTwoFactor } from './hooks/useTwoFactor'
+import VerifyEmail from './pages/VerifyEmail'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/welcome"          element={<ProtectedRoute><Welcome /></ProtectedRoute>} />
           <Route path="/reset-password"   element={<ResetPassword />} />
           <Route path="/accept-invite"    element={<AcceptInvite />} />
+          <Route path="/verify-email"    element={<VerifyEmail />} />
           {/* Admin routes */}
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index          element={<AdminDashboard />} />

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useSync } from '../contexts/SyncContext'
 import api from '../api'
-import { User, Save, Loader, Check, Camera, Upload, LogOut, Bell, RefreshCw, Download, CreditCard } from 'lucide-react'
+import { User, Save, Loader, Check, Camera, Upload, LogOut, Bell, RefreshCw, Download, CreditCard, Lock, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 import SocialLinks, { PLATFORMS } from '../components/SocialLinks'
 
 const PREF_GROUPS = [
@@ -150,6 +150,26 @@ export default function Profile() {
   const [error,       setError]       = useState('')
   const [downloading, setDownloading] = useState(false)
 
+  // Change password
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword,     setNewPassword]     = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [pwSaving,        setPwSaving]        = useState(false)
+  const [pwSaved,         setPwSaved]         = useState(false)
+  const [pwError,         setPwError]         = useState('')
+
+  // Email verification
+  const [verifySending, setVerifySending] = useState(false)
+  const [verifySent,    setVerifySent]    = useState(false)
+  const [verifyError,   setVerifyError]   = useState('')
+
+  // Change email
+  const [newEmail,        setNewEmail]        = useState('')
+  const [emailPassword,   setEmailPassword]   = useState('')
+  const [emailSaving,     setEmailSaving]     = useState(false)
+  const [emailSaved,      setEmailSaved]      = useState(false)
+  const [emailError,      setEmailError]      = useState('')
+
   // Notification preferences
   const [prefs,       setPrefs]       = useState(null)   // null = loading
   const [prefsSaving, setPrefsSaving] = useState(false)
@@ -189,6 +209,37 @@ export default function Profile() {
 
   const setLink = (key, val) => setLinks(prev => ({ ...prev, [key]: val }))
 
+  const handleSendVerification = async () => {
+    setVerifySending(true)
+    setVerifyError('')
+    try {
+      await api.post('/auth/send-verification')
+      setVerifySent(true)
+    } catch (err) {
+      setVerifyError(err.response?.data?.error || 'Failed to send verification email')
+    } finally {
+      setVerifySending(false)
+    }
+  }
+
+  const handleEmailChange = async e => {
+    e.preventDefault()
+    setEmailError('')
+    setEmailSaving(true)
+    try {
+      await api.put('/auth/email', { newEmail: newEmail.trim(), currentPassword: emailPassword })
+      await refreshUser()
+      setNewEmail('')
+      setEmailPassword('')
+      setEmailSaved(true)
+      setTimeout(() => setEmailSaved(false), 3000)
+    } catch (err) {
+      setEmailError(err.response?.data?.error || 'Failed to update email')
+    } finally {
+      setEmailSaving(false)
+    }
+  }
+
   const handleSave = async e => {
     e.preventDefault()
     setSaving(true)
@@ -207,6 +258,32 @@ export default function Profile() {
 
   const handleAvatarUploaded = async () => {
     await refreshUser()
+  }
+
+  const handlePasswordChange = async e => {
+    e.preventDefault()
+    setPwError('')
+    if (newPassword.length < 8) {
+      setPwError('New password must be at least 8 characters')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('Passwords do not match')
+      return
+    }
+    setPwSaving(true)
+    try {
+      await api.put('/auth/password', { currentPassword, newPassword })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPwSaved(true)
+      setTimeout(() => setPwSaved(false), 2500)
+    } catch (err) {
+      setPwError(err.response?.data?.error || 'Failed to update password')
+    } finally {
+      setPwSaving(false)
+    }
   }
 
   const handleDownload = async () => {
@@ -262,12 +339,39 @@ export default function Profile() {
             </div>
             <div>
               <label className="label">Email</label>
-              <input
-                className="input bg-slate-50 text-slate-400 cursor-not-allowed"
-                value={user?.email || ''}
-                readOnly
-              />
-              <p className="text-xs text-slate-400 mt-1">Email cannot be changed</p>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input bg-slate-50 text-slate-500 cursor-default flex-1"
+                  value={user?.email || ''}
+                  readOnly
+                />
+                {user?.email_verified ? (
+                  <span className="flex items-center gap-1 text-moss-600 text-xs font-medium flex-shrink-0">
+                    <CheckCircle size={14} /> Verified
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-amber-600 text-xs font-medium flex-shrink-0">
+                    <AlertCircle size={14} /> Unverified
+                  </span>
+                )}
+              </div>
+              {!user?.email_verified && (
+                <div className="mt-2">
+                  {verifyError && <p className="text-xs text-red-500 mb-1">{verifyError}</p>}
+                  {verifySent ? (
+                    <p className="text-xs text-moss-600 font-medium">Check your inbox!</p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSendVerification}
+                      disabled={verifySending}
+                      className="text-xs text-amber-700 hover:text-amber-800 font-medium underline"
+                    >
+                      {verifySending ? 'Sending…' : 'Send verification email'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="label">Phone number <span className="text-slate-400 font-normal">(optional)</span></label>
@@ -493,6 +597,131 @@ export default function Profile() {
             }
           </button>
         </div>
+      </div>
+
+      {/* Change Password */}
+      <div className="mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+            <Lock size={20} className="text-slate-600" />
+          </div>
+          <div>
+            <h2 className="font-serif font-semibold text-ink">Change Password</h2>
+            <p className="text-sm text-slate-500">Update your account password</p>
+          </div>
+        </div>
+
+        <form onSubmit={handlePasswordChange} className="card space-y-4">
+          <div>
+            <label className="label">Current password</label>
+            <input
+              className="input"
+              type="password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="Your current password"
+            />
+          </div>
+          <div>
+            <label className="label">New password</label>
+            <input
+              className="input"
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+            />
+          </div>
+          <div>
+            <label className="label">Confirm new password</label>
+            <input
+              className="input"
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              placeholder="Repeat new password"
+            />
+          </div>
+
+          {pwError && <p className="text-sm text-red-500">{pwError}</p>}
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              disabled={pwSaving}
+              className="btn-primary flex items-center gap-2 px-6"
+            >
+              {pwSaving
+                ? <><Loader size={15} className="animate-spin" /> Updating…</>
+                : pwSaved
+                  ? <><Check size={15} /> Updated!</>
+                  : <><Lock size={15} /> Update password</>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Change Email */}
+      <div className="mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+            <Mail size={20} className="text-slate-600" />
+          </div>
+          <div>
+            <h2 className="font-serif font-semibold text-ink">Change Email</h2>
+            <p className="text-sm text-slate-500">Update your account email address</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleEmailChange} className="card space-y-4">
+          <div>
+            <label className="label">New email address</label>
+            <input
+              className="input"
+              type="email"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              required
+              placeholder="new@example.com"
+            />
+          </div>
+          <div>
+            <label className="label">Current password <span className="text-slate-400 font-normal">(to confirm)</span></label>
+            <input
+              className="input"
+              type="password"
+              value={emailPassword}
+              onChange={e => setEmailPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="Your current password"
+            />
+          </div>
+
+          {emailError && <p className="text-sm text-red-500">{emailError}</p>}
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              disabled={emailSaving}
+              className="btn-primary flex items-center gap-2 px-6"
+            >
+              {emailSaving
+                ? <><Loader size={15} className="animate-spin" /> Updating…</>
+                : emailSaved
+                  ? <><Check size={15} /> Updated — check your inbox</>
+                  : <><Mail size={15} /> Update email</>
+              }
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Sign out */}

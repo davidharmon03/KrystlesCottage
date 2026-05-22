@@ -50,9 +50,12 @@ export default function Welcome() {
   const { user, refreshUser } = useAuth()
   const navigate = useNavigate()
 
-  const [joinCode, setJoinCode]       = useState('')
-  const [joinError, setJoinError]     = useState('')
-  const [joinLoading, setJoinLoading] = useState(false)
+  const [joinCode, setJoinCode]               = useState('')
+  const [joinError, setJoinError]             = useState('')
+  const [joinLoading, setJoinLoading]         = useState(false)
+  const [verifyBanner, setVerifyBanner]       = useState(false)
+  const [verifyResending, setVerifyResending] = useState(false)
+  const [verifyResent, setVerifyResent]       = useState(false)
 
   const [groupName, setGroupName]         = useState('')
   const [createError, setCreateError]     = useState('')
@@ -62,9 +65,19 @@ export default function Welcome() {
 
   const isPaid = user?.account_tier === 'paid'
 
+  const handleResendVerification = async () => {
+    setVerifyResending(true)
+    try {
+      await api.post('/auth/send-verification')
+      setVerifyResent(true)
+    } catch {}
+    finally { setVerifyResending(false) }
+  }
+
   const handleJoin = async e => {
     e.preventDefault()
     setJoinError('')
+    setVerifyBanner(false)
     setJoinLoading(true)
     try {
       await api.post('/groups/join', { invite_code: joinCode.trim().toUpperCase() })
@@ -72,7 +85,9 @@ export default function Welcome() {
       navigate('/')
     } catch (err) {
       const code = err.response?.data?.error
-      if (code === 'group_full') {
+      if (code === 'email_not_verified') {
+        setVerifyBanner(true)
+      } else if (code === 'group_full') {
         setJoinError('That group is already full (5 members max).')
       } else {
         setJoinError(code || 'Invalid invite code')
@@ -139,6 +154,23 @@ export default function Welcome() {
             <p className="text-sm text-slate-500 mb-4 flex-1">
               Have an invite code? Enter it below to jump straight in.
             </p>
+            {verifyBanner && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 text-sm text-amber-800">
+                You need to verify your email first.{' '}
+                {verifyResent ? (
+                  <span className="font-medium">Check your inbox!</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={verifyResending}
+                    className="font-medium underline hover:no-underline"
+                  >
+                    {verifyResending ? 'Sending…' : 'Resend verification email'}
+                  </button>
+                )}
+              </div>
+            )}
             {joinError && (
               <p className="text-red-600 text-sm mb-3">{joinError}</p>
             )}

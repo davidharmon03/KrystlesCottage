@@ -13,6 +13,7 @@ const { body, validationResult } = require('express-validator');
 const { getDb } = require('../db');
 const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
 const { compressImage } = require('../utils/compressImage');
+const { sendVerificationEmail } = require('../utils/email');
 
 // Canonical default notification preferences — all on by default.
 // Exported so notifications.js and digest.js can reference them.
@@ -161,7 +162,7 @@ router.post('/login', loginValidation, async (req, res) => {
     const payload = {
       token: accessToken,
       refreshToken: refreshTokenValue,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, account_tier: user.account_tier, groups }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, plan: user.plan, account_tier: user.account_tier, email_verified: user.email_verified === 1, groups }
     };
     if (user.must_change_password === 1) payload.mustChangePassword = true;
 
@@ -188,7 +189,7 @@ router.post('/refresh', async (req, res) => {
       return res.status(401).json({ error: 'Refresh token expired' });
     }
 
-    const user = await db.get('SELECT id, name, email, role FROM users WHERE id = ?', [stored.user_id]);
+    const user = await db.get('SELECT id, name, email, role, email_verified FROM users WHERE id = ?', [stored.user_id]);
     if (!user) return res.status(401).json({ error: 'User not found' });
 
     const accessToken = jwt.sign(
@@ -197,7 +198,7 @@ router.post('/refresh', async (req, res) => {
       { expiresIn: '15m' }
     );
 
-    res.json({ token: accessToken });
+    res.json({ token: accessToken, email_verified: user.email_verified === 1 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -398,12 +399,12 @@ router.post('/reset-password', [
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const user = await db.get('SELECT id, name, email, role, plan, account_tier, phone, social_links, avatar_path, sync_mode, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await db.get('SELECT id, name, email, role, plan, account_tier, phone, social_links, avatar_path, sync_mode, email_verified, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const groups = await _getUserGroups(db, user.id);
     let social_links = {};
     try { social_links = JSON.parse(user.social_links || '{}') } catch {}
-    res.json({ ...user, social_links, groups });
+    res.json({ ...user, email_verified: user.email_verified === 1, social_links, groups });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -495,6 +496,116 @@ router.put('/notification-prefs', authMiddleware, async (req, res) => {
       [JSON.stringify(merged), req.user.id]);
     res.json({ ...DEFAULT_NOTIFICATION_PREFS, ...merged });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+// PUT /api/auth/password
+router.put('/password', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(422).json({ error: 'New password must be at least 8 characters' });
+    }
+
+    const db = await getDb();
+    const user = await db.get('SELECT id, password FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    await db.run('UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?',
+      [password_hash, req.user.id]);
+
+    res.json({ message: 'Password updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/send-verification
+router.post('/send-verification', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    const user = await db.get('SELECT id, email FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+    await db.run(
+      'UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?',
+      [token, expires, user.id]
+    );
+
+    await sendVerificationEmail(user.email, token);
+    res.json({ message: 'Verification email sent', token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/auth/verify-email?token=xxx
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: 'Token required' });
+
+    const db = await getDb();
+    const user = await db.get(
+      "SELECT id FROM users WHERE email_verification_token = ? AND email_verification_expires > datetime('now')",
+      [token]
+    );
+    if (!user) return res.status(400).json({ error: 'Invalid or expired verification token' });
+
+    await db.run(
+      'UPDATE users SET email_verified = 1, email_verification_token = NULL, email_verification_expires = NULL WHERE id = ?',
+      [user.id]
+    );
+
+    res.json({ message: 'Email verified' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PUT /api/auth/email  (change email)
+router.put('/email', authMiddleware, async (req, res) => {
+  try {
+    const { newEmail, currentPassword } = req.body;
+    if (!newEmail || !currentPassword) {
+      return res.status(400).json({ error: 'newEmail and currentPassword are required' });
+    }
+
+    const db = await getDb();
+    const user = await db.get('SELECT id, email, password FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    const normalized = newEmail.trim().toLowerCase();
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [normalized]);
+    if (existing) return res.status(409).json({ error: 'Email already in use' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    await db.run(
+      'UPDATE users SET email = ?, email_verified = 0, email_verification_token = ?, email_verification_expires = ? WHERE id = ?',
+      [normalized, token, expires, user.id]
+    );
+
+    await sendVerificationEmail(normalized, token);
+    res.json({ message: 'Email updated, verification sent', token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 async function _getUserGroups(db, userId) {

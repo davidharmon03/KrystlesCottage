@@ -38,23 +38,29 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **Admin Groups View** — superadmins can see all groups, member counts, expandable member lists with roles and join dates
 - ✅ **Print Center** — expanded Label Generator to full Print Center with 4 print types: Bag Labels, Weekly Menu, Shopping List, Meal Cards
 - ✅ **Dashboard Group Card Redesign** — group members displayed inside the group card with dividers; superadmin sees correct "Admin Access" badge and group CTA
+- ✅ **Account Status Card Fix** — superadmin no longer shows as "Free Account"; role badge and group status display correctly for all roles
+- ✅ **Change Password in Profile** — dedicated Change Password section added to Profile.jsx
+- ✅ **Admin Role Page Visibility Fix** — admin page was superadmin-only; now correctly accessible to `admin` role
+- ✅ **SPA 404 Fix** — `_redirects` file + `render.yaml` rewrite rule added; direct route loads no longer 404
+- ✅ **Email Verification Flow** — verification required before joining a group or going paid; verification email sent on registration; gated routes enforce verified status
+- ✅ **Group Invite via Email** — group owners can send invite codes to any email address; recipient receives invite link
+- ✅ **Change Email Address in Profile** — users can update their email in Profile.jsx; triggers re-verification flow on change
 
 ---
 
 ## 🔧 Next Up
 
-- 🔄 **Deploy Pending Changes** — (Pantry rename + Cottage Laws) pending `git push` from Windows (git index.lock issue in Linux sandbox); after push, redeploy both Render services
-- 🔄 **Live App Testing** — in progress; found 404 on first load (resolves on refresh, due to Pantry not yet deployed); continue testing registration, login, core features; fix any bugs in production
 - 🔲 **Payment Processor Integration** — wire Stripe into the existing freemium gate and group slot expansion (placeholders already in place)
+- 🔲 **Real Email Provider** — swap placeholder in `server/utils/email.js` with SendGrid or Resend for production email delivery
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
-- 🔲 **Feature Development** — TBD (next phase)
 
 ---
 
 ## 📋 Backlog
 
 - 🔲 **Image Compression** — sharp/WebP on upload (deferred until images are in use)
+- 🔲 **Feature Development** — TBD (next phase)
 
 ---
 
-*Last updated: May 21, 2026*
+*Last updated: May 22, 2026*

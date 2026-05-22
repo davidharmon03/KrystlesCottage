@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import {
   ChefHat, DollarSign, Package, Leaf, Tag,
-  Users, Plus, ArrowRight, Copy, Check, AlertTriangle, ShieldCheck, User
+  Users, Plus, ArrowRight, Copy, Check, AlertTriangle, ShieldCheck, User, Mail, Send
 } from 'lucide-react'
 import SocialLinks from '../components/SocialLinks'
 
@@ -70,6 +70,12 @@ export default function Dashboard() {
   const [showExpandModal, setShowExpandModal] = useState(false)
   const [groupDetail, setGroupDetail] = useState(null)
 
+  // Invite by email
+  const [inviteEmail,   setInviteEmail]   = useState('')
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteResult,  setInviteResult]  = useState(null) // { ok: bool, msg: string }
+  const [showInviteBox, setShowInviteBox] = useState(false)
+
   const activeGroup = user?.groups?.[0]
 
   useEffect(() => {
@@ -92,6 +98,22 @@ export default function Dashboard() {
       setCopiedCode(true)
       setTimeout(() => setCopiedCode(false), 2000)
     })
+  }
+
+  const handleInviteByEmail = async e => {
+    e.preventDefault()
+    if (!inviteEmail.trim() || !activeGroup) return
+    setInviteSending(true)
+    setInviteResult(null)
+    try {
+      await api.post(`/groups/${activeGroup.id}/invite-email`, { email: inviteEmail.trim() })
+      setInviteResult({ ok: true, msg: `Invite sent to ${inviteEmail.trim()}` })
+      setInviteEmail('')
+    } catch (err) {
+      setInviteResult({ ok: false, msg: err.response?.data?.error || 'Failed to send invite' })
+    } finally {
+      setInviteSending(false)
+    }
   }
 
   return (
@@ -268,19 +290,58 @@ export default function Dashboard() {
 
           {/* Action buttons */}
           {(activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) || activeGroup.owner_id === user?.id) && (
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-moss-200">
-              {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
-                <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
-                  <Plus size={15} /> Invite more
-                </Link>
+            <div className="mt-4 pt-3 border-t border-moss-200">
+              <div className="flex items-center gap-2 flex-wrap">
+                {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
+                  <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
+                    <Plus size={15} /> Invite more
+                  </Link>
+                )}
+                {activeGroup.owner_id === user?.id && (
+                  <>
+                    <button
+                      onClick={() => { setShowInviteBox(v => !v); setInviteResult(null) }}
+                      className="btn-ghost text-sm flex items-center gap-1.5"
+                    >
+                      <Mail size={15} /> Invite by Email
+                    </button>
+                    <button
+                      onClick={() => setShowExpandModal(true)}
+                      className="btn-ghost text-sm flex items-center gap-1.5"
+                    >
+                      <Plus size={15} /> Expand Group
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Invite by email inline form */}
+              {showInviteBox && activeGroup.owner_id === user?.id && (
+                <form onSubmit={handleInviteByEmail} className="mt-3 flex items-center gap-2">
+                  <input
+                    type="email"
+                    className="input flex-1 text-sm py-1.5"
+                    placeholder="friend@example.com"
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={inviteSending}
+                    className="btn-primary text-sm flex items-center gap-1.5 flex-shrink-0 py-1.5 px-3"
+                  >
+                    {inviteSending
+                      ? <><Send size={13} className="animate-pulse" /> Sending…</>
+                      : <><Send size={13} /> Send</>
+                    }
+                  </button>
+                </form>
               )}
-              {activeGroup.owner_id === user?.id && (
-                <button
-                  onClick={() => setShowExpandModal(true)}
-                  className="btn-ghost text-sm flex items-center gap-1.5"
-                >
-                  <Plus size={15} /> Expand Group
-                </button>
+              {inviteResult && (
+                <p className={`text-xs mt-1.5 ${inviteResult.ok ? 'text-moss-600' : 'text-red-500'}`}>
+                  {inviteResult.msg}
+                </p>
               )}
             </div>
           )}

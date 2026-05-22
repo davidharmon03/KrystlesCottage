@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 const { createNotification, notifyGroupMembers } = require('./notifications');
+const { sendGroupInviteEmail } = require('../utils/email');
 
 const MAX_MEMBERS = 5;
 
@@ -137,6 +138,13 @@ router.post('/join', authMiddleware, async (req, res) => {
     if (!invite_code) return res.status(400).json({ error: 'invite_code is required' });
 
     const db = await getDb();
+
+    // Email verification gate
+    const joiner = await db.get('SELECT email_verified FROM users WHERE id = ?', [req.user.id]);
+    if (!joiner || !joiner.email_verified) {
+      return res.status(403).json({ error: 'email_not_verified' });
+    }
+
     const group = await db.get('SELECT * FROM groups WHERE invite_code = ?', [invite_code.toUpperCase()]);
     if (!group) return res.status(404).json({ error: 'Invalid invite code' });
 
@@ -298,6 +306,27 @@ router.delete('/:id/members/:userId', authMiddleware, async (req, res) => {
       [req.params.id, req.params.userId]);
     res.json({ message: 'Member removed' });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/groups/:id/invite-email — send invite code to an email address (owner only)
+router.post('/:id/invite-email', authMiddleware, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'email is required' });
+
+    const db = await getDb();
+    const group = await db.get('SELECT * FROM groups WHERE id = ?', [req.params.id]);
+    if (!group) return res.status(404).json({ error: 'Group not found' });
+    if (group.owner_id !== req.user.id) return res.status(403).json({ error: 'Owner only' });
+
+    const owner = await db.get('SELECT name FROM users WHERE id = ?', [req.user.id]);
+
+    await sendGroupInviteEmail(email.trim().toLowerCase(), group.invite_code, group.name, owner.name);
+    res.json({ message: 'Invite sent' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PATCH /api/groups/:id/expand — add 5 member slots (owner only, payment coming soon)
