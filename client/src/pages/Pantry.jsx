@@ -1282,4 +1282,97 @@ export default function Pantry({ locationFilter, defaultTab }) {
                         : <ProductThumb product={{ image_url: item.product_image_url, name: item.name || item.item_name }} size={40} />
                       }
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-ink text-sm">{item.name || item.item_n
+                        <p className="font-medium text-ink text-sm">{item.name || item.item_name}</p>
+                        <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap mt-0.5">
+                          <span className={`px-1.5 py-0.5 rounded font-medium ${STORAGE_COLORS[item.storage_type] || 'bg-slate-100 text-slate-600'}`}>
+                            {item.storage_type}</span>
+                          {item.prep_method && item.prep_method !== 'none' && (
+                            <span className="px-1.5 py-0.5 rounded bg-terra-100 text-terra-700 font-medium">
+                              {PREP_METHOD_LABELS[item.prep_method] || item.prep_method}
+                            </span>
+                          )}
+                          {item.quantity && <span>qty: {item.quantity}</span>}
+                          {item.category && <span className="capitalize">{item.category}</span>}
+                          {item.use_by_date && <span className={new Date(item.use_by_date) < new Date() ? 'text-red-500 font-medium' : ''}>
+                            use by {item.use_by_date}</span>}
+                        </div>
+                        {item.notes && <p className="text-xs text-slate-300 mt-0.5">{item.notes}</p>}
+                      </div>
+                      <MealPhotoButton
+                        gid={gid} itemId={item.id} field="inventory_item_id"
+                        existingPath={item.meal_photo_path}
+                        onUploaded={photo => setInv(prev => prev.map(i => i.id === item.id ? { ...i, meal_photo_path: photo.image_path } : i))}
+                      />
+                      <button onClick={() => deleteInv(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
+                        <Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab 2: Vacuum Seal */}
+          {tab === 2 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-500">{vsLog.length} log entr{vsLog.length !== 1 ? 'ies' : 'y'}</p>
+                <button onClick={() => setAddingVs(v => !v)} className="btn-primary flex items-center gap-1.5 text-sm">
+                  <Plus size={15} /> Log Seal</button>
+              </div>
+              {addingVs && <div className="card border-moss-200 bg-moss-50"><VSForm gid={gid} onAdd={async f => { await addVs(f); setAddingVs(false) }} loading={addingVs} /></div>}
+              {vsLog.length === 0 ? (
+                <div className="card text-center py-10 text-slate-400">
+                  <Layers size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="font-medium">No vacuum seal logs yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {vsLog.map(entry => (
+                    <div key={entry.id} className="card flex items-center gap-3 min-h-[64px] py-3">
+                      {entry.meal_photo_path
+                        ? <img src={photoUrl(entry.meal_photo_path)} alt={entry.item_name}
+                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-slate-100"
+                            onError={e => { e.currentTarget.style.display = 'none' }} />
+                        : <ProductThumb product={{ image_url: entry.product_image_url, name: entry.item_name }} size={40} />
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-ink text-sm">{entry.item_name}</p>
+                        <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap mt-0.5">
+                          {entry.quantity && <span>qty: {entry.quantity}</span>}
+                          {entry.seal_date && <span>sealed {entry.seal_date}</span>}
+                          {entry.use_by_date && <span className={new Date(entry.use_by_date) < new Date() ? 'text-red-500 font-medium' : ''}>
+                            use by {entry.use_by_date}</span>}
+                          {entry.storage_location && <span>📍 {entry.storage_location}</span>}
+                        </div>
+                        {entry.notes && <p className="text-xs text-slate-300 mt-0.5">{entry.notes}</p>}
+                      </div>
+                      <MealPhotoButton
+                        gid={gid} itemId={entry.id} field="vacuum_seal_id"
+                        existingPath={entry.meal_photo_path}
+                        onUploaded={photo => setVsLog(prev => prev.map(e => e.id === entry.id ? { ...e, meal_photo_path: photo.image_path } : e))}
+                      />
+                      <button onClick={() => deleteVs(entry.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
+                        <Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab 3: Bulk Buy */}
+          {tab === 3 && (
+            selectedRun
+              ? <BulkRunDetail run={selectedRun} members={members} gid={gid}
+                  onBack={() => setSelectedRun(null)} onRunUpdated={updated => setSelectedRun(updated)} />
+              : <BulkRunList runs={runs} members={members} loading={false}
+                  onSelect={setSelectedRun} onAdd={addRun} onDelete={deleteRun} />
+          )}
+        </>
+      )}
+      </>
+      )}
+    </div>
+  )
+}

@@ -290,4 +290,77 @@ export default function Layout() {
               <span className="text-white font-serif font-bold text-lg leading-none">{fn[0]?.toUpperCase()}</span>
             </div>
             <div>
-              <p className="font-serif font-semibold text-ink text-sm leading-tight">{f
+              <p className="font-serif font-semibold text-ink text-sm leading-tight">{fn}'s Cottage</p>
+            </div>
+          </div>
+        </div>
+        {renderNav(() => {})}
+      </aside>
+
+      {/* ── Mobile drawer — slide-in from left ── */}
+      {drawerOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+            onClick={closeDrawer}
+          />
+          {/* Drawer panel */}
+          <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col shadow-xl md:hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-serif font-bold text-sm leading-none">{fn[0]?.toUpperCase()}</span>
+                </div>
+                <p className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</p>
+              </div>
+              <button
+                onClick={closeDrawer}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            {renderNav(closeDrawer)}
+          </aside>
+        </>
+      )}
+
+      {/* ── Main content area ── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* Top header bar */}
+        <header className="flex items-center gap-2 px-4 py-3 bg-white border-b border-slate-200 flex-shrink-0">
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="md:hidden p-1 -ml-1 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+
+          {/* App name — mobile only, centered */}
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="w-7 h-7 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-serif font-bold text-sm">K</span>
+            </div>
+            <span className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</span>
+          </div>
+
+          <div className="flex-1" />
+          <NotificationBell />
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+          <Outlet />
+        </main>
+
+      </div>
+
+      <InstallPrompt />
+    </div>
+  )
+}

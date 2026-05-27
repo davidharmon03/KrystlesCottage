@@ -24,7 +24,6 @@ import Help from './pages/Help'
 import CottageLaws from './pages/CottageLaws'
 import Suggestions from './pages/Suggestions'
 import Orders from './pages/Orders'
-import Cuisine from './pages/Cuisine'
 import Chat from './pages/Chat'
 import Billing from './pages/Billing'
 import Welcome from './pages/Welcome'
@@ -130,4 +129,17 @@ export default function App() {
             <Route path="gallery"      element={<Gallery />} />
             <Route path="profile"      element={<Profile />} />
             <Route path="swap"         element={<MealSwap />} />
-         
+            <Route path="suggestions"  element={<Suggestions />} />
+            <Route path="orders"       element={<Orders />} />
+            <Route path="chat"         element={<Chat />} />
+            <Route path="billing"      element={<Billing />} />
+            <Route path="help"         element={<Help />} />
+            <Route path="cottage-laws" element={<CottageLaws />} />
+            <Route path="create-group" element={<CreateGroup />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      </SyncProvider>
+    </AuthProvider>
+  )
+}

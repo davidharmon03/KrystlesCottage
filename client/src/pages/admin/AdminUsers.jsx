@@ -484,4 +484,12 @@ export default function AdminUsers() {
               Previous
             </button>
             <button disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}
-              clas
+              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

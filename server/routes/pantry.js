@@ -439,4 +439,36 @@ router.get('/:groupId/bulk-buys/:runId/settlement', authMiddleware, async (req, 
     const db = await getDb();
     const run = await db.get(`
       SELECT r.*, u.name AS buyer_name, u.id AS buyer_id
-      FROM bulk_buy_runs r LEFT JOIN users u ON u.i
+      FROM bulk_buy_runs r LEFT JOIN users u ON u.id = r.buyer_user_id
+      WHERE r.id = ?
+    `, [req.params.runId]);
+    if (!run) return res.status(404).json({ error: 'Run not found' });
+
+    const items = await db.all(`
+      SELECT i.*, u.name AS requester_name
+      FROM bulk_buy_items i LEFT JOIN users u ON u.id = i.requested_by
+      WHERE i.run_id = ? AND i.group_id = ?
+    `, [req.params.runId, req.params.groupId]);
+
+    // Group totals by requester
+    const totals = {};
+    let grandTotal = 0;
+    for (const item of items) {
+      const cost = item.actual_cost ?? item.est_cost ?? 0;
+      const rid = item.requested_by;
+      if (!totals[rid]) totals[rid] = { user_id: rid, name: item.requester_name, total: 0 };
+      totals[rid].total += cost;
+      grandTotal += cost;
+    }
+
+    res.json({
+      run,
+      items,
+      settlement: Object.values(totals),
+      grand_total: grandTotal,
+      buyer_user_id: run.buyer_user_id,
+    });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+module.exports = router;

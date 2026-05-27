@@ -310,4 +310,11 @@ router.get('/groups', async (req, res) => {
       };
     });
 
-    res.json(result
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load groups' });
+  }
+});
+
+module.exports = router;

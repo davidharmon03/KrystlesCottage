@@ -291,4 +291,48 @@ export default function Calendar() {
                   const n = counts[type] || 0
                   if (n === 0) return null
                   return (
-                 
+                    <div key={type} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                        <span className="text-xs text-slate-600">{cfg.label}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-700 tabular-nums">{n}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Expiring soon alert */}
+          {(counts.expiring > 0 || counts.expired > 0) && (
+            <div className={`card border ${counts.expired > 0 ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+              <p className={`text-xs font-semibold mb-1 ${counts.expired > 0 ? 'text-red-700' : 'text-yellow-700'}`}>
+                {counts.expired > 0 ? '⚠️ Items past use-by this month' : '⏰ Items expiring this month'}
+              </p>
+              <p className="text-xs text-slate-600">
+                {counts.expired > 0 && `${counts.expired} expired item${counts.expired !== 1 ? 's' : ''}. `}
+                {counts.expiring > 0 && `${counts.expiring} expiring soon.`}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EventItem({ event }) {
+  const cfg = EVENT_CFG[event.type] || { dot: 'bg-slate-400', text: 'text-slate-700', bg: 'bg-slate-50' }
+  return (
+    <div className={`flex items-start gap-2.5 p-2.5 rounded-lg ${cfg.bg}`}>
+      <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${cfg.dot}`} />
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-medium leading-snug ${cfg.text}`}>{event.label}</p>
+        {event.sublabel && (
+          <p className="text-xs text-slate-500 mt-0.5 truncate">{event.sublabel}</p>
+        )}
+      </div>
+    </div>
+  )
+}
