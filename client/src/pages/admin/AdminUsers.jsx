@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
+import { useAuth } from '../../contexts/AuthContext'
 import { useTwoFactor } from '../../hooks/useTwoFactor'
 import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck, Pencil, Check, X, UserPlus, Copy, Eye, EyeOff } from 'lucide-react'
 
@@ -182,6 +183,7 @@ export default function AdminUsers() {
   const [roleValue, setRoleValue]   = useState('')
   const [roleSaving, setRoleSaving] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const { user } = useAuth()
   const { getToken } = useTwoFactor()
   const LIMIT = 50
 
@@ -396,20 +398,22 @@ export default function AdminUsers() {
                             <div>
                               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Actions</p>
                               <div className="flex flex-wrap gap-2">
-                                {u.plan === 'free' ? (
-                                  <button
-                                    onClick={() => changePlan(u.id, 'pro')}
-                                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition-colors"
-                                  >
-                                    <ShieldCheck size={12} /> Upgrade to Pro
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() => changePlan(u.id, 'free')}
-                                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                                  >
-                                    Downgrade to Free
-                                  </button>
+                                {user?.role === 'superadmin' && (
+                                  u.plan === 'free' ? (
+                                    <button
+                                      onClick={() => changePlan(u.id, 'pro')}
+                                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition-colors"
+                                    >
+                                      <ShieldCheck size={12} /> Upgrade to Pro
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => changePlan(u.id, 'free')}
+                                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                                    >
+                                      Downgrade to Free
+                                    </button>
+                                  )
                                 )}
                                 <button
                                   onClick={() => deleteUser(u.id, u.name)}
@@ -480,12 +484,4 @@ export default function AdminUsers() {
               Previous
             </button>
             <button disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+              clas

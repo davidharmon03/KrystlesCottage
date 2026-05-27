@@ -178,9 +178,10 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-// PUT /api/admin/users/:id/plan — change user plan
+// PUT /api/admin/users/:id/plan — change user plan (superadmin only)
 router.put('/users/:id/plan', async (req, res) => {
   try {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Only superadmins can change subscription plans' });
     const db = await getDb();
     const { plan } = req.body;
     if (!['free', 'pro'].includes(plan)) {
@@ -309,11 +310,4 @@ router.get('/groups', async (req, res) => {
       };
     });
 
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to load groups' });
-  }
-});
-
-module.exports = router;
+    res.json(result

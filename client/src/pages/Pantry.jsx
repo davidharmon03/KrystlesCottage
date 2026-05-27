@@ -9,8 +9,18 @@ import {
   Search, Scan, Camera, Printer
 } from 'lucide-react'
 
-const CATEGORIES    = ['protein', 'produce', 'staple', 'dairy', 'grain', 'condiment', 'other']
-const STORAGE_TYPES = ['vacuum sealed', 'frozen', 'fresh', 'canned', 'dry storage']
+const CATEGORIES     = ['protein', 'produce', 'staple', 'dairy', 'grain', 'condiment', 'other']
+const STORAGE_TYPES  = ['vacuum sealed', 'frozen', 'fresh', 'canned', 'dry storage']
+const LOCATIONS      = ['pantry', 'refrigerator', 'freezer']
+const PREP_METHODS   = [
+  { value: 'none',          label: 'None / Raw' },
+  { value: 'vacuum_sealed', label: 'Vacuum Sealed' },
+  { value: 'ziploc',        label: 'Ziploc Bag' },
+  { value: 'glass_jar',     label: 'Glass Jar' },
+  { value: 'canned',        label: 'Canned' },
+  { value: 'dehydrated',    label: 'Dehydrated' },
+]
+const PREP_METHOD_LABELS = Object.fromEntries(PREP_METHODS.map(p => [p.value, p.label]))
 const BULK_CATS     = ['protein', 'produce', 'staple', 'dairy', 'grain', 'paper goods', 'condiment', 'other']
 const SECTION_ORDER = ['produce', 'meat', 'dairy', 'frozen', 'bakery', 'pantry', 'bulk', 'beverages', 'deli', 'household', 'other']
 const SECTION_EMOJI = { produce:'🥦', meat:'🥩', dairy:'🥛', frozen:'🧊', bakery:'🍞', pantry:'🥫', bulk:'⚖️', beverages:'🥤', deli:'🧀', household:'🧺', other:'📦' }
@@ -178,8 +188,8 @@ function ProductSearch({ gid, placeholder, onSelect, className = '' }) {
 }
 
 // ── Inventory add form ────────────────────────────────────────────────────────
-function InvForm({ onAdd, loading, gid }) {
-  const EMPTY = { name: '', quantity: '', category: 'produce', storage_type: 'fresh', notes: '', product_id: null, product_image_url: '' }
+function InvForm({ onAdd, loading, gid, locationFilter }) {
+  const EMPTY = { name: '', quantity: '', category: 'produce', storage_location: locationFilter || 'pantry', prep_method: 'none', notes: '', product_id: null, product_image_url: '' }
   const [form, setForm]         = useState(EMPTY)
   const [barcode, setBarcode]   = useState('')
   const [barcodeLoading, setBarcodeLoading] = useState(false)
@@ -262,9 +272,20 @@ function InvForm({ onAdd, loading, gid }) {
           <div><label className="label">Category</label>
             <select className="input" value={form.category} onChange={set('category')}>
               {CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
-          <div className="col-span-2"><label className="label">Storage type</label>
-            <select className="input" value={form.storage_type} onChange={set('storage_type')}>
-              {STORAGE_TYPES.map(s => <option key={s}>{s}</option>)}</select></div>
+          <div>
+            <label className="label">Location</label>
+            <select className="input" value={form.storage_location} onChange={set('storage_location')} disabled={!!locationFilter}>
+              <option value="pantry">Pantry</option>
+              <option value="refrigerator">Refrigerator</option>
+              <option value="freezer">Freezer</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Prep Method</label>
+            <select className="input" value={form.prep_method} onChange={set('prep_method')}>
+              {PREP_METHODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select>
+          </div>
         </div>
         <div><label className="label">Notes (optional)</label>
           <input className="input" placeholder="Any extra info" value={form.notes} onChange={set('notes')} /></div>
@@ -1073,9 +1094,16 @@ function ShoppingListTab({ gid }) {
 // ── Main Pantry page ──────────────────────────────────────────────────────────
 const TABS = ['Shopping', 'Inventory', 'Vacuum Seal', 'Bulk Buy']
 
-export default function Pantry() {
+const LOCATION_TITLES = {
+  pantry:       'Pantry',
+  refrigerator: 'Refrigerator',
+  freezer:      'Freezer',
+}
+
+export default function Pantry({ locationFilter, defaultTab }) {
   const { user }  = useAuth()
-  const [tab, setTab]   = useState(0)
+  const initialTab = defaultTab ? Math.max(0, TABS.indexOf(defaultTab)) : 0
+  const [tab, setTab]   = useState(initialTab)
   const [inv, setInv]   = useState([])
   const [vsLog, setVsLog] = useState([])
   const [runs, setRuns] = useState([])
@@ -1141,19 +1169,87 @@ export default function Pantry() {
     await load()
   }
 
+  // Filter inventory by location if a filter is active
+  const displayedInv = locationFilter
+    ? inv.filter(item => item.storage_location === locationFilter)
+    : inv
+
+  const pageTitle = locationFilter ? (LOCATION_TITLES[locationFilter] || locationFilter) : 'Pantry'
+
   return (
     <div className="max-w-3xl mx-auto space-y-4 md:space-y-6 overflow-x-hidden">
-      <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold">Pantry</h1>
+      <h1 className="text-xl md:text-2xl font-serif text-ink font-semibold">{pageTitle}</h1>
 
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
-        {TABS.map((t, i) => (
-          <button key={t} onClick={() => { setTab(i); setSelectedRun(null) }}
-            className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 whitespace-nowrap ${
-              tab === i ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-            {t}
-          </button>
-        ))}
-      </div>
+      {/* Hide tab bar when a location filter is active — jump straight to inventory */}
+      {!locationFilter && (
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
+          {TABS.map((t, i) => (
+            <button key={t} onClick={() => { setTab(i); setSelectedRun(null) }}
+              className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 whitespace-nowrap ${
+                tab === i ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* When locationFilter active, show inventory directly; otherwise use tab system */}
+      {locationFilter ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500">{displayedInv.length} item{displayedInv.length !== 1 ? 's' : ''}</p>
+            <button onClick={() => setAddingInv(v => !v)} className="btn-primary flex items-center gap-1.5 text-sm">
+              <Plus size={15} /> Add Item</button>
+          </div>
+          {addingInv && (
+            <div className="card border-moss-200 bg-moss-50">
+              <InvForm gid={gid} locationFilter={locationFilter} onAdd={async f => { await addInv(f); setAddingInv(false) }} loading={addingInv} />
+            </div>
+          )}
+          {loading ? <Spinner /> : displayedInv.length === 0 ? (
+            <div className="card text-center py-10 text-slate-400">
+              <Package size={32} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">No items in {LOCATION_TITLES[locationFilter] || locationFilter}.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayedInv.map(item => (
+                <div key={item.id} className="card flex items-center gap-3 min-h-[64px] py-3">
+                  {item.meal_photo_path
+                    ? <img src={photoUrl(item.meal_photo_path)} alt={item.name || item.item_name}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-slate-100"
+                        onError={e => { e.currentTarget.style.display = 'none' }} />
+                    : <ProductThumb product={{ image_url: item.product_image_url, name: item.name || item.item_name }} size={40} />
+                  }
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-ink text-sm">{item.name || item.item_name}</p>
+                    <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap mt-0.5">
+                      {item.prep_method && item.prep_method !== 'none' && (
+                        <span className="px-1.5 py-0.5 rounded bg-terra-100 text-terra-700 font-medium">
+                          {PREP_METHOD_LABELS[item.prep_method] || item.prep_method}
+                        </span>
+                      )}
+                      {item.quantity && <span>qty: {item.quantity}</span>}
+                      {item.category && <span className="capitalize">{item.category}</span>}
+                      {item.use_by_date && <span className={new Date(item.use_by_date) < new Date() ? 'text-red-500 font-medium' : ''}>
+                        use by {item.use_by_date}</span>}
+                    </div>
+                    {item.notes && <p className="text-xs text-slate-300 mt-0.5">{item.notes}</p>}
+                  </div>
+                  <MealPhotoButton
+                    gid={gid} itemId={item.id} field="inventory_item_id"
+                    existingPath={item.meal_photo_path}
+                    onUploaded={photo => setInv(prev => prev.map(i => i.id === item.id ? { ...i, meal_photo_path: photo.image_path } : i))}
+                  />
+                  <button onClick={() => deleteInv(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
+                    <Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+      <>
 
       {/* Tab 0: Shopping */}
       {tab === 0 && <ShoppingListTab gid={gid} />}
@@ -1164,19 +1260,19 @@ export default function Pantry() {
           {tab === 1 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-500">{inv.length} item{inv.length !== 1 ? 's' : ''}</p>
+                <p className="text-sm text-slate-500">{displayedInv.length} item{displayedInv.length !== 1 ? 's' : ''}</p>
                 <button onClick={() => setAddingInv(v => !v)} className="btn-primary flex items-center gap-1.5 text-sm">
                   <Plus size={15} /> Add Item</button>
               </div>
               {addingInv && <div className="card border-moss-200 bg-moss-50"><InvForm gid={gid} onAdd={async f => { await addInv(f); setAddingInv(false) }} loading={addingInv} /></div>}
-              {inv.length === 0 ? (
+              {displayedInv.length === 0 ? (
                 <div className="card text-center py-10 text-slate-400">
                   <Package size={32} className="mx-auto mb-3 opacity-30" />
                   <p className="font-medium">No inventory yet.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {inv.map(item => (
+                  {displayedInv.map(item => (
                     <div key={item.id} className="card flex items-center gap-3 min-h-[64px] py-3">
                       {/* Meal photo (actual item) — falls back to product catalog thumb */}
                       {item.meal_photo_path
@@ -1186,90 +1282,4 @@ export default function Pantry() {
                         : <ProductThumb product={{ image_url: item.product_image_url, name: item.name || item.item_name }} size={40} />
                       }
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-ink text-sm">{item.name || item.item_name}</p>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap mt-0.5">
-                          <span className={`px-1.5 py-0.5 rounded font-medium ${STORAGE_COLORS[item.storage_type] || 'bg-slate-100 text-slate-600'}`}>
-                            {item.storage_type}</span>
-                          {item.quantity && <span>qty: {item.quantity}</span>}
-                          {item.category && <span className="capitalize">{item.category}</span>}
-                          {item.use_by_date && <span className={new Date(item.use_by_date) < new Date() ? 'text-red-500 font-medium' : ''}>
-                            use by {item.use_by_date}</span>}
-                        </div>
-                        {item.notes && <p className="text-xs text-slate-300 mt-0.5">{item.notes}</p>}
-                      </div>
-                      <MealPhotoButton
-                        gid={gid} itemId={item.id} field="inventory_item_id"
-                        existingPath={item.meal_photo_path}
-                        onUploaded={photo => setInv(prev => prev.map(i => i.id === item.id ? { ...i, meal_photo_path: photo.image_path } : i))}
-                      />
-                      <button onClick={() => deleteInv(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
-                        <Trash2 size={14} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tab 2: Vacuum Seal */}
-          {tab === 2 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-500">{vsLog.length} log entr{vsLog.length !== 1 ? 'ies' : 'y'}</p>
-                <button onClick={() => setAddingVs(v => !v)} className="btn-primary flex items-center gap-1.5 text-sm">
-                  <Plus size={15} /> Log Seal</button>
-              </div>
-              {addingVs && <div className="card border-moss-200 bg-moss-50"><VSForm gid={gid} onAdd={async f => { await addVs(f); setAddingVs(false) }} loading={addingVs} /></div>}
-              {vsLog.length === 0 ? (
-                <div className="card text-center py-10 text-slate-400">
-                  <Layers size={32} className="mx-auto mb-3 opacity-30" />
-                  <p className="font-medium">No vacuum seal logs yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {vsLog.map(entry => (
-                    <div key={entry.id} className="card flex items-center gap-3 min-h-[64px] py-3">
-                      {entry.meal_photo_path
-                        ? <img src={photoUrl(entry.meal_photo_path)} alt={entry.item_name}
-                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-slate-100"
-                            onError={e => { e.currentTarget.style.display = 'none' }} />
-                        : <ProductThumb product={{ image_url: entry.product_image_url, name: entry.item_name }} size={40} />
-                      }
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-ink text-sm">{entry.item_name}</p>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap mt-0.5">
-                          {entry.quantity && <span>qty: {entry.quantity}</span>}
-                          {entry.seal_date && <span>sealed {entry.seal_date}</span>}
-                          {entry.use_by_date && <span className={new Date(entry.use_by_date) < new Date() ? 'text-red-500 font-medium' : ''}>
-                            use by {entry.use_by_date}</span>}
-                          {entry.storage_location && <span>📍 {entry.storage_location}</span>}
-                        </div>
-                        {entry.notes && <p className="text-xs text-slate-300 mt-0.5">{entry.notes}</p>}
-                      </div>
-                      <MealPhotoButton
-                        gid={gid} itemId={entry.id} field="vacuum_seal_id"
-                        existingPath={entry.meal_photo_path}
-                        onUploaded={photo => setVsLog(prev => prev.map(e => e.id === entry.id ? { ...e, meal_photo_path: photo.image_path } : e))}
-                      />
-                      <button onClick={() => deleteVs(entry.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
-                        <Trash2 size={14} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tab 3: Bulk Buy */}
-          {tab === 3 && (
-            selectedRun
-              ? <BulkRunDetail run={selectedRun} members={members} gid={gid}
-                  onBack={() => setSelectedRun(null)} onRunUpdated={updated => setSelectedRun(updated)} />
-              : <BulkRunList runs={runs} members={members} loading={false}
-                  onSelect={setSelectedRun} onAdd={addRun} onDelete={deleteRun} />
-          )}
-        </>
-      )}
-    </div>
-  )
-}
+                        <p className="font-medium text-ink text-sm">{item.name || item.item_n

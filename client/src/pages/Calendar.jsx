@@ -10,6 +10,8 @@ const MONTH_NAMES = [
 ]
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
+const ALL_FILTER_TYPES = ['created', 'expiring', 'expired', 'bulk_buy', 'harvest']
+
 const EVENT_CFG = {
   created:  { dot: 'bg-moss-500',   ring: 'ring-moss-300',   text: 'text-moss-700',   bg: 'bg-moss-50',   label: 'Added'    },
   expiring: { dot: 'bg-yellow-400', ring: 'ring-yellow-300', text: 'text-yellow-700', bg: 'bg-yellow-50', label: 'Expiring' },
@@ -31,6 +33,20 @@ export default function Calendar() {
   const [events,    setEvents]    = useState([])
   const [loading,   setLoading]   = useState(false)
   const [selectedDay, setSelectedDay] = useState(null)
+  const [activeFilters, setActiveFilters] = useState(ALL_FILTER_TYPES)
+
+  const toggleFilter = (type) => {
+    setActiveFilters(prev => {
+      if (prev.includes(type)) {
+        // Don't allow deselecting the last filter
+        return prev.length === 1 ? ALL_FILTER_TYPES : prev.filter(f => f !== type)
+      }
+      return [...prev, type]
+    })
+    setSelectedDay(null)
+  }
+
+  const allActive = activeFilters.length === ALL_FILTER_TYPES.length
 
   const loadEvents = useCallback(async () => {
     if (!activeGroup) return
@@ -63,8 +79,11 @@ export default function Calendar() {
   const firstDow  = new Date(viewYear, viewMonth - 1, 1).getDay()
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate()
 
+  // Filter events by active filters
+  const filteredEvents = events.filter(ev => activeFilters.includes(ev.type))
+
   // Group events by YYYY-MM-DD
-  const byDate = events.reduce((acc, ev) => {
+  const byDate = filteredEvents.reduce((acc, ev) => {
     if (!acc[ev.date]) acc[ev.date] = []
     acc[ev.date].push(ev)
     return acc
@@ -78,8 +97,8 @@ export default function Calendar() {
   const selStr     = selectedDay ? fmtDate(selectedDay) : null
   const selEvents  = selStr ? (byDate[selStr] || []) : []
 
-  // Summary counts
-  const counts = events.reduce((acc, ev) => { acc[ev.type] = (acc[ev.type] || 0) + 1; return acc }, {})
+  // Summary counts (based on filtered events)
+  const counts = filteredEvents.reduce((acc, ev) => { acc[ev.type] = (acc[ev.type] || 0) + 1; return acc }, {})
 
   if (!activeGroup) {
     return (
@@ -108,6 +127,36 @@ export default function Calendar() {
         <p className="text-slate-500 text-sm mt-1">
           Meal creation, expiry dates, bulk buy runs, and harvests — {activeGroup.name}
         </p>
+      </div>
+
+      {/* ── Filter pills ── */}
+      <div className="flex flex-wrap gap-2 mb-5">
+        <button
+          onClick={() => { setActiveFilters(ALL_FILTER_TYPES); setSelectedDay(null) }}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+            allActive
+              ? 'bg-slate-700 text-white'
+              : 'border border-slate-300 text-slate-500 hover:bg-slate-50'
+          }`}
+        >
+          All
+        </button>
+        {Object.entries(EVENT_CFG).map(([type, cfg]) => (
+          <button
+            key={type}
+            onClick={() => toggleFilter(type)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              activeFilters.includes(type) && !allActive
+                ? `${cfg.bg} ${cfg.text} border border-current/20`
+                : activeFilters.includes(type)
+                  ? 'border border-slate-200 text-slate-500 bg-white'
+                  : 'border border-slate-200 text-slate-400 hover:bg-slate-50'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+            {cfg.label}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -234,7 +283,7 @@ export default function Calendar() {
             <h3 className="font-serif font-semibold text-ink text-sm mb-3">
               {MONTH_NAMES[viewMonth - 1]} Summary
             </h3>
-            {events.length === 0 && !loading ? (
+            {filteredEvents.length === 0 && !loading ? (
               <p className="text-xs text-slate-400">No events this month</p>
             ) : (
               <div className="space-y-1.5">
@@ -242,48 +291,4 @@ export default function Calendar() {
                   const n = counts[type] || 0
                   if (n === 0) return null
                   return (
-                    <div key={type} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                        <span className="text-xs text-slate-600">{cfg.label}</span>
-                      </div>
-                      <span className="text-xs font-semibold text-slate-700 tabular-nums">{n}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Expiring soon alert */}
-          {(counts.expiring > 0 || counts.expired > 0) && (
-            <div className={`card border ${counts.expired > 0 ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
-              <p className={`text-xs font-semibold mb-1 ${counts.expired > 0 ? 'text-red-700' : 'text-yellow-700'}`}>
-                {counts.expired > 0 ? '⚠️ Items past use-by this month' : '⏰ Items expiring this month'}
-              </p>
-              <p className="text-xs text-slate-600">
-                {counts.expired > 0 && `${counts.expired} expired item${counts.expired !== 1 ? 's' : ''}. `}
-                {counts.expiring > 0 && `${counts.expiring} expiring soon.`}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function EventItem({ event }) {
-  const cfg = EVENT_CFG[event.type] || { dot: 'bg-slate-400', text: 'text-slate-700', bg: 'bg-slate-50' }
-  return (
-    <div className={`flex items-start gap-2.5 p-2.5 rounded-lg ${cfg.bg}`}>
-      <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${cfg.dot}`} />
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium leading-snug ${cfg.text}`}>{event.label}</p>
-        {event.sublabel && (
-          <p className="text-xs text-slate-500 mt-0.5 truncate">{event.sublabel}</p>
-        )}
-      </div>
-    </div>
-  )
-}
+                 

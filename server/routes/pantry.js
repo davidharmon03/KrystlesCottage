@@ -10,19 +10,39 @@ async function requireMember(groupId, userId) {
   return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId]);
 }
 
-function calcUseBy(dateStr, storageType) {
+function calcUseBy(dateStr, storageLocation, prepMethod) {
   if (!dateStr) return null;
   const d = new Date(dateStr.length === 10 ? dateStr + 'T00:00:00' : dateStr);
   if (isNaN(d.getTime())) return null;
-  switch (storageType) {
-    case 'fresh':         d.setDate(d.getDate() + 5);    break;
-    case 'vacuum sealed': d.setDate(d.getDate() + 14);   break;
-    case 'frozen':        d.setDate(d.getDate() + 90);   break;
-    case 'canned':
-    case 'dry storage':   d.setDate(d.getDate() + 180);  break;
-    case 'vacuum-frozen': d.setMonth(d.getMonth() + 12); break;
-    default:              d.setDate(d.getDate() + 14);   break;
+
+  let days = 7; // default fallback
+
+  const loc  = storageLocation || 'pantry';
+  const prep = prepMethod       || 'none';
+
+  if (prep === 'vacuum_sealed') {
+    if (loc === 'freezer')        days = 365;
+    else if (loc === 'refrigerator') days = 21;
+    else                           days = 180; // pantry
+  } else if (prep === 'glass_jar' || prep === 'canned') {
+    if (loc === 'pantry')         days = 365;
+    else if (loc === 'refrigerator') days = 14;
+    else                           days = 90;  // freezer
+  } else if (prep === 'dehydrated') {
+    if (loc === 'pantry')         days = 180;
+    else                           days = 30;
+  } else if (prep === 'ziploc') {
+    if (loc === 'freezer')        days = 90;
+    else if (loc === 'refrigerator') days = 7;
+    else                           days = 14; // pantry
+  } else {
+    // none / raw
+    if (loc === 'freezer')        days = 90;
+    else if (loc === 'refrigerator') days = 5;
+    else                           days = 7;  // pantry
   }
+
+  d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
 }
 
@@ -48,17 +68,19 @@ router.post('/:groupId/inventory', authMiddleware, async (req, res) => {
   try {
     if (!await requireMember(req.params.groupId, req.user.id))
       return res.status(403).json({ error: 'Not a group member' });
-    const { name, item_name, quantity, category, storage_type, notes, use_by_date, product_id, product_image_url } = req.body;
+    const { name, item_name, quantity, category, storage_type, storage_location, prep_method, notes, use_by_date, product_id, product_image_url } = req.body;
     const itemName = name || item_name;
-    if (!itemName || !quantity || !category || !storage_type)
-      return res.status(400).json({ error: 'name, quantity, category, storage_type required' });
+    if (!itemName || !quantity || !category)
+      return res.status(400).json({ error: 'name, quantity, category required' });
     const db = await getDb();
     const id = uuidv4();
     const today = new Date().toISOString().split('T')[0];
-    const computed_use_by = use_by_date || calcUseBy(today, storage_type);
+    const loc  = storage_location || storage_type || 'pantry';
+    const prep = prep_method || 'none';
+    const computed_use_by = use_by_date || calcUseBy(today, loc, prep);
     await db.run(
-      'INSERT INTO inventory_items (id, group_id, name, quantity, category, storage_type, notes, use_by_date, product_id, product_image_url, added_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-      [id, req.params.groupId, itemName, quantity, category, storage_type, notes || '', computed_use_by, product_id || null, product_image_url || null, req.user.id]
+      'INSERT INTO inventory_items (id, group_id, name, quantity, category, storage_type, storage_location, prep_method, notes, use_by_date, product_id, product_image_url, added_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [id, req.params.groupId, itemName, quantity, category, storage_type || loc, loc, prep, notes || '', computed_use_by, product_id || null, product_image_url || null, req.user.id]
     );
     const created = await db.get(
       'SELECT i.*, u.name AS added_by_name FROM inventory_items i JOIN users u ON u.id = i.added_by WHERE i.id = ?',
@@ -85,10 +107,12 @@ router.put('/:groupId/inventory/:id', authMiddleware, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM inventory_items WHERE id = ? AND group_id = ?', [req.params.id, req.params.groupId]);
     if (!item) return res.status(404).json({ error: 'Item not found' });
-    const { name, quantity, category, storage_type, notes } = req.body;
+    const { name, quantity, category, storage_type, storage_location, prep_method, notes } = req.body;
+    const loc  = storage_location ?? item.storage_location ?? item.storage_type ?? 'pantry';
+    const prep = prep_method ?? item.prep_method ?? 'none';
     await db.run(
-      'UPDATE inventory_items SET name=?, quantity=?, category=?, storage_type=?, notes=? WHERE id=?',
-      [name ?? item.name, quantity ?? item.quantity, category ?? item.category, storage_type ?? item.storage_type, notes ?? item.notes, req.params.id]
+      'UPDATE inventory_items SET name=?, quantity=?, category=?, storage_type=?, storage_location=?, prep_method=?, notes=? WHERE id=?',
+      [name ?? item.name, quantity ?? item.quantity, category ?? item.category, storage_type ?? item.storage_type, loc, prep, notes ?? item.notes, req.params.id]
     );
     const updated = await db.get(
       'SELECT i.*, u.name AS added_by_name FROM inventory_items i JOIN users u ON u.id = i.added_by WHERE i.id = ?',
@@ -208,7 +232,7 @@ router.post('/:groupId/vacuum-log', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'item_name and seal_date required' });
     const db = await getDb();
     const id = uuidv4();
-    const computed_use_by = use_by_date || expiry_date || calcUseBy(seal_date, 'vacuum-frozen');
+    const computed_use_by = use_by_date || expiry_date || calcUseBy(seal_date, 'freezer', 'vacuum_sealed');
     await db.run(
       'INSERT INTO vacuum_seal_log (id, group_id, item_name, quantity, seal_date, expiry_date, use_by_date, storage_location, notes, product_id, product_image_url, added_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
       [id, req.params.groupId, item_name, quantity || '', seal_date, expiry_date || '', computed_use_by, storage_location || '', notes || '', product_id || null, product_image_url || null, req.user.id]
@@ -415,36 +439,4 @@ router.get('/:groupId/bulk-buys/:runId/settlement', authMiddleware, async (req, 
     const db = await getDb();
     const run = await db.get(`
       SELECT r.*, u.name AS buyer_name, u.id AS buyer_id
-      FROM bulk_buy_runs r LEFT JOIN users u ON u.id = r.buyer_user_id
-      WHERE r.id = ?
-    `, [req.params.runId]);
-    if (!run) return res.status(404).json({ error: 'Run not found' });
-
-    const items = await db.all(`
-      SELECT i.*, u.name AS requester_name
-      FROM bulk_buy_items i LEFT JOIN users u ON u.id = i.requested_by
-      WHERE i.run_id = ? AND i.group_id = ?
-    `, [req.params.runId, req.params.groupId]);
-
-    // Group totals by requester
-    const totals = {};
-    let grandTotal = 0;
-    for (const item of items) {
-      const cost = item.actual_cost ?? item.est_cost ?? 0;
-      const rid = item.requested_by;
-      if (!totals[rid]) totals[rid] = { user_id: rid, name: item.requester_name, total: 0 };
-      totals[rid].total += cost;
-      grandTotal += cost;
-    }
-
-    res.json({
-      run,
-      items,
-      settlement: Object.values(totals),
-      grand_total: grandTotal,
-      buyer_user_id: run.buyer_user_id,
-    });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
-});
-
-module.exports = router;
+      FROM bulk_buy_runs r LEFT JOIN users u ON u.i

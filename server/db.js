@@ -548,6 +548,19 @@ async function _init() {
   const _invColNames = _invCols2.map(c => c.name);
   if (!_invColNames.includes('product_id'))        await db.run('ALTER TABLE inventory_items ADD COLUMN product_id TEXT');
   if (!_invColNames.includes('product_image_url')) await db.run('ALTER TABLE inventory_items ADD COLUMN product_image_url TEXT');
+  if (!_invColNames.includes('storage_location')) {
+    await db.run("ALTER TABLE inventory_items ADD COLUMN storage_location TEXT NOT NULL DEFAULT 'pantry'");
+    // Migrate from storage_type into storage_location
+    await db.run(`UPDATE inventory_items SET storage_location = CASE
+      WHEN storage_type IN ('fridge', 'refrigerator') THEN 'refrigerator'
+      WHEN storage_type IN ('freezer', 'frozen', 'vacuum-frozen') THEN 'freezer'
+      WHEN storage_type = 'pantry' THEN 'pantry'
+      ELSE 'pantry'
+    END`);
+  }
+  if (!_invColNames.includes('prep_method')) {
+    await db.run("ALTER TABLE inventory_items ADD COLUMN prep_method TEXT NOT NULL DEFAULT 'none'");
+  }
 
   // vacuum_seal_log migrations
   const _vsCols2 = await db.all('PRAGMA table_info(vacuum_seal_log)');
@@ -1390,20 +1403,4 @@ async function _seedSuperadmin(db) {
   const existing = await db.get('SELECT id, role, account_tier FROM users WHERE email = ?', [ADMIN_EMAIL]);
 
   if (!existing) {
-    const hash = await bcrypt.hash('KrystleAdmin2026!', 10);
-    await db.run(
-      `INSERT INTO users (id, name, email, password, role, must_change_password, account_tier, email_verified)
-       VALUES (?, ?, ?, ?, 'superadmin', 0, 'paid', 1)`,
-      [uuidv4(), 'David', ADMIN_EMAIL, hash]
-    );
-    console.log('Superadmin seeded: davidharmon03@gmail.com');
-  } else if (existing.role !== 'superadmin' || existing.account_tier !== 'paid') {
-    await db.run(
-      `UPDATE users SET role = 'superadmin', must_change_password = 0, account_tier = 'paid', email_verified = 1 WHERE email = ?`,
-      [ADMIN_EMAIL]
-    );
-    console.log('Superadmin seeded: davidharmon03@gmail.com');
-  }
-}
-
-module.exports = { getDb };
+    const hash = await bcrypt.hash('KrystleAdmin

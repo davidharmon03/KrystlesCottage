@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SyncProvider } from './contexts/SyncContext'
@@ -24,6 +24,7 @@ import Help from './pages/Help'
 import CottageLaws from './pages/CottageLaws'
 import Suggestions from './pages/Suggestions'
 import Orders from './pages/Orders'
+import Cuisine from './pages/Cuisine'
 import Chat from './pages/Chat'
 import Billing from './pages/Billing'
 import Welcome from './pages/Welcome'
@@ -116,7 +117,12 @@ export default function App() {
             <Route index               element={<Dashboard />} />
             <Route path="kitchen"      element={<Kitchen />} />
             <Route path="corner"       element={<Corner />} />
-            <Route path="pantry"       element={<Pantry />} />
+            <Route path="pantry"       element={<Navigate to="/storage/pantry" replace />} />
+            <Route path="storage/pantry"        element={<Pantry locationFilter="pantry" />} />
+            <Route path="storage/refrigerator"  element={<Pantry locationFilter="refrigerator" />} />
+            <Route path="storage/freezer"       element={<Pantry locationFilter="freezer" />} />
+            <Route path="storage/shopping"      element={<Pantry defaultTab="Shopping" />} />
+            <Route path="storage/bulk-buy"      element={<Pantry defaultTab="Bulk Buy" />} />
             <Route path="garden"       element={<Garden />} />
             <Route path="equipment"    element={<Equipment />} />
             <Route path="labels"       element={<Labels />} />
@@ -124,17 +130,4 @@ export default function App() {
             <Route path="gallery"      element={<Gallery />} />
             <Route path="profile"      element={<Profile />} />
             <Route path="swap"         element={<MealSwap />} />
-            <Route path="suggestions"  element={<Suggestions />} />
-            <Route path="orders"       element={<Orders />} />
-            <Route path="chat"         element={<Chat />} />
-            <Route path="billing"      element={<Billing />} />
-            <Route path="help"         element={<Help />} />
-            <Route path="cottage-laws" element={<CottageLaws />} />
-            <Route path="create-group" element={<CreateGroup />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-      </SyncProvider>
-    </AuthProvider>
-  )
-}
+         

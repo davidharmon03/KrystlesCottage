@@ -1,11 +1,12 @@
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSync } from '../contexts/SyncContext'
 import {
-  ChefHat, DollarSign, Package, Leaf, Tag, LayoutDashboard,
-  LogOut, Menu, X, Wrench, Calendar, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
-  RefreshCw, Wifi, WifiOff, Clock, ShieldCheck, FileText, Printer
+  ChefHat, DollarSign, Package, Leaf, LayoutDashboard,
+  LogOut, Menu, X, Wrench, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
+  RefreshCw, WifiOff, Clock, ShieldCheck, FileText, Printer,
+  ChevronDown, ChevronRight, ShoppingCart, Users, Snowflake, Thermometer, Layers
 } from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
@@ -87,34 +88,104 @@ function AvatarCircle({ user, size = 'md' }) {
 
 export { AvatarCircle }
 
+// ── Nav group definitions ──────────────────────────────────────────────────────
+const NAV_GROUPS = [
+  {
+    key: 'kitchen',
+    label: 'Kitchen',
+    links: [
+      { to: '/kitchen',     label: 'Recipe Library', icon: ChefHat,        color: 'text-terra-500' },
+      { to: '/orders',      label: 'Menus & Orders', icon: ShoppingBag,    color: 'text-moss-600'  },
+      { to: '/swap',        label: 'Meal Swap',      icon: ArrowLeftRight, color: 'text-moss-600'  },
+      { to: '/gallery',     label: 'Meal Gallery',   icon: Camera,         color: 'text-terra-400' },
+      { to: '/suggestions', label: 'Suggestions',    icon: Lightbulb,      color: 'text-terra-400' },
+      { to: '/equipment',   label: 'Equipment',      icon: Wrench,         color: 'text-terra-400' },
+    ],
+  },
+  {
+    key: 'storage',
+    label: 'Storage',
+    links: [
+      { to: '/storage/pantry',       label: 'Pantry',        icon: Package,      color: 'text-terra-500' },
+      { to: '/storage/refrigerator', label: 'Refrigerator',  icon: Thermometer,  color: 'text-blue-500'  },
+      { to: '/storage/freezer',      label: 'Freezer',       icon: Snowflake,    color: 'text-blue-400'  },
+      { to: '/storage/shopping',     label: 'Shopping List', icon: ShoppingCart, color: 'text-moss-600'  },
+      { to: '/storage/bulk-buy',     label: 'Bulk Buy Runs', icon: Layers,       color: 'text-moss-500'  },
+      { to: '/labels',               label: 'Print Center',  icon: Printer,      color: 'text-slate-400' },
+    ],
+  },
+  {
+    key: 'community',
+    label: 'Community',
+    links: [
+      { to: '/chat',         label: 'Group Chat',        icon: MessageSquare, color: 'text-moss-500'  },
+      { to: '/corner',       label: 'Corner / Finances', icon: DollarSign,    color: 'text-moss-600'  },
+      { to: '/cottage-laws', label: 'Cottage Laws',      icon: FileText,      color: 'text-slate-500' },
+      { to: '/garden',       label: 'Garden',            icon: Leaf,          color: 'text-moss-500'  },
+    ],
+  },
+]
+
+const ADMIN_LINKS = [
+  { to: '/admin/users',  label: 'Users',     icon: Users,           color: 'text-terra-500' },
+  { to: '/admin/groups', label: 'Groups',    icon: Users,           color: 'text-terra-400' },
+  { to: '/admin',        label: 'Dashboard', icon: LayoutDashboard, color: 'text-terra-600', end: true },
+]
+
+const DEFAULT_NAV_STATE = { kitchen: true, storage: true, community: true, admin: true }
+
+function getNavState() {
+  try {
+    const stored = localStorage.getItem('cottage_nav_state')
+    return stored ? { ...DEFAULT_NAV_STATE, ...JSON.parse(stored) } : DEFAULT_NAV_STATE
+  } catch {
+    return DEFAULT_NAV_STATE
+  }
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const fn = firstName(user)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const navigate = useNavigate()
   const activeGroup = user?.groups?.[0]
+  const isAdmin = ['admin', 'superadmin'].includes(user?.role)
 
-  const channels = [
-    { to: '/kitchen',     label: 'Kitchen',            icon: ChefHat,         color: 'text-terra-500' },
-    { to: '/corner',      label: 'Corner',             icon: DollarSign,      color: 'text-moss-600'  },
-    { to: '/pantry',      label: 'Pantry',             icon: Package,         color: 'text-slate-600' },
-    { to: '/orders',      label: 'Kitchen Orders',     icon: ShoppingBag,     color: 'text-moss-600'  },
-    { to: '/garden',      label: 'Garden',             icon: Leaf,            color: 'text-moss-500'  },
-    { to: '/equipment',   label: 'Equipment',          icon: Wrench,          color: 'text-terra-400' },
-    { to: '/labels',      label: 'Print Center',       icon: Printer,         color: 'text-slate-400' },
-    { to: '/calendar',    label: 'Group Calendar',     icon: Calendar,        color: 'text-moss-500'  },
-    { to: '/gallery',     label: 'Meal Gallery',       icon: Camera,          color: 'text-terra-400' },
-    { to: '/swap',        label: 'Meal Swap',          icon: ArrowLeftRight,  color: 'text-moss-600'  },
-    { to: '/suggestions', label: 'Suggestions',        icon: Lightbulb,       color: 'text-terra-400' },
-    { to: '/chat',        label: 'Group Chat',         icon: MessageSquare,   color: 'text-moss-500'  },
-  ]
+  const [navOpen, setNavOpen] = useState(getNavState)
+
+  const toggleGroup = (key) => {
+    setNavOpen(prev => {
+      const next = { ...prev, [key]: !prev[key] }
+      try { localStorage.setItem('cottage_nav_state', JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
 
   const closeDrawer = () => setDrawerOpen(false)
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`
+
+  const GroupHeader = ({ groupKey, label }) => (
+    <button
+      onClick={() => toggleGroup(groupKey)}
+      className="w-full flex items-center justify-between px-3 py-1.5 mt-3 mb-0.5 rounded-lg hover:bg-slate-50 transition-colors group"
+    >
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-500">
+        {label}
+      </p>
+      {navOpen[groupKey]
+        ? <ChevronDown size={12} className="text-slate-300 group-hover:text-slate-400" />
+        : <ChevronRight size={12} className="text-slate-300 group-hover:text-slate-400" />}
+    </button>
+  )
 
   // Shared nav content — used by both desktop sidebar and mobile drawer
   const renderNav = (onLinkClick) => (
     <>
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+        {/* Dashboard — always visible */}
         <NavLink to="/" end onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -123,19 +194,45 @@ export default function Layout() {
           Dashboard
         </NavLink>
 
-        <div className="pt-3 pb-1 px-3">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Channels</p>
-        </div>
-
-        {channels.map(ch => (
-          <NavLink key={ch.to} to={ch.to} onClick={onLinkClick}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <ch.icon size={17} className={`flex-shrink-0 ${ch.color}`} />
-            <span className="truncate">{ch.label}</span>
-          </NavLink>
+        {/* Collapsible groups */}
+        {NAV_GROUPS.map(group => (
+          <div key={group.key}>
+            <GroupHeader groupKey={group.key} label={group.label} />
+            {navOpen[group.key] && (
+              <div className="space-y-0.5">
+                {group.links.map(ch => (
+                  <NavLink key={ch.to} to={ch.to} end={ch.end} onClick={onLinkClick}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    <ch.icon size={16} className={`flex-shrink-0 ${ch.color}`} />
+                    <span className="truncate">{ch.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
+
+        {/* Admin Panel — conditional */}
+        {isAdmin && (
+          <div>
+            <GroupHeader groupKey="admin" label="Admin Panel" />
+            {navOpen.admin && (
+              <div className="space-y-0.5">
+                {ADMIN_LINKS.map(ch => (
+                  <NavLink key={ch.to} to={ch.to} end={ch.end} onClick={onLinkClick}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive ? 'bg-terra-50 text-terra-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    <ch.icon size={16} className={`flex-shrink-0 ${ch.color}`} />
+                    <span className="truncate">{ch.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {activeGroup && (
@@ -149,22 +246,6 @@ export default function Layout() {
       <SyncBadge onLinkClick={onLinkClick} />
 
       <div className="px-4 py-2 border-t border-slate-100 space-y-0.5">
-        {['admin', 'superadmin'].includes(user?.role) && (
-          <NavLink to="/admin" onClick={onLinkClick}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
-                isActive ? 'text-terra-700 bg-terra-50' : 'text-terra-500 hover:text-terra-700 hover:bg-terra-50'}`}>
-            <ShieldCheck size={14} />
-            Admin Panel
-          </NavLink>
-        )}
-        <NavLink to="/cottage-laws" onClick={onLinkClick}
-          className={({ isActive }) =>
-            `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
-              isActive ? 'text-moss-700 bg-moss-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}>
-          <FileText size={14} />
-          Cottage Laws
-        </NavLink>
         <NavLink to="/help" onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
@@ -209,77 +290,4 @@ export default function Layout() {
               <span className="text-white font-serif font-bold text-lg leading-none">{fn[0]?.toUpperCase()}</span>
             </div>
             <div>
-              <p className="font-serif font-semibold text-ink text-sm leading-tight">{fn}'s Cottage</p>
-            </div>
-          </div>
-        </div>
-        {renderNav(() => {})}
-      </aside>
-
-      {/* ── Mobile drawer — slide-in from left ── */}
-      {drawerOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/40 md:hidden"
-            onClick={closeDrawer}
-          />
-          {/* Drawer panel */}
-          <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col shadow-xl md:hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-serif font-bold text-sm leading-none">{fn[0]?.toUpperCase()}</span>
-                </div>
-                <p className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</p>
-              </div>
-              <button
-                onClick={closeDrawer}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                aria-label="Close menu"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            {renderNav(closeDrawer)}
-          </aside>
-        </>
-      )}
-
-      {/* ── Main content area ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-        {/* Top header bar */}
-        <header className="flex items-center gap-2 px-4 py-3 bg-white border-b border-slate-200 flex-shrink-0">
-          {/* Hamburger — mobile only */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="md:hidden p-1 -ml-1 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={22} />
-          </button>
-
-          {/* App name — mobile only, centered */}
-          <div className="flex items-center gap-2 md:hidden">
-            <div className="w-7 h-7 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-serif font-bold text-sm">K</span>
-            </div>
-            <span className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</span>
-          </div>
-
-          <div className="flex-1" />
-          <NotificationBell />
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
-          <Outlet />
-        </main>
-
-      </div>
-
-      <InstallPrompt />
-    </div>
-  )
-}
+              <p className="font-serif font-semibold text-ink text-sm leading-tight">{f
