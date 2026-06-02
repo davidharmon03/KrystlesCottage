@@ -70,6 +70,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
 - 🔲 **Manual File Deletions** — remove `ProductCard.jsx`, `rename_kitchen_to_cottage.bat`, `git-fix-commit.bat`, and any `.fuse_hidden` files from the repo
 - 🔲 **Garden Subpages (implementation)** — Plants, Harvest Log, Calendar, Growing Guides are scaffolded only; need full implementation
+- 🔲 **Garden Map View** — A top-down visual layout of the entire garden space showing all plots (raised beds, buckets, rows) arranged spatially like a blueprint/map. Users can drag and position plots on a canvas to represent where they physically are in the yard. Shows at-a-glance what's planted where across all plots. Connects to the existing Plots and Plants data.
 
 ---
 
