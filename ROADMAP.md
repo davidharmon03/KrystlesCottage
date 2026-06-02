@@ -52,6 +52,14 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - ✅ **Menus & Orders Page** — Cuisine.jsx wired up at `/orders`
 - ✅ **Superadmin Plan Management Gate** — plan management actions locked to superadmin role on both backend (route middleware) and frontend (conditional UI)
 - ✅ **Calendar Event Type Filter Pills** — filter pills added to calendar view: All, Expirations, Added Items, Bulk Buy Trips, Garden Harvests
+- ✅ **Garden Section Expanded** — Garden split into subpages (Plots, Plants, Harvest Log, Calendar, Growing Guides) with sidebar nav matching Kitchen/Storage style
+- ✅ **Garden Plots Page** — plot types (Raised Bed, Bucket, Row), blueprint designer with color-coded cell labeling, saved to DB
+
+---
+
+## 🚨 Infrastructure
+
+- 🔴 **Render Persistent Disk** — SQLite DB resets on every redeploy, losing all groups and user data. Fix: add $1/month Render disk, point DB path to mount. **Until this is done, data loss on every deploy is expected.**
 
 ---
 
@@ -61,6 +69,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - 🔲 **Real Email Provider** — swap placeholder in `server/utils/email.js` with SendGrid or Resend for production email delivery
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
 - 🔲 **Manual File Deletions** — remove `ProductCard.jsx`, `rename_kitchen_to_cottage.bat`, `git-fix-commit.bat`, and any `.fuse_hidden` files from the repo
+- 🔲 **Garden Subpages (implementation)** — Plants, Harvest Log, Calendar, Growing Guides are scaffolded only; need full implementation
 
 ---
 
@@ -71,4 +80,4 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ---
 
-*Last updated: May 27, 2026*
+*Last updated: June 2, 2026*

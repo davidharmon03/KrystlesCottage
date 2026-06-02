@@ -3,11 +3,13 @@ import { useAuth } from '../contexts/AuthContext'
 import {
   HelpCircle, ChefHat, DollarSign, Package, Leaf, Wrench, Tag,
   Calendar, Camera, ArrowLeftRight, Bell, User, Mail,
-  CheckCircle, ChevronDown, ChevronUp, Search, Lightbulb
+  CheckCircle, ChevronDown, ChevronUp, Search, Lightbulb,
+  Layout, Shield
 } from 'lucide-react'
 
 const sections = [
   { id: 'getting-started',  label: 'Getting Started',    icon: CheckCircle    },
+  { id: 'navigation',       label: 'Navigation',          icon: Layout         },
   { id: 'kitchen',          label: 'Your Kitchen',        icon: ChefHat        },
   { id: 'korner',           label: 'Your Corner',         icon: DollarSign     },
   { id: 'kuzine',           label: 'Your Cuisine',        icon: Package        },
@@ -21,6 +23,7 @@ const sections = [
   { id: 'digest',           label: 'Weekly Digest',       icon: Mail           },
   { id: 'labels',           label: 'Label Generator',     icon: Tag            },
   { id: 'profile',          label: 'Profile & Account',   icon: User           },
+  { id: 'admin',            label: 'Admin Panel',         icon: Shield         },
   { id: 'tips',             label: 'Tips',                icon: Lightbulb      },
 ]
 
@@ -107,10 +110,18 @@ export default function Help() {
           <H>Create an account</H>
           <P>Head to /register and enter your name, email, and a password. No email verification required — you'll land on the Dashboard immediately.</P>
           <H>Create or join a group</H>
-          <P>The Hub is built around groups of up to 5 members. From the Dashboard, you can create a new group (give it a name and grab the invite code) or join an existing one by entering an invite code. Every feature — recipes, the Swap calendar, finances — is scoped to your group, so everyone sees the same shared data.</P>
+          <P>The Hub is built around groups of up to 5 members. Paid accounts can create new groups — give it a name and grab the invite code. Free accounts can join an existing group via invite code but cannot create one. Every feature — recipes, the Swap calendar, finances — is scoped to your group, so everyone sees the same shared data.</P>
           <H>Invite your people</H>
-          <P>Once you've created a group, go to your group settings and send email invitations directly from the Hub. If the recipient already has an account they'll be added instantly; if not, they'll get a link to register and join in one step. Your group's invite code is always visible in the sidebar under "Active Group" if you'd rather share it directly.</P>
-          <Tip>Groups max out at 5 members. If you need to remove someone, a group admin can do that from group settings.</Tip>
+          <P>Group owners can invite new members by email directly from the Dashboard. If the recipient already has an account they'll be added instantly; if not, they'll get a link to register and join in one step. Your group's invite code is also visible in the sidebar under "Active Group" if you'd rather share it directly. Note: your email address must be verified before you can join a group — check the Profile page if you're unsure of your verification status.</P>
+          <Tip>Groups max out at 5 members (base). If you need to remove someone, a group admin can do that from group settings.</Tip>
+        </Section>
+
+        <Section id="navigation" icon={Layout} title="Navigation — Sidebar & Groups">
+          <P>The sidebar is your main way around the Hub. It's organized into collapsible groups so you can keep it tidy as the feature set grows.</P>
+          <H>Collapsible groups</H>
+          <P>The sidebar is divided into five groups: Kitchen, Storage, Garden, Community, and Admin Panel. Click any group header to collapse or expand it — that state is remembered across sessions, so if you always leave Storage collapsed it'll stay that way next time you log in.</P>
+          <H>Admin Panel group</H>
+          <P>The Admin Panel group is only visible to admins and superadmins. It won't appear in the sidebar for regular members.</P>
         </Section>
 
         <Section id="kitchen" icon={ChefHat} title="Kitchen — Recipes & Cooking">
@@ -139,8 +150,10 @@ export default function Help() {
 
         <Section id="kuzine" icon={Package} title="Cuisine — Inventory, Shopping & Bulk Buys">
           <P>Cuisine is your shared pantry and freezer manager. It has four tabs: Inventory, Vacuum Seal Log, Shopping Lists, and Bulk Buy Runs.</P>
-          <H>Inventory</H>
-          <P>Add any food item your group has on hand — name, quantity, category (protein, produce, pantry, etc.), and storage type (fresh, vacuum sealed, frozen, etc.). The app automatically calculates a use-by date based on storage type: fresh items get 5 days, vacuum sealed get 14, frozen get 90, and so on. To find a product quickly, use the search bar — it checks your local catalog first and falls back to the Open Food Facts database if there's no local match. You can also scan a barcode with your device camera to look up store-bought items instantly.</P>
+          <H>Inventory — three storage views</H>
+          <P>Storage is split into three separate views: Pantry, Refrigerator, and Freezer. Each view only shows items stored in that location, so you're not scrolling past the whole inventory to find what's in the fridge. Switch between views using the tabs at the top of the Inventory section.</P>
+          <H>Adding an inventory item</H>
+          <P>When adding an item, choose its Location (Pantry, Refrigerator, or Freezer) and Prep Method (Vacuum Sealed, Ziploc Bag, Glass Jar, Canned, Dehydrated, or None/Raw) as separate fields. The use-by date is calculated automatically from the combination of those two values — a vacuum-sealed item in the freezer gets a different shelf life than the same item in a Ziploc in the fridge. You don't need to enter a date manually. To find a product quickly, use the search bar — it checks your local catalog first and falls back to the Open Food Facts database if there's no local match. You can also scan a barcode with your device camera to look up store-bought items instantly.</P>
           <H>Vacuum Seal Log</H>
           <P>Track everything that goes through the vacuum sealer — item name, seal date, expiry, storage location, and notes. Helpful for keeping the chest freezer organized when everything looks identical in its bag.</P>
           <H>Shopping Lists</H>
@@ -150,10 +163,12 @@ export default function Help() {
           <Tip>Harvest something in your Garden? If you tick "Add to inventory" at log time, it auto-creates an entry here — no manual entry needed.</Tip>
         </Section>
 
-        <Section id="kultivate" icon={Leaf} title="Garden — Plants & Harvest Tracking">
-          <P>Garden is your group's garden notebook. It has four tabs: Garden, Harvest Log, Calendar, and Growing Guides.</P>
+        <Section id="kultivate" icon={Leaf} title="Garden — Plants, Plots & Harvest Tracking">
+          <P>Garden is your group's garden notebook. It has five tabs: Garden, Plots, Harvest Log, Calendar, and Growing Guides.</P>
           <H>Garden tab — tracking plants</H>
           <P>Add each plant with its name, planting date, expected harvest date, and current status (growing, flowering, harvesting, harvested, or dormant). When you type a plant name, the Hub searches the built-in growing guides and suggests matches — selecting one links the guide to your plant so you can pull up care details at any time with the book icon on the plant card.</P>
+          <H>Plots tab — garden layout designer</H>
+          <P>The Plots tab is where you map out your physical garden space. Add a plot and choose one of three types: Raised Bed (set width and length in feet and a grid is generated), Bucket (choose 5-gallon, 2-gallon, or other size and how many), or Row (traditional row gardening by length). Each plot has a blueprint designer — click any cell or bucket in the grid to label it with a plant name and assign a color to it. Hit "Save Layout" to persist your design. Layouts are per-plot and visible to all group members.</P>
           <H>Harvest Log</H>
           <P>When you pull something from the ground, log it: plant name, harvest date, and yield amount. Tick "Auto-add to Cuisine inventory" and it'll create an inventory entry in your Cuisine with the storage type you choose — no separate step needed. Every harvest logged sends a notification to all group members.</P>
           <H>Seasonal Calendar</H>
@@ -193,7 +208,7 @@ export default function Help() {
           <H>Color codes</H>
           <P>Each event type has its own color so you can read the calendar at a glance. Green events are newly created inventory items. Yellow events are items expiring soon (within the warning window). Red events are expired items that need attention. Terracotta events are scheduled Bulk Buy runs. Moss/dark-green events are logged garden harvests.</P>
           <H>Expiry logic</H>
-          <P>Inventory use-by dates are calculated automatically when you add an item — fresh items get 5 days, vacuum sealed get 14, frozen get 90. Those dates surface on the calendar as green dots when created, shift to yellow as they approach expiry, and turn red once they've passed. You don't need to enter dates manually.</P>
+          <P>Inventory use-by dates are calculated automatically when you add an item, based on the combination of Location and Prep Method you chose. Those dates surface on the calendar as green dots when created, shift to yellow as they approach expiry, and turn red once they've passed. You don't need to enter dates manually.</P>
           <H>Clicking a day</H>
           <P>Click any day that has dots to open a detail panel listing every event on that date — item names, types, and quick links to the relevant page. It's the fastest way to see what needs to be used up on a specific day.</P>
           <Tip>The calendar updates live — add an inventory item and its expiry appears on the calendar immediately. No manual sync required.</Tip>
@@ -262,8 +277,23 @@ export default function Help() {
           <P>Your display name appears throughout the app — in recipe credits, the sidebar header, and anywhere your name shows. Update it anytime from your profile page.</P>
           <H>Social links</H>
           <P>Add your social media handles or URLs and they'll appear as clickable icons on your group member card. Supported platforms: website/blog, Instagram, TikTok, YouTube, Facebook, Twitter/X, and Pinterest.</P>
+          <H>Changing your password</H>
+          <P>Use the "Change Password" section on your profile page. You'll need to enter your current password to confirm the change. If you've forgotten your current password, use the forgot-password flow from the login screen instead.</P>
+          <H>Changing your email address</H>
+          <P>You can update your email address from the profile page — it requires your current password to confirm. After changing it, a verification email is sent to the new address and your account is marked unverified until you click the link. Unverified accounts can't join groups, so complete the verification before trying to accept any invites.</P>
+          <H>Email verification status</H>
+          <P>Your verification status is shown next to your email address on the profile page. If it shows "Unverified," use the resend link to get a new verification email.</P>
           <H>Signing out</H>
           <P>Hit the "Sign Out" button at the bottom of your profile page (or in the sidebar menu). You'll be returned to the login screen. Your data stays intact — everything is stored server-side and will be there when you log back in.</P>
+        </Section>
+
+        <Section id="admin" icon={Shield} title="Admin Panel — Group & User Management">
+          <P>The Admin Panel is visible to admins and superadmins. It lives in its own sidebar group and covers tools for managing users and groups across the Hub.</P>
+          <H>Groups admin page</H>
+          <P>Admins can view all groups on the platform and see their member lists. This is useful for troubleshooting group membership issues or confirming that an invite landed correctly.</P>
+          <H>Creating new users</H>
+          <P>Admins can create new user accounts directly from the Admin Panel — set the name, email, and a temporary password. The new user will be prompted to change their password on first login.</P>
+          <Tip>The Admin Panel group in the sidebar is only visible if you have admin or superadmin access. Regular members won't see it at all.</Tip>
         </Section>
 
         <Section id="tips" icon={Lightbulb} title="Power-User Tips">
