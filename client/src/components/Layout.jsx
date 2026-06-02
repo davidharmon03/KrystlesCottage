@@ -121,7 +121,7 @@ const NAV_GROUPS = [
       { to: '/chat',         label: 'Group Chat',        icon: MessageSquare, color: 'text-moss-500'  },
       { to: '/corner',       label: 'Corner / Finances', icon: DollarSign,    color: 'text-moss-600'  },
       { to: '/cottage-laws', label: 'Cottage Laws',      icon: FileText,      color: 'text-slate-500' },
-      { to: '/garden',       label: 'Garden',            icon: Leaf,          color: 'text-moss-500'  },
+      { to: '/garden/plots', label: 'Garden',            icon: Leaf,          color: 'text-moss-500'  },
     ],
   },
 ]

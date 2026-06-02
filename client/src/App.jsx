@@ -31,6 +31,12 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminGroups from './pages/admin/AdminGroups'
+import GardenLayout from './pages/garden/GardenLayout'
+import Plots from './pages/garden/Plots'
+import Plants from './pages/garden/Plants'
+import HarvestLog from './pages/garden/HarvestLog'
+import GardenCalendar from './pages/garden/GardenCalendar'
+import GrowingGuides from './pages/garden/GrowingGuides'
 import TwoFactorModal from './components/TwoFactorModal'
 import { useTwoFactor } from './hooks/useTwoFactor'
 import VerifyEmail from './pages/VerifyEmail'
@@ -122,7 +128,14 @@ export default function App() {
             <Route path="storage/freezer"       element={<Pantry locationFilter="freezer" />} />
             <Route path="storage/shopping"      element={<Pantry defaultTab="Shopping" />} />
             <Route path="storage/bulk-buy"      element={<Pantry defaultTab="Bulk Buy" />} />
-            <Route path="garden"       element={<Garden />} />
+            <Route path="garden" element={<GardenLayout />}>
+              <Route index element={<Navigate to="plots" replace />} />
+              <Route path="plots"    element={<Plots />} />
+              <Route path="plants"   element={<Plants />} />
+              <Route path="harvest"  element={<HarvestLog />} />
+              <Route path="calendar" element={<GardenCalendar />} />
+              <Route path="guides"   element={<GrowingGuides />} />
+            </Route>
             <Route path="equipment"    element={<Equipment />} />
             <Route path="labels"       element={<Labels />} />
             <Route path="calendar"     element={<GroupCalendar />} />
