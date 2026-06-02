@@ -77,7 +77,16 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 ## 📋 Backlog
 
 - 🔲 **Image Compression** — sharp/WebP on upload (deferred until images are in use)
-- 🔲 **Feature Development** — TBD (next phase)
+- 🔲 **Recipe → Shopping List Integration** — Planning meals or selecting recipes should auto-generate or populate the Shopping List with missing ingredients. Core workflow connection.
+- 🔲 **Harvest Log → Inventory Integration** — Logging a harvest in Garden should offer to add the item directly to Pantry inventory, with quantity and storage location pre-filled.
+- 🔲 **Garden Calendar → Group Calendar Sync** — Planting dates, expected harvest dates, and garden tasks added in the Garden Calendar should appear on the main Group Calendar so the whole group sees them.
+- 🔲 **Plants Page (Garden)** — Build out the scaffold: track what's planted in each plot/cell, planting date, expected harvest date, and link back to the blueprint cell so clicking a cell shows plant details.
+- 🔲 **Harvest Log (Garden)** — Build out the scaffold: log harvests with quantity, date, and which plot. Connects to Harvest → Inventory integration.
+- 🔲 **Growing Guides (Garden)** — Build out the scaffold: reference guides per plant type with spacing, watering, companion plants, common issues. Could be seeded with common plants or user-added.
+- 🔲 **In-App Notifications** — Alert badges for expiring inventory, new group chat messages, harvest reminders, new items added to Meal Gallery.
+- 🔲 **Meal Planning / Weekly Menu Builder** — Plan meals Monday–Sunday, assign recipes per day, auto-generate shopping list from planned meals. May overlap with or replace current Menus & Orders page — evaluate when building.
+- 🔲 **Photo Uploads** — Image upload support for Meal Gallery (meal photos), Garden (plot/plant photos), and Recipes. Needs file storage solution (Cloudinary or similar).
+- 🔲 **Cottage Laws — Legal Reference by Location** — The Cottage Laws page is a reference database of actual cottage food laws by state, county, and city. Admins should be able to add/update legal entries. Members can look up their jurisdiction's rules. Consider searchable by state/county.
 
 ---
 
