@@ -208,4 +208,93 @@ router.delete('/:groupId/calendar/:id', authMiddleware, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
-// ─── Garden Plots 
+// ─── Garden Plots ────────────────────────────────────────────────────────────
+
+async function getUserGroupId(userId) {
+  const db = await getDb();
+  const member = await db.get('SELECT group_id FROM group_members WHERE user_id = ?', [userId]);
+  return member?.group_id;
+}
+
+// GET /api/garden/plots
+router.get('/plots', authMiddleware, async (req, res) => {
+  try {
+    const groupId = await getUserGroupId(req.user.id);
+    if (!groupId) return res.status(403).json({ error: 'No group' });
+    const db = await getDb();
+    const plots = await db.all(
+      'SELECT * FROM garden_plots WHERE group_id = ? ORDER BY created_at DESC',
+      [groupId]
+    );
+    res.json(plots);
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/garden/plots
+router.post('/plots', authMiddleware, async (req, res) => {
+  try {
+    const groupId = await getUserGroupId(req.user.id);
+    if (!groupId) return res.status(403).json({ error: 'No group' });
+    const { name, type, width, length, bucket_size, bucket_count, notes } = req.body;
+    const db = await getDb();
+    const result = await db.run(
+      'INSERT INTO garden_plots (group_id, name, type, width, length, bucket_size, bucket_count, notes) VALUES (?,?,?,?,?,?,?,?)',
+      [groupId, name, type || 'raised_bed', width || null, length || null, bucket_size || null, bucket_count || 1, notes || null]
+    );
+    const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [result.lastID]);
+    res.status(201).json(plot);
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+// PATCH /api/garden/plots/:id
+router.patch('/plots/:id', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    const { name, type, width, length, bucket_size, bucket_count, notes } = req.body;
+    await db.run(
+      'UPDATE garden_plots SET name=?, type=?, width=?, length=?, bucket_size=?, bucket_count=?, notes=? WHERE id=?',
+      [name, type, width, length, bucket_size, bucket_count, notes, req.params.id]
+    );
+    const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [req.params.id]);
+    res.json(plot);
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+// DELETE /api/garden/plots/:id
+router.delete('/plots/:id', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    await db.run('DELETE FROM garden_plots WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Deleted' });
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/garden/plots/:id/cells
+router.get('/plots/:id/cells', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    const cells = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+    res.json(cells);
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/garden/plots/:id/cells — replace entire grid
+router.put('/plots/:id/cells', authMiddleware, async (req, res) => {
+  try {
+    const db = await getDb();
+    const { cells } = req.body;
+    await db.run('DELETE FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+    for (const cell of cells) {
+      if (cell.label || cell.color) {
+        await db.run(
+          'INSERT INTO garden_plot_cells (plot_id, cell_x, cell_y, label, color) VALUES (?,?,?,?,?)',
+          [req.params.id, cell.cell_x, cell.cell_y, cell.label || null, cell.color || null]
+        );
+      }
+    }
+    const saved = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+    res.json(saved);
+  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+});
+
+module.exports = router;
