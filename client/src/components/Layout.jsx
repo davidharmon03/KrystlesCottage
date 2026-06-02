@@ -121,7 +121,17 @@ const NAV_GROUPS = [
       { to: '/chat',         label: 'Group Chat',        icon: MessageSquare, color: 'text-moss-500'  },
       { to: '/corner',       label: 'Corner / Finances', icon: DollarSign,    color: 'text-moss-600'  },
       { to: '/cottage-laws', label: 'Cottage Laws',      icon: FileText,      color: 'text-slate-500' },
-      { to: '/garden/plots', label: 'Garden',            icon: Leaf,          color: 'text-moss-500'  },
+    ],
+  },
+  {
+    key: 'garden',
+    label: 'Garden',
+    links: [
+      { to: '/garden/plots',   label: 'Plots',          icon: Leaf,          color: 'text-moss-500'  },
+      { to: '/garden/plants',  label: 'Plants',         icon: Leaf,          color: 'text-moss-400'  },
+      { to: '/garden/harvest', label: 'Harvest Log',    icon: Leaf,          color: 'text-terra-500' },
+      { to: '/garden/calendar',label: 'Calendar',       icon: Leaf,          color: 'text-moss-600'  },
+      { to: '/garden/guides',  label: 'Growing Guides', icon: Leaf,          color: 'text-moss-500'  },
     ],
   },
 ]
@@ -132,7 +142,7 @@ const ADMIN_LINKS = [
   { to: '/admin',        label: 'Dashboard', icon: LayoutDashboard, color: 'text-terra-600', end: true },
 ]
 
-const DEFAULT_NAV_STATE = { kitchen: true, storage: true, community: true, admin: true }
+const DEFAULT_NAV_STATE = { kitchen: true, storage: true, community: true, garden: true, admin: true }
 
 function getNavState() {
   try {
