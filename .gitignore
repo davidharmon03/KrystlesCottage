@@ -36,3 +36,6 @@ client/public/workbox-*.js
 
 # ── Database backups ──────────────────────────────────────────
 server/backups/
+
+# ── Logs from the always-on scripts ──────────────────────────
+logs/

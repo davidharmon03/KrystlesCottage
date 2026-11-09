@@ -15,8 +15,18 @@ or routines apply here.
 | Address | krystlescottage.com and www — Cloudflare Tunnel `krystlescottage` (id `6c535744-…`) to `127.0.0.1:3001`. Config: `%USERPROFILE%\.cloudflared\krystlescottage.yml`. Live since 2026-11-09 |
 
 Render was removed (2026-11-09) — don't bring it back. Settings live in `server/.env`
-(never committed). Run it live: `npm run build` in `client/`, then `node index.js` in
-`server/`. For development: `npm run dev` in `server/` and `client/` separately.
+(never committed).
+
+**It runs by itself.** Two scheduled tasks start at boot as SYSTEM, no sign-in needed:
+`KrystlesCottage-App` (`scripts/run-server.ps1`) and `KrystlesCottage-Tunnel`
+(`scripts/run-tunnel.ps1`). Each restarts its program if it stops. Logs go to `logs/`.
+`scripts/install-autostart.ps1` (admin) re-registers them.
+
+**To ship a change:** `npm run build` in `client/` (the site picks it up at once); for
+server changes, restart the app task from an admin window:
+`Stop-ScheduledTask KrystlesCottage-App; Start-ScheduledTask KrystlesCottage-App`.
+Never start a second `node index.js` on port 3001 — test on a copy of the database with
+`DB_PATH` and `PORT=3002` instead. Format with `npm run format` at the root.
 
 ## The sections
 

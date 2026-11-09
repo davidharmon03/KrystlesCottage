@@ -59,7 +59,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ## 🚨 Infrastructure
 
-- 🟡 **Hosting moved to David's PC (2026-11-09)** — Render removed. One server now serves the site and the API; the database is a real file on this PC, so the old "resets on redeploy" problem is gone. krystlescottage.com is live through a Cloudflare Tunnel. Still to do: start the app and tunnel automatically when the PC boots, and real email (the email code is a placeholder).
+- 🟡 **Hosting moved to David's PC (2026-11-09)** — Render removed. One server now serves the site and the API; the database is a real file on this PC, so the old "resets on redeploy" problem is gone. krystlescottage.com is live through a Cloudflare Tunnel, and both start on their own at boot. Still to do: real email (the email code is a placeholder) — until then new members cannot confirm their email, so they cannot join a group.
 
 ---
 
