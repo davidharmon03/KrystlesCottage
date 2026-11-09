@@ -1,0 +1,210 @@
+const { v4: uuidv4 } = require('uuid');
+
+async function _seedProducts(db) {
+  const count = await db.get('SELECT COUNT(*) as n FROM products');
+  if (count.n > 0) return;
+
+  console.log('Seeding products catalog...');
+  const products = [
+    {
+      name: 'Organic Garlic',
+      brand: 'Generic',
+      category: 'produce',
+      store_section: 'produce',
+      unit_type: 'lb',
+      unit_size: '3 lb bag',
+      description: 'Bulk organic garlic heads. Staple for almost every recipe.',
+    },
+    {
+      name: 'Extra Virgin Olive Oil',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'pantry',
+      unit_type: 'bottle',
+      unit_size: '2 L',
+      description: 'Cold-pressed EVOO for cooking and finishing.',
+    },
+    {
+      name: 'Fine Sea Salt',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'pantry',
+      unit_type: 'lb',
+      unit_size: '5 lb bag',
+      description: 'Fine-grain sea salt. Bulk purchase staple.',
+    },
+    {
+      name: 'FoodSaver Gallon Vacuum Bags',
+      brand: 'FoodSaver',
+      category: 'household',
+      store_section: 'household',
+      unit_type: 'pack',
+      unit_size: '28-pack',
+      description: 'BPA-free gallon vacuum seal bags for the FoodSaver.',
+    },
+    {
+      name: 'Reynolds Unbleached Parchment Paper',
+      brand: 'Reynolds',
+      category: 'household',
+      store_section: 'household',
+      unit_type: 'roll',
+      unit_size: '100 sq ft',
+      description: 'Unbleached parchment for flash-freezing portions.',
+    },
+    {
+      name: 'Ball Wide-Mouth Mason Jars 32oz',
+      brand: 'Ball',
+      category: 'household',
+      store_section: 'household',
+      unit_type: 'pack',
+      unit_size: '12-pack',
+      description: 'Standard quart mason jars for soups, broths, and sauces.',
+    },
+    {
+      name: 'Long-Grain White Rice',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'bulk',
+      unit_type: 'lb',
+      unit_size: '25 lb bag',
+      description: 'Bulk white rice. Buy at warehouse stores.',
+    },
+    {
+      name: 'Rolled Oats',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'bulk',
+      unit_type: 'lb',
+      unit_size: '10 lb bag',
+      description: 'Old-fashioned rolled oats. Bulk staple.',
+    },
+    {
+      name: 'Dried Black Beans',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'bulk',
+      unit_type: 'lb',
+      unit_size: '5 lb bag',
+      description: 'Dried black beans. Soak overnight before cooking.',
+    },
+    {
+      name: 'Boneless Chicken Breast',
+      brand: 'Generic',
+      category: 'meat_seafood',
+      store_section: 'meat',
+      unit_type: 'lb',
+      unit_size: 'per lb',
+      description: 'Boneless skinless chicken breast. Vacuum seal and freeze in portions.',
+    },
+    {
+      name: 'Ground Beef 80/20',
+      brand: 'Generic',
+      category: 'meat_seafood',
+      store_section: 'meat',
+      unit_type: 'lb',
+      unit_size: 'per lb',
+      description: 'Ground beef 80% lean. Buy bulk, portion, and freeze.',
+    },
+    {
+      name: 'Frozen Broccoli Florets',
+      brand: 'Generic',
+      category: 'frozen',
+      store_section: 'frozen',
+      unit_type: 'lb',
+      unit_size: '5 lb bag',
+      description: 'IQF broccoli florets. No prep needed.',
+    },
+    {
+      name: 'Large Eggs (Cage-Free)',
+      brand: 'Generic',
+      category: 'dairy_eggs',
+      store_section: 'dairy',
+      unit_type: 'dozen',
+      unit_size: '2-pack / 24 ct',
+      description: 'Cage-free large eggs. Buy 2-packs at warehouse stores.',
+    },
+    {
+      name: 'Unsalted Butter',
+      brand: 'Generic',
+      category: 'dairy_eggs',
+      store_section: 'dairy',
+      unit_type: 'lb',
+      unit_size: '4-pack / 4 lb',
+      description: 'Unsalted butter. Freeze extras.',
+    },
+    {
+      name: 'All-Purpose Flour',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'bulk',
+      unit_type: 'lb',
+      unit_size: '25 lb bag',
+      description: 'Unbleached all-purpose flour. Warehouse bulk.',
+    },
+    {
+      name: 'Apple Cider Vinegar',
+      brand: 'Bragg',
+      category: 'pantry',
+      store_section: 'pantry',
+      unit_type: 'bottle',
+      unit_size: '128 oz / 1 gallon',
+      description: 'Raw unfiltered ACV with the mother. Bulk gallon jug.',
+    },
+    {
+      name: 'Coconut Oil (Unrefined)',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'pantry',
+      unit_type: 'jar',
+      unit_size: '54 oz',
+      description: 'Cold-pressed unrefined coconut oil.',
+    },
+    {
+      name: 'Raw Honey',
+      brand: 'Generic',
+      category: 'pantry',
+      store_section: 'pantry',
+      unit_type: 'jar',
+      unit_size: '5 lb jar',
+      description: 'Local raw honey. Bulk jar.',
+    },
+    {
+      name: 'Ziploc Freezer Bags Gallon',
+      brand: 'Ziploc',
+      category: 'household',
+      store_section: 'household',
+      unit_type: 'pack',
+      unit_size: '30-pack',
+      description: 'Heavy-duty gallon freezer bags. Double-seal zipper.',
+    },
+    {
+      name: 'Avery Removable Square Labels 2\"',
+      brand: 'Avery',
+      category: 'household',
+      store_section: 'household',
+      unit_type: 'pack',
+      unit_size: '60-pack',
+      description: 'White removable labels for dating containers.',
+    },
+  ];
+
+  for (const p of products) {
+    await db.run(
+      `INSERT INTO products (id, name, brand, category, store_section, unit_type, unit_size, description, source, is_public)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'custom', 1)`,
+      [
+        uuidv4(),
+        p.name,
+        p.brand || '',
+        p.category,
+        p.store_section,
+        p.unit_type || '',
+        p.unit_size || '',
+        p.description || '',
+      ]
+    );
+  }
+  console.log('Products catalog seeded.');
+}
+
+module.exports = _seedProducts;
