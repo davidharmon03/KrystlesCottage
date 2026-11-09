@@ -25,7 +25,8 @@ function UpgradeModal({ onClose }) {
 
         <h2 className="font-serif font-semibold text-ink text-xl mb-2">Upgrade to Premium</h2>
         <p className="text-slate-600 text-sm leading-relaxed mb-4">
-          A Premium account lets you create and manage a group of up to 5 people — unlocking the Corner, Cuisine, and Garden channels for everyone in your group.
+          A Premium account lets you create and manage a group of up to 5 people — unlocking the
+          Corner, Cuisine, and Garden channels for everyone in your group.
         </p>
 
         <button
@@ -37,7 +38,10 @@ function UpgradeModal({ onClose }) {
 
         <p className="text-center text-xs text-slate-400">
           Already have an invite code?{' '}
-          <button onClick={onClose} className="text-moss-600 hover:text-moss-700 font-medium underline">
+          <button
+            onClick={onClose}
+            className="text-moss-600 hover:text-moss-700 font-medium underline"
+          >
             Join a group above for free.
           </button>
         </p>
@@ -50,15 +54,15 @@ export default function Welcome() {
   const { user, refreshUser } = useAuth()
   const navigate = useNavigate()
 
-  const [joinCode, setJoinCode]               = useState('')
-  const [joinError, setJoinError]             = useState('')
-  const [joinLoading, setJoinLoading]         = useState(false)
-  const [verifyBanner, setVerifyBanner]       = useState(false)
+  const [joinCode, setJoinCode] = useState('')
+  const [joinError, setJoinError] = useState('')
+  const [joinLoading, setJoinLoading] = useState(false)
+  const [verifyBanner, setVerifyBanner] = useState(false)
   const [verifyResending, setVerifyResending] = useState(false)
-  const [verifyResent, setVerifyResent]       = useState(false)
+  const [verifyResent, setVerifyResent] = useState(false)
 
-  const [groupName, setGroupName]         = useState('')
-  const [createError, setCreateError]     = useState('')
+  const [groupName, setGroupName] = useState('')
+  const [createError, setCreateError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -70,8 +74,10 @@ export default function Welcome() {
     try {
       await api.post('/auth/send-verification')
       setVerifyResent(true)
-    } catch {}
-    finally { setVerifyResending(false) }
+    } catch {
+    } finally {
+      setVerifyResending(false)
+    }
   }
 
   const handleJoin = async e => {
@@ -128,7 +134,6 @@ export default function Welcome() {
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
 
       <div className="w-full max-w-xl">
-
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mx-auto mb-4 ring-2 ring-white ring-opacity-30">
@@ -138,13 +143,13 @@ export default function Welcome() {
             Welcome to Krystle's Cottage, {firstName}!
           </h1>
           <p className="text-moss-200 text-sm mt-2 max-w-sm mx-auto">
-            The Cottage is organized around groups — join one with an invite code, or start your own. Groups unlock Kitchen, Corner, Cuisine, and Garden.
+            The Cottage is organized around groups — join one with an invite code, or start your
+            own. Groups unlock Kitchen, Corner, Cuisine, and Garden.
           </p>
         </div>
 
         {/* Two cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-
           {/* Join a Group */}
           <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col">
             <div className="w-10 h-10 rounded-xl bg-moss-100 flex items-center justify-center mb-4">
@@ -171,9 +176,7 @@ export default function Welcome() {
                 )}
               </div>
             )}
-            {joinError && (
-              <p className="text-red-600 text-sm mb-3">{joinError}</p>
-            )}
+            {joinError && <p className="text-red-600 text-sm mb-3">{joinError}</p>}
             <form onSubmit={handleJoin} className="space-y-3">
               <input
                 className="input font-mono uppercase tracking-widest text-center text-base"
@@ -183,11 +186,7 @@ export default function Welcome() {
                 onChange={e => setJoinCode(e.target.value)}
                 maxLength={8}
               />
-              <button
-                type="submit"
-                disabled={joinLoading}
-                className="btn-primary w-full"
-              >
+              <button type="submit" disabled={joinLoading} className="btn-primary w-full">
                 {joinLoading ? 'Joining…' : 'Join Group'}
               </button>
             </form>
@@ -201,12 +200,10 @@ export default function Welcome() {
             <h2 className="font-serif font-semibold text-ink text-lg mb-1">Create a Group</h2>
             <p className="text-sm text-slate-500 mb-4 flex-1">
               {isPaid
-                ? 'Start a new group and invite up to 4 others once you\'re in.'
+                ? "Start a new group and invite up to 4 others once you're in."
                 : 'Premium feature — upgrade to start your own group and invite up to 4 others.'}
             </p>
-            {createError && (
-              <p className="text-red-600 text-sm mb-3">{createError}</p>
-            )}
+            {createError && <p className="text-red-600 text-sm mb-3">{createError}</p>}
             {isPaid ? (
               <form onSubmit={handleCreate} className="space-y-3">
                 <input
@@ -217,11 +214,7 @@ export default function Welcome() {
                   onChange={e => setGroupName(e.target.value)}
                   maxLength={60}
                 />
-                <button
-                  type="submit"
-                  disabled={createLoading}
-                  className="btn-terra w-full"
-                >
+                <button type="submit" disabled={createLoading} className="btn-terra w-full">
                   {createLoading ? 'Creating…' : 'Create Group'}
                 </button>
               </form>
@@ -245,7 +238,6 @@ export default function Welcome() {
             Skip for now
           </button>
         </p>
-
       </div>
     </div>
   )

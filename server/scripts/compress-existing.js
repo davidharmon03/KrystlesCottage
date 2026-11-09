@@ -19,8 +19,8 @@ const uploadsRoot = path.join(__dirname, '../uploads');
 
 // Targets: [directory, maxWidth]
 const DIRS = [
-  { dir: path.join(uploadsRoot, 'avatars'),  maxWidth: 400  },
-  { dir: path.join(uploadsRoot, 'meals'),    maxWidth: 1200 },
+  { dir: path.join(uploadsRoot, 'avatars'), maxWidth: 400 },
+  { dir: path.join(uploadsRoot, 'meals'), maxWidth: 1200 },
   { dir: path.join(uploadsRoot, 'products'), maxWidth: 1200 },
   { dir: path.join(uploadsRoot, 'receipts'), maxWidth: 1600 },
   // Legacy receipt images in root uploads/
@@ -49,9 +49,11 @@ async function compressFile(filePath, maxWidth) {
     .toFile(outPath);
 
   const origSize = fs.statSync(filePath).size;
-  const newSize  = fs.statSync(outPath).size;
+  const newSize = fs.statSync(outPath).size;
   const pct = Math.round((1 - newSize / origSize) * 100);
-  console.log(`  compressed: ${path.basename(filePath)} → ${path.basename(outPath)} (${pct}% smaller)`);
+  console.log(
+    `  compressed: ${path.basename(filePath)} → ${path.basename(outPath)} (${pct}% smaller)`
+  );
 
   return outPath;
 }
@@ -60,7 +62,9 @@ async function updateDbPaths(db) {
   console.log('\nUpdating DB paths...');
 
   // avatars: stored as "avatars/{filename}" in users.avatar_path
-  const users = await db.all("SELECT id, avatar_path FROM users WHERE avatar_path IS NOT NULL AND avatar_path NOT LIKE '%.webp'");
+  const users = await db.all(
+    "SELECT id, avatar_path FROM users WHERE avatar_path IS NOT NULL AND avatar_path NOT LIKE '%.webp'"
+  );
   for (const u of users) {
     const ext = path.extname(u.avatar_path);
     const newPath = u.avatar_path.replace(ext, '.webp');
@@ -71,7 +75,9 @@ async function updateDbPaths(db) {
   }
 
   // meal_photos: stored as "uploads/meals/{filename}" in meal_photos.image_path
-  const photos = await db.all("SELECT id, image_path FROM meal_photos WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'");
+  const photos = await db.all(
+    "SELECT id, image_path FROM meal_photos WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'"
+  );
   for (const p of photos) {
     const ext = path.extname(p.image_path);
     const newPath = p.image_path.replace(ext, '.webp');
@@ -83,7 +89,9 @@ async function updateDbPaths(db) {
   }
 
   // products: stored as "uploads/products/{filename}" in products.image_path
-  const products = await db.all("SELECT id, image_path FROM products WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'");
+  const products = await db.all(
+    "SELECT id, image_path FROM products WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'"
+  );
   for (const p of products) {
     const ext = path.extname(p.image_path);
     const newPath = p.image_path.replace(ext, '.webp');
@@ -95,7 +103,9 @@ async function updateDbPaths(db) {
   }
 
   // receipts: stored as "/uploads/{filename}" or "/uploads/receipts/{filename}"
-  const receipts = await db.all("SELECT id, image_path FROM receipts WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'");
+  const receipts = await db.all(
+    "SELECT id, image_path FROM receipts WHERE image_path IS NOT NULL AND image_path NOT LIKE '%.webp'"
+  );
   for (const r of receipts) {
     const ext = path.extname(r.image_path);
     const newPath = r.image_path.replace(ext, '.webp');
@@ -122,7 +132,9 @@ async function run() {
       return true;
     });
 
-    console.log(`\n[${path.relative(uploadsRoot, dir) || 'uploads (root)'}] — ${files.length} files`);
+    console.log(
+      `\n[${path.relative(uploadsRoot, dir) || 'uploads (root)'}] — ${files.length} files`
+    );
     for (const f of files) {
       const result = await compressFile(path.join(dir, f), maxWidth);
       if (result) total++;

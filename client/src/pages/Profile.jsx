@@ -3,30 +3,58 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useSync } from '../contexts/SyncContext'
 import api from '../api'
-import { User, Save, Loader, Check, Camera, Upload, LogOut, Bell, RefreshCw, Download, CreditCard, Lock, Mail, CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  User,
+  Save,
+  Loader,
+  Check,
+  Camera,
+  Upload,
+  LogOut,
+  Bell,
+  RefreshCw,
+  Download,
+  CreditCard,
+  Lock,
+  Mail,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react'
 import SocialLinks, { PLATFORMS } from '../components/SocialLinks'
 
 const PREF_GROUPS = [
   {
     label: 'Email',
     items: [
-      { key: 'email_digest', label: 'Weekly Email Digest', desc: 'Receive the group summary email each week' },
+      {
+        key: 'email_digest',
+        label: 'Weekly Email Digest',
+        desc: 'Receive the group summary email each week',
+      },
     ],
   },
   {
     label: 'In-App Notifications',
     items: [
-      { key: 'in_app_swap',      label: 'Meal Swap',   desc: 'New swap weeks and entrée-ready alerts' },
-      { key: 'in_app_korner',    label: 'Corner',      desc: 'Bulk buy runs posted to the group' },
-      { key: 'in_app_kuzine',    label: 'Cuisine',     desc: 'Meals and inventory activity' },
-      { key: 'in_app_garden',    label: 'Garden',      desc: 'Harvest logs from group members' },
-      { key: 'in_app_orders',    label: 'Kitchen Orders', desc: 'Order requests, ready alerts, and declines' },
+      { key: 'in_app_swap', label: 'Meal Swap', desc: 'New swap weeks and entrée-ready alerts' },
+      { key: 'in_app_korner', label: 'Corner', desc: 'Bulk buy runs posted to the group' },
+      { key: 'in_app_kuzine', label: 'Cuisine', desc: 'Meals and inventory activity' },
+      { key: 'in_app_garden', label: 'Garden', desc: 'Harvest logs from group members' },
+      {
+        key: 'in_app_orders',
+        label: 'Kitchen Orders',
+        desc: 'Order requests, ready alerts, and declines',
+      },
     ],
   },
   {
     label: 'Reminders',
     items: [
-      { key: 'expiry_reminders', label: 'Expiry Reminders', desc: 'Alerts when inventory items are nearing use-by date' },
+      {
+        key: 'expiry_reminders',
+        label: 'Expiry Reminders',
+        desc: 'Alerts when inventory items are nearing use-by date',
+      },
     ],
   },
 ]
@@ -42,9 +70,11 @@ function Toggle({ on, onChange }) {
         on ? 'bg-moss-500' : 'bg-slate-200'
       }`}
     >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150 ${
-        on ? 'translate-x-4' : 'translate-x-0'
-      }`} />
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-150 ${
+          on ? 'translate-x-4' : 'translate-x-0'
+        }`}
+      />
     </button>
   )
 }
@@ -52,12 +82,12 @@ function Toggle({ on, onChange }) {
 const API_BASE = '' // uploads are served from the same address as the site
 
 const PLATFORM_PLACEHOLDERS = {
-  website:   'https://yoursite.com',
+  website: 'https://yoursite.com',
   instagram: '@yourhandle',
-  tiktok:    '@yourhandle',
-  youtube:   '@yourchannel or full URL',
-  facebook:  'username or full URL',
-  twitter:   '@yourhandle',
+  tiktok: '@yourhandle',
+  youtube: '@yourchannel or full URL',
+  facebook: 'username or full URL',
+  twitter: '@yourhandle',
   pinterest: '@yourhandle',
 }
 
@@ -66,8 +96,8 @@ function AvatarEditor({ user, onUploaded }) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState(null)
 
-  const avatarSrc = preview
-    || (user?.avatar_path ? `${API_BASE}/uploads/${user.avatar_path}` : null)
+  const avatarSrc =
+    preview || (user?.avatar_path ? `${API_BASE}/uploads/${user.avatar_path}` : null)
 
   const handleFile = e => {
     const file = e.target.files?.[0]
@@ -82,7 +112,7 @@ function AvatarEditor({ user, onUploaded }) {
       const fd = new FormData()
       fd.append('avatar', file)
       const res = await api.post('/auth/avatar', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
       onUploaded(res.data)
     } catch (err) {
@@ -104,14 +134,17 @@ function AvatarEditor({ user, onUploaded }) {
           />
         ) : (
           <div className="w-24 h-24 rounded-full bg-terra-100 border-4 border-white shadow-md flex items-center justify-center">
-            <span className="text-terra-600 font-bold text-3xl">{user?.name?.[0]?.toUpperCase()}</span>
+            <span className="text-terra-600 font-bold text-3xl">
+              {user?.name?.[0]?.toUpperCase()}
+            </span>
           </div>
         )}
         <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          {uploading
-            ? <Loader size={20} className="text-white animate-spin" />
-            : <Camera size={20} className="text-white" />
-          }
+          {uploading ? (
+            <Loader size={20} className="text-white animate-spin" />
+          ) : (
+            <Camera size={20} className="text-white" />
+          )}
         </div>
         <input
           ref={fileRef}
@@ -142,39 +175,39 @@ export default function Profile() {
   const { syncMode, setSyncMode, syncStatus, pendingCount, syncNow } = useSync()
   const navigate = useNavigate()
 
-  const [name,        setName]        = useState(user?.name || '')
-  const [phone,       setPhone]       = useState(user?.phone || '')
-  const [links,       setLinks]       = useState({})
-  const [saving,      setSaving]      = useState(false)
-  const [saved,       setSaved]       = useState(false)
-  const [error,       setError]       = useState('')
+  const [name, setName] = useState(user?.name || '')
+  const [phone, setPhone] = useState(user?.phone || '')
+  const [links, setLinks] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
   const [downloading, setDownloading] = useState(false)
 
   // Change password
   const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword,     setNewPassword]     = useState('')
+  const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [pwSaving,        setPwSaving]        = useState(false)
-  const [pwSaved,         setPwSaved]         = useState(false)
-  const [pwError,         setPwError]         = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
+  const [pwSaved, setPwSaved] = useState(false)
+  const [pwError, setPwError] = useState('')
 
   // Email verification
   const [verifySending, setVerifySending] = useState(false)
-  const [verifySent,    setVerifySent]    = useState(false)
-  const [verifyError,   setVerifyError]   = useState('')
+  const [verifySent, setVerifySent] = useState(false)
+  const [verifyError, setVerifyError] = useState('')
 
   // Change email
-  const [newEmail,        setNewEmail]        = useState('')
-  const [emailPassword,   setEmailPassword]   = useState('')
-  const [emailSaving,     setEmailSaving]     = useState(false)
-  const [emailSaved,      setEmailSaved]      = useState(false)
-  const [emailError,      setEmailError]      = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [emailPassword, setEmailPassword] = useState('')
+  const [emailSaving, setEmailSaving] = useState(false)
+  const [emailSaved, setEmailSaved] = useState(false)
+  const [emailError, setEmailError] = useState('')
 
   // Notification preferences
-  const [prefs,       setPrefs]       = useState(null)   // null = loading
+  const [prefs, setPrefs] = useState(null) // null = loading
   const [prefsSaving, setPrefsSaving] = useState(false)
-  const [prefsSaved,  setPrefsSaved]  = useState(false)
-  const [prefsError,  setPrefsError]  = useState('')
+  const [prefsSaved, setPrefsSaved] = useState(false)
+  const [prefsError, setPrefsError] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -188,10 +221,14 @@ export default function Profile() {
     try {
       const res = await api.get('/auth/notification-prefs')
       setPrefs(res.data)
-    } catch { setPrefsError('Could not load notification preferences.') }
+    } catch {
+      setPrefsError('Could not load notification preferences.')
+    }
   }, [])
 
-  useEffect(() => { loadPrefs() }, [loadPrefs])
+  useEffect(() => {
+    loadPrefs()
+  }, [loadPrefs])
 
   const setPref = (key, val) => setPrefs(prev => ({ ...prev, [key]: val }))
 
@@ -203,8 +240,11 @@ export default function Profile() {
       setPrefs(res.data)
       setPrefsSaved(true)
       setTimeout(() => setPrefsSaved(false), 2500)
-    } catch { setPrefsError('Failed to save preferences.') }
-    finally { setPrefsSaving(false) }
+    } catch {
+      setPrefsError('Failed to save preferences.')
+    } finally {
+      setPrefsSaving(false)
+    }
   }
 
   const setLink = (key, val) => setLinks(prev => ({ ...prev, [key]: val }))
@@ -245,7 +285,11 @@ export default function Profile() {
     setSaving(true)
     setError('')
     try {
-      await api.put('/auth/profile', { name: name.trim(), phone: phone.trim() || null, social_links: links })
+      await api.put('/auth/profile', {
+        name: name.trim(),
+        phone: phone.trim() || null,
+        social_links: links,
+      })
       await refreshUser()
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
@@ -290,9 +334,9 @@ export default function Profile() {
     setDownloading(true)
     try {
       const res = await api.get('/export/my-data', { responseType: 'blob' })
-      const url  = URL.createObjectURL(res.data)
-      const a    = document.createElement('a')
-      a.href     = url
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
       a.download = `cottage-export-${new Date().toISOString().split('T')[0]}.zip`
       a.click()
       URL.revokeObjectURL(url)
@@ -374,7 +418,9 @@ export default function Profile() {
               )}
             </div>
             <div>
-              <label className="label">Phone number <span className="text-slate-400 font-normal">(optional)</span></label>
+              <label className="label">
+                Phone number <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
               <input
                 className="input"
                 type="tel"
@@ -382,7 +428,9 @@ export default function Profile() {
                 onChange={e => setPhone(e.target.value)}
                 placeholder="+1 (555) 000-0000"
               />
-              <p className="text-xs text-slate-400 mt-1">Used for SMS notifications when available</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Used for SMS notifications when available
+              </p>
             </div>
           </div>
         </div>
@@ -400,9 +448,7 @@ export default function Profile() {
           <div className="space-y-3">
             {PLATFORMS.map(p => (
               <div key={p.key} className="flex items-center gap-3">
-                <div className={`w-5 h-5 flex-shrink-0 ${p.color}`}>
-                  {p.icon}
-                </div>
+                <div className={`w-5 h-5 flex-shrink-0 ${p.color}`}>{p.icon}</div>
                 <div className="flex-1">
                   <input
                     className="input text-sm py-1.5"
@@ -411,7 +457,9 @@ export default function Profile() {
                     onChange={e => setLink(p.key, e.target.value)}
                   />
                 </div>
-                <span className="text-xs text-slate-400 w-20 flex-shrink-0 hidden sm:block">{p.label}</span>
+                <span className="text-xs text-slate-400 w-20 flex-shrink-0 hidden sm:block">
+                  {p.label}
+                </span>
               </div>
             ))}
           </div>
@@ -425,12 +473,19 @@ export default function Profile() {
             disabled={saving}
             className="btn-primary flex items-center gap-2 px-6"
           >
-            {saving
-              ? <><Loader size={15} className="animate-spin" /> Saving…</>
-              : saved
-                ? <><Check size={15} /> Saved!</>
-                : <><Save size={15} /> Save changes</>
-            }
+            {saving ? (
+              <>
+                <Loader size={15} className="animate-spin" /> Saving…
+              </>
+            ) : saved ? (
+              <>
+                <Check size={15} /> Saved!
+              </>
+            ) : (
+              <>
+                <Save size={15} /> Save changes
+              </>
+            )}
           </button>
         </div>
       </form>
@@ -447,9 +502,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {prefsError && (
-          <p className="text-sm text-red-500 mb-3">{prefsError}</p>
-        )}
+        {prefsError && <p className="text-sm text-red-500 mb-3">{prefsError}</p>}
 
         {prefs === null ? (
           <div className="card flex items-center justify-center py-8">
@@ -459,7 +512,9 @@ export default function Profile() {
           <div className="space-y-4">
             {PREF_GROUPS.map(group => (
               <div key={group.label} className="card">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{group.label}</h3>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                  {group.label}
+                </h3>
                 <div className="space-y-3">
                   {group.items.map(item => (
                     <div key={item.key} className="flex items-center justify-between gap-4">
@@ -467,7 +522,10 @@ export default function Profile() {
                         <p className="text-sm font-medium text-ink">{item.label}</p>
                         <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
                       </div>
-                      <Toggle on={prefs[item.key] !== false} onChange={val => setPref(item.key, val)} />
+                      <Toggle
+                        on={prefs[item.key] !== false}
+                        onChange={val => setPref(item.key, val)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -481,12 +539,19 @@ export default function Profile() {
                 disabled={prefsSaving}
                 className="btn-primary flex items-center gap-2 px-6"
               >
-                {prefsSaving
-                  ? <><Loader size={15} className="animate-spin" /> Saving…</>
-                  : prefsSaved
-                    ? <><Check size={15} /> Saved!</>
-                    : <><Save size={15} /> Save preferences</>
-                }
+                {prefsSaving ? (
+                  <>
+                    <Loader size={15} className="animate-spin" /> Saving…
+                  </>
+                ) : prefsSaved ? (
+                  <>
+                    <Check size={15} /> Saved!
+                  </>
+                ) : (
+                  <>
+                    <Save size={15} /> Save preferences
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -502,7 +567,9 @@ export default function Profile() {
             </div>
             <div>
               <h2 className="font-serif font-semibold text-ink">Group Sync</h2>
-              <p className="text-sm text-slate-500">Control when your activity syncs with the group</p>
+              <p className="text-sm text-slate-500">
+                Control when your activity syncs with the group
+              </p>
             </div>
           </div>
 
@@ -516,16 +583,23 @@ export default function Profile() {
                     : 'Manual mode — use "Sync Now" to update your last-synced timestamp.'}
                 </p>
               </div>
-              <Toggle on={syncMode === 'auto'} onChange={on => setSyncMode(on ? 'auto' : 'manual')} />
+              <Toggle
+                on={syncMode === 'auto'}
+                onChange={on => setSyncMode(on ? 'auto' : 'manual')}
+              />
             </div>
 
             {syncMode === 'manual' && (
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600">
-                    {pendingCount > 0
-                      ? <span className="text-amber-600 font-medium">{pendingCount} action{pendingCount !== 1 ? 's' : ''} pending sync</span>
-                      : <span className="text-slate-400">No pending changes</span>}
+                    {pendingCount > 0 ? (
+                      <span className="text-amber-600 font-medium">
+                        {pendingCount} action{pendingCount !== 1 ? 's' : ''} pending sync
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">No pending changes</span>
+                    )}
                   </p>
                 </div>
                 <button
@@ -561,7 +635,10 @@ export default function Profile() {
               {user?.plan === 'pro' ? 'All features unlocked' : 'Upgrade to unlock pro features'}
             </p>
           </div>
-          <Link to="/billing" className="btn-primary flex items-center gap-2 text-sm px-4 py-2 flex-shrink-0">
+          <Link
+            to="/billing"
+            className="btn-primary flex items-center gap-2 text-sm px-4 py-2 flex-shrink-0"
+          >
             <CreditCard size={14} />
             {user?.plan === 'pro' ? 'Manage' : 'Upgrade'}
           </Link>
@@ -591,10 +668,15 @@ export default function Profile() {
             disabled={downloading}
             className="btn-ghost flex items-center gap-2 text-sm flex-shrink-0"
           >
-            {downloading
-              ? <><Loader size={14} className="animate-spin" /> Preparing…</>
-              : <><Download size={14} /> Download</>
-            }
+            {downloading ? (
+              <>
+                <Loader size={14} className="animate-spin" /> Preparing…
+              </>
+            ) : (
+              <>
+                <Download size={14} /> Download
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -657,12 +739,19 @@ export default function Profile() {
               disabled={pwSaving}
               className="btn-primary flex items-center gap-2 px-6"
             >
-              {pwSaving
-                ? <><Loader size={15} className="animate-spin" /> Updating…</>
-                : pwSaved
-                  ? <><Check size={15} /> Updated!</>
-                  : <><Lock size={15} /> Update password</>
-              }
+              {pwSaving ? (
+                <>
+                  <Loader size={15} className="animate-spin" /> Updating…
+                </>
+              ) : pwSaved ? (
+                <>
+                  <Check size={15} /> Updated!
+                </>
+              ) : (
+                <>
+                  <Lock size={15} /> Update password
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -693,7 +782,9 @@ export default function Profile() {
             />
           </div>
           <div>
-            <label className="label">Current password <span className="text-slate-400 font-normal">(to confirm)</span></label>
+            <label className="label">
+              Current password <span className="text-slate-400 font-normal">(to confirm)</span>
+            </label>
             <input
               className="input"
               type="password"
@@ -713,12 +804,19 @@ export default function Profile() {
               disabled={emailSaving}
               className="btn-primary flex items-center gap-2 px-6"
             >
-              {emailSaving
-                ? <><Loader size={15} className="animate-spin" /> Updating…</>
-                : emailSaved
-                  ? <><Check size={15} /> Updated — check your inbox</>
-                  : <><Mail size={15} /> Update email</>
-              }
+              {emailSaving ? (
+                <>
+                  <Loader size={15} className="animate-spin" /> Updating…
+                </>
+              ) : emailSaved ? (
+                <>
+                  <Check size={15} /> Updated — check your inbox
+                </>
+              ) : (
+                <>
+                  <Mail size={15} /> Update email
+                </>
+              )}
             </button>
           </div>
         </form>

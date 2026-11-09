@@ -5,19 +5,59 @@ import api from '../api'
 import { ChevronLeft, ChevronRight, Calendar as CalIcon, X, Users } from 'lucide-react'
 
 const MONTH_NAMES = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
-const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const ALL_FILTER_TYPES = ['created', 'expiring', 'expired', 'bulk_buy', 'harvest']
 
 const EVENT_CFG = {
-  created:  { dot: 'bg-moss-500',   ring: 'ring-moss-300',   text: 'text-moss-700',   bg: 'bg-moss-50',   label: 'Added'    },
-  expiring: { dot: 'bg-yellow-400', ring: 'ring-yellow-300', text: 'text-yellow-700', bg: 'bg-yellow-50', label: 'Expiring' },
-  expired:  { dot: 'bg-red-500',    ring: 'ring-red-300',    text: 'text-red-700',    bg: 'bg-red-50',    label: 'Expired'  },
-  bulk_buy: { dot: 'bg-terra-500',  ring: 'ring-terra-300',  text: 'text-terra-700',  bg: 'bg-terra-50',  label: 'Bulk Buy' },
-  harvest:  { dot: 'bg-moss-400',   ring: 'ring-moss-200',   text: 'text-moss-600',   bg: 'bg-moss-50',   label: 'Harvest'  },
+  created: {
+    dot: 'bg-moss-500',
+    ring: 'ring-moss-300',
+    text: 'text-moss-700',
+    bg: 'bg-moss-50',
+    label: 'Added',
+  },
+  expiring: {
+    dot: 'bg-yellow-400',
+    ring: 'ring-yellow-300',
+    text: 'text-yellow-700',
+    bg: 'bg-yellow-50',
+    label: 'Expiring',
+  },
+  expired: {
+    dot: 'bg-red-500',
+    ring: 'ring-red-300',
+    text: 'text-red-700',
+    bg: 'bg-red-50',
+    label: 'Expired',
+  },
+  bulk_buy: {
+    dot: 'bg-terra-500',
+    ring: 'ring-terra-300',
+    text: 'text-terra-700',
+    bg: 'bg-terra-50',
+    label: 'Bulk Buy',
+  },
+  harvest: {
+    dot: 'bg-moss-400',
+    ring: 'ring-moss-200',
+    text: 'text-moss-600',
+    bg: 'bg-moss-50',
+    label: 'Harvest',
+  },
 }
 
 // Dot render order: expired first (most urgent), then expiring, created, bulk_buy, harvest
@@ -28,14 +68,14 @@ export default function Calendar() {
   const activeGroup = user?.groups?.[0]
   const today = new Date()
 
-  const [viewYear,  setViewYear]  = useState(today.getFullYear())
+  const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth() + 1)
-  const [events,    setEvents]    = useState([])
-  const [loading,   setLoading]   = useState(false)
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(false)
   const [selectedDay, setSelectedDay] = useState(null)
   const [activeFilters, setActiveFilters] = useState(ALL_FILTER_TYPES)
 
-  const toggleFilter = (type) => {
+  const toggleFilter = type => {
     setActiveFilters(prev => {
       if (prev.includes(type)) {
         // Don't allow deselecting the last filter
@@ -52,7 +92,9 @@ export default function Calendar() {
     if (!activeGroup) return
     setLoading(true)
     try {
-      const res = await api.get(`/calendar?group_id=${activeGroup.id}&month=${viewMonth}&year=${viewYear}`)
+      const res = await api.get(
+        `/calendar?group_id=${activeGroup.id}&month=${viewMonth}&year=${viewYear}`
+      )
       setEvents(res.data.events || [])
     } catch (e) {
       console.error('Calendar load error:', e)
@@ -62,21 +104,27 @@ export default function Calendar() {
     }
   }, [activeGroup?.id, viewMonth, viewYear])
 
-  useEffect(() => { loadEvents() }, [loadEvents])
+  useEffect(() => {
+    loadEvents()
+  }, [loadEvents])
 
   const prevMonth = () => {
     setSelectedDay(null)
-    if (viewMonth === 1) { setViewMonth(12); setViewYear(y => y - 1) }
-    else setViewMonth(m => m - 1)
+    if (viewMonth === 1) {
+      setViewMonth(12)
+      setViewYear(y => y - 1)
+    } else setViewMonth(m => m - 1)
   }
   const nextMonth = () => {
     setSelectedDay(null)
-    if (viewMonth === 12) { setViewMonth(1); setViewYear(y => y + 1) }
-    else setViewMonth(m => m + 1)
+    if (viewMonth === 12) {
+      setViewMonth(1)
+      setViewYear(y => y + 1)
+    } else setViewMonth(m => m + 1)
   }
 
   // Build calendar grid
-  const firstDow  = new Date(viewYear, viewMonth - 1, 1).getDay()
+  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay()
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate()
 
   // Filter events by active filters
@@ -90,15 +138,18 @@ export default function Calendar() {
   }, {})
 
   const fmtDate = d =>
-    `${viewYear}-${String(viewMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+    `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
-  const selStr     = selectedDay ? fmtDate(selectedDay) : null
-  const selEvents  = selStr ? (byDate[selStr] || []) : []
+  const selStr = selectedDay ? fmtDate(selectedDay) : null
+  const selEvents = selStr ? byDate[selStr] || [] : []
 
   // Summary counts (based on filtered events)
-  const counts = filteredEvents.reduce((acc, ev) => { acc[ev.type] = (acc[ev.type] || 0) + 1; return acc }, {})
+  const counts = filteredEvents.reduce((acc, ev) => {
+    acc[ev.type] = (acc[ev.type] || 0) + 1
+    return acc
+  }, {})
 
   if (!activeGroup) {
     return (
@@ -111,8 +162,12 @@ export default function Calendar() {
         <div className="card text-center py-16 border-terra-200 bg-terra-50">
           <Users size={36} className="mx-auto mb-3 text-terra-400" />
           <p className="font-semibold text-terra-800">You need a group to see the calendar.</p>
-          <p className="text-sm text-terra-600 mt-1">Create or join a group from the dashboard first.</p>
-          <Link to="/" className="inline-block mt-4 btn-terra text-sm">Go to Dashboard</Link>
+          <p className="text-sm text-terra-600 mt-1">
+            Create or join a group from the dashboard first.
+          </p>
+          <Link to="/" className="inline-block mt-4 btn-terra text-sm">
+            Go to Dashboard
+          </Link>
         </div>
       </div>
     )
@@ -132,7 +187,10 @@ export default function Calendar() {
       {/* ── Filter pills ── */}
       <div className="flex flex-wrap gap-2 mb-5">
         <button
-          onClick={() => { setActiveFilters(ALL_FILTER_TYPES); setSelectedDay(null) }}
+          onClick={() => {
+            setActiveFilters(ALL_FILTER_TYPES)
+            setSelectedDay(null)
+          }}
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
             allActive
               ? 'bg-slate-700 text-white'
@@ -160,21 +218,24 @@ export default function Calendar() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* ── Calendar grid ── */}
         <div className="lg:col-span-2">
           <div className="card">
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-5">
-              <button onClick={prevMonth}
-                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+              <button
+                onClick={prevMonth}
+                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+              >
                 <ChevronLeft size={18} />
               </button>
               <h2 className="font-serif font-semibold text-ink text-lg">
                 {MONTH_NAMES[viewMonth - 1]} {viewYear}
               </h2>
-              <button onClick={nextMonth}
-                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors">
+              <button
+                onClick={nextMonth}
+                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+              >
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -182,7 +243,9 @@ export default function Calendar() {
             {/* Day-of-week headers */}
             <div className="grid grid-cols-7 mb-1">
               {DAY_NAMES.map(d => (
-                <div key={d} className="text-center text-xs font-semibold text-slate-400 py-1">{d}</div>
+                <div key={d} className="text-center text-xs font-semibold text-slate-400 py-1">
+                  {d}
+                </div>
               ))}
             </div>
 
@@ -199,11 +262,11 @@ export default function Calendar() {
                 ))}
                 {/* Day cells */}
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                  const ds       = fmtDate(day)
-                  const dayEvs   = byDate[ds] || []
-                  const isToday  = ds === todayStr
-                  const isSel    = selectedDay === day
-                  const hasEvs   = dayEvs.length > 0
+                  const ds = fmtDate(day)
+                  const dayEvs = byDate[ds] || []
+                  const isToday = ds === todayStr
+                  const isSel = selectedDay === day
+                  const hasEvs = dayEvs.length > 0
                   // Deduplicate dot types, sorted by urgency
                   const dotTypes = DOT_ORDER.filter(t => dayEvs.some(e => e.type === t)).slice(0, 4)
 
@@ -216,15 +279,18 @@ export default function Calendar() {
                         ${isSel ? 'ring-2 ring-inset ring-moss-400 bg-moss-50' : ''}
                         ${hasEvs ? 'hover:shadow-inner' : ''}`}
                     >
-                      <div className={`
+                      <div
+                        className={`
                         text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1
                         ${isToday ? 'bg-moss-500 text-white' : 'text-slate-700'}
-                      `}>
+                      `}
+                      >
                         {day}
                       </div>
                       <div className="flex flex-wrap gap-0.5">
                         {dotTypes.map(type => (
-                          <div key={type}
+                          <div
+                            key={type}
                             className={`w-2 h-2 rounded-full flex-shrink-0 ${EVENT_CFG[type]?.dot || 'bg-slate-400'}`}
                           />
                         ))}
@@ -256,8 +322,10 @@ export default function Calendar() {
                 <h3 className="font-serif font-semibold text-ink text-sm">
                   {MONTH_NAMES[viewMonth - 1]} {selectedDay}, {viewYear}
                 </h3>
-                <button onClick={() => setSelectedDay(null)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors">
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
                   <X size={15} />
                 </button>
               </div>
@@ -267,7 +335,9 @@ export default function Calendar() {
                 <div className="space-y-2">
                   {selEvents
                     .sort((a, b) => DOT_ORDER.indexOf(a.type) - DOT_ORDER.indexOf(b.type))
-                    .map(ev => <EventItem key={ev.id} event={ev} />)}
+                    .map(ev => (
+                      <EventItem key={ev.id} event={ev} />
+                    ))}
                 </div>
               )}
             </div>
@@ -306,12 +376,19 @@ export default function Calendar() {
 
           {/* Expiring soon alert */}
           {(counts.expiring > 0 || counts.expired > 0) && (
-            <div className={`card border ${counts.expired > 0 ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
-              <p className={`text-xs font-semibold mb-1 ${counts.expired > 0 ? 'text-red-700' : 'text-yellow-700'}`}>
-                {counts.expired > 0 ? '⚠️ Items past use-by this month' : '⏰ Items expiring this month'}
+            <div
+              className={`card border ${counts.expired > 0 ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}
+            >
+              <p
+                className={`text-xs font-semibold mb-1 ${counts.expired > 0 ? 'text-red-700' : 'text-yellow-700'}`}
+              >
+                {counts.expired > 0
+                  ? '⚠️ Items past use-by this month'
+                  : '⏰ Items expiring this month'}
               </p>
               <p className="text-xs text-slate-600">
-                {counts.expired > 0 && `${counts.expired} expired item${counts.expired !== 1 ? 's' : ''}. `}
+                {counts.expired > 0 &&
+                  `${counts.expired} expired item${counts.expired !== 1 ? 's' : ''}. `}
                 {counts.expiring > 0 && `${counts.expiring} expiring soon.`}
               </p>
             </div>
@@ -323,7 +400,11 @@ export default function Calendar() {
 }
 
 function EventItem({ event }) {
-  const cfg = EVENT_CFG[event.type] || { dot: 'bg-slate-400', text: 'text-slate-700', bg: 'bg-slate-50' }
+  const cfg = EVENT_CFG[event.type] || {
+    dot: 'bg-slate-400',
+    text: 'text-slate-700',
+    bg: 'bg-slate-50',
+  }
   return (
     <div className={`flex items-start gap-2.5 p-2.5 rounded-lg ${cfg.bg}`}>
       <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${cfg.dot}`} />

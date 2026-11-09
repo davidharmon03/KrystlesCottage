@@ -24,13 +24,16 @@ const MENU_RECIPE_COLS = `
 router.get('/menu/:groupId', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const items = await db.all(`
+    const items = await db.all(
+      `
       SELECT ${MENU_RECIPE_COLS}
       FROM menu_items mi
       JOIN recipes r ON r.id = mi.recipe_id
       WHERE mi.group_id = ? AND mi.available = 1
       ORDER BY mi.created_at DESC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
     res.json(items);
   } catch (err) {
     console.error(err);
@@ -42,16 +45,19 @@ router.get('/menu/:groupId', authMiddleware, async (req, res) => {
 router.get('/menu/:groupId/all', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!await isGroupAdmin(db, req.params.groupId, req.user.id)) {
+    if (!(await isGroupAdmin(db, req.params.groupId, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
-    const items = await db.all(`
+    const items = await db.all(
+      `
       SELECT ${MENU_RECIPE_COLS}
       FROM menu_items mi
       JOIN recipes r ON r.id = mi.recipe_id
       WHERE mi.group_id = ?
       ORDER BY mi.created_at DESC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
     res.json(items);
   } catch (err) {
     console.error(err);
@@ -67,7 +73,7 @@ router.post('/menu', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'recipe_id and group_id required' });
     }
     const db = await getDb();
-    if (!await isGroupAdmin(db, group_id, req.user.id)) {
+    if (!(await isGroupAdmin(db, group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const id = uuidv4();
@@ -75,12 +81,15 @@ router.post('/menu', authMiddleware, async (req, res) => {
       'INSERT INTO menu_items (id, recipe_id, group_id, price, note) VALUES (?, ?, ?, ?, ?)',
       [id, recipe_id, group_id, price, note]
     );
-    const item = await db.get(`
+    const item = await db.get(
+      `
       SELECT ${MENU_RECIPE_COLS}
       FROM menu_items mi
       JOIN recipes r ON r.id = mi.recipe_id
       WHERE mi.id = ?
-    `, [id]);
+    `,
+      [id]
+    );
     res.status(201).json(item);
   } catch (err) {
     console.error(err);
@@ -94,22 +103,27 @@ router.put('/menu/:id', authMiddleware, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM menu_items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!await isGroupAdmin(db, item.group_id, req.user.id)) {
+    if (!(await isGroupAdmin(db, item.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const available = req.body.available !== undefined ? req.body.available : item.available;
-    const price     = req.body.price     !== undefined ? req.body.price     : item.price;
-    const note      = req.body.note      !== undefined ? req.body.note      : item.note;
-    await db.run(
-      'UPDATE menu_items SET available = ?, price = ?, note = ? WHERE id = ?',
-      [available, price, note, req.params.id]
-    );
-    const updated = await db.get(`
+    const price = req.body.price !== undefined ? req.body.price : item.price;
+    const note = req.body.note !== undefined ? req.body.note : item.note;
+    await db.run('UPDATE menu_items SET available = ?, price = ?, note = ? WHERE id = ?', [
+      available,
+      price,
+      note,
+      req.params.id,
+    ]);
+    const updated = await db.get(
+      `
       SELECT ${MENU_RECIPE_COLS}
       FROM menu_items mi
       JOIN recipes r ON r.id = mi.recipe_id
       WHERE mi.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     res.json(updated);
   } catch (err) {
     console.error(err);
@@ -123,7 +137,7 @@ router.delete('/menu/:id', authMiddleware, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM menu_items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!await isGroupAdmin(db, item.group_id, req.user.id)) {
+    if (!(await isGroupAdmin(db, item.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     await db.run('DELETE FROM menu_items WHERE id = ?', [req.params.id]);
@@ -140,10 +154,11 @@ router.delete('/menu/:id', authMiddleware, async (req, res) => {
 router.get('/requests/:groupId', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!await isGroupAdmin(db, req.params.groupId, req.user.id)) {
+    if (!(await isGroupAdmin(db, req.params.groupId, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
-    const rows = await db.all(`
+    const rows = await db.all(
+      `
       SELECT mr.id, mr.menu_item_id, mr.group_id, mr.requester_id,
              mr.quantity, mr.note, mr.status, mr.requested_at, mr.updated_at,
              u.name  AS requester_name,
@@ -154,7 +169,9 @@ router.get('/requests/:groupId', authMiddleware, async (req, res) => {
       JOIN recipes r     ON r.id  = mi.recipe_id
       WHERE mr.group_id = ?
       ORDER BY mr.requested_at DESC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -166,7 +183,8 @@ router.get('/requests/:groupId', authMiddleware, async (req, res) => {
 router.get('/requests/:groupId/mine', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const rows = await db.all(`
+    const rows = await db.all(
+      `
       SELECT mr.id, mr.menu_item_id, mr.group_id, mr.requester_id,
              mr.quantity, mr.note, mr.status, mr.requested_at, mr.updated_at,
              r.title AS recipe_title
@@ -175,7 +193,9 @@ router.get('/requests/:groupId/mine', authMiddleware, async (req, res) => {
       JOIN recipes r     ON r.id  = mi.recipe_id
       WHERE mr.group_id = ? AND mr.requester_id = ?
       ORDER BY mr.requested_at DESC
-    `, [req.params.groupId, req.user.id]);
+    `,
+      [req.params.groupId, req.user.id]
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -192,10 +212,9 @@ router.post('/requests', authMiddleware, async (req, res) => {
     }
     const db = await getDb();
 
-    const menuItem = await db.get(
-      'SELECT * FROM menu_items WHERE id = ? AND available = 1',
-      [menu_item_id]
-    );
+    const menuItem = await db.get('SELECT * FROM menu_items WHERE id = ? AND available = 1', [
+      menu_item_id,
+    ]);
     if (!menuItem) return res.status(404).json({ error: 'Menu item not available' });
 
     const id = uuidv4();
@@ -205,17 +224,17 @@ router.post('/requests', authMiddleware, async (req, res) => {
     );
 
     // Notify group admin
-    const group     = await db.get('SELECT owner_id FROM groups WHERE id = ?', [group_id]);
-    const recipe    = await db.get('SELECT title FROM recipes WHERE id = ?', [menuItem.recipe_id]);
+    const group = await db.get('SELECT owner_id FROM groups WHERE id = ?', [group_id]);
+    const recipe = await db.get('SELECT title FROM recipes WHERE id = ?', [menuItem.recipe_id]);
     const requester = await db.get('SELECT name FROM users WHERE id = ?', [req.user.id]);
     if (group && group.owner_id !== req.user.id) {
       await createNotification({
-        user_id:  group.owner_id,
+        user_id: group.owner_id,
         group_id,
-        type:     'order_request',
-        title:    'New meal request',
-        message:  `New meal request from ${requester?.name || 'Someone'}: ${recipe?.title || 'Unknown'} ×${quantity}`,
-        link:     '/orders',
+        type: 'order_request',
+        title: 'New meal request',
+        message: `New meal request from ${requester?.name || 'Someone'}: ${recipe?.title || 'Unknown'} ×${quantity}`,
+        link: '/orders',
       });
     }
 
@@ -233,7 +252,7 @@ router.put('/requests/:id/status', authMiddleware, async (req, res) => {
     const db = await getDb();
     const request = await db.get('SELECT * FROM meal_requests WHERE id = ?', [req.params.id]);
     if (!request) return res.status(404).json({ error: 'Not found' });
-    if (!await isGroupAdmin(db, request.group_id, req.user.id)) {
+    if (!(await isGroupAdmin(db, request.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
 
@@ -243,33 +262,37 @@ router.put('/requests/:id/status', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: `status must be one of: ${valid.join(', ')}` });
     }
 
-    await db.run(
-      "UPDATE meal_requests SET status = ?, updated_at = datetime('now') WHERE id = ?",
-      [status, req.params.id]
-    );
+    await db.run("UPDATE meal_requests SET status = ?, updated_at = datetime('now') WHERE id = ?", [
+      status,
+      req.params.id,
+    ]);
 
     // Notify requester on key status changes
-    const menuItem    = await db.get('SELECT recipe_id FROM menu_items WHERE id = ?', [request.menu_item_id]);
-    const recipe      = menuItem ? await db.get('SELECT title FROM recipes WHERE id = ?', [menuItem.recipe_id]) : null;
+    const menuItem = await db.get('SELECT recipe_id FROM menu_items WHERE id = ?', [
+      request.menu_item_id,
+    ]);
+    const recipe = menuItem
+      ? await db.get('SELECT title FROM recipes WHERE id = ?', [menuItem.recipe_id])
+      : null;
     const recipeTitle = recipe?.title || 'Your meal';
 
     if (status === 'ready') {
       await createNotification({
-        user_id:  request.requester_id,
+        user_id: request.requester_id,
         group_id: request.group_id,
-        type:     'order_ready',
-        title:    'Meal ready for pickup!',
-        message:  `Your ${recipeTitle} request is ready for pickup!`,
-        link:     '/orders',
+        type: 'order_ready',
+        title: 'Meal ready for pickup!',
+        message: `Your ${recipeTitle} request is ready for pickup!`,
+        link: '/orders',
       });
     } else if (status === 'declined') {
       await createNotification({
-        user_id:  request.requester_id,
+        user_id: request.requester_id,
         group_id: request.group_id,
-        type:     'order_declined',
-        title:    'Meal request declined',
-        message:  `Your ${recipeTitle} request was declined.`,
-        link:     '/orders',
+        type: 'order_declined',
+        title: 'Meal request declined',
+        message: `Your ${recipeTitle} request was declined.`,
+        link: '/orders',
       });
     }
 

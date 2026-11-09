@@ -8,13 +8,12 @@ export default function InstallPrompt() {
 
   const isMobile =
     typeof window !== 'undefined' &&
-    (window.innerWidth < 768 ||
-      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))
+    (window.innerWidth < 768 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))
 
   useEffect(() => {
     if (!isMobile || dismissed) return
 
-    const handler = (e) => {
+    const handler = e => {
       e.preventDefault()
       setDeferredPrompt(e)
       setVisible(true)
@@ -46,7 +45,8 @@ export default function InstallPrompt() {
           <span className="text-white font-serif font-bold text-lg leading-none">K</span>
         </div>
         <p className="flex-1 text-sm text-slate-700 leading-snug">
-          Install <span className="font-semibold text-moss-700">Cottage</span> on your phone for a better experience
+          Install <span className="font-semibold text-moss-700">Cottage</span> on your phone for a
+          better experience
         </p>
         <button
           onClick={handleInstall}

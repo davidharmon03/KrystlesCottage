@@ -29,7 +29,9 @@ router.post('/users', async (req, res) => {
       return res.status(403).json({ error: 'Only superadmins can create superadmin accounts' });
     }
 
-    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [
+      email.toLowerCase().trim(),
+    ]);
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 
     // Generate a readable temporary password
@@ -60,20 +62,28 @@ router.post('/users', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     const db = await getDb();
-    const totalUsers   = await db.get("SELECT COUNT(*) as count FROM users WHERE role != 'superadmin'");
-    const paidUsers    = await db.get("SELECT COUNT(*) as count FROM users WHERE plan = 'pro' AND role != 'superadmin'");
-    const freeUsers    = await db.get("SELECT COUNT(*) as count FROM users WHERE plan = 'free' AND role != 'superadmin'");
-    const totalGroups  = await db.get("SELECT COUNT(*) as count FROM groups");
-    const totalMembers = await db.get("SELECT COUNT(*) as count FROM group_members");
-    const newThisWeek  = await db.get("SELECT COUNT(*) as count FROM users WHERE created_at >= datetime('now', '-7 days') AND role != 'superadmin'");
+    const totalUsers = await db.get(
+      "SELECT COUNT(*) as count FROM users WHERE role != 'superadmin'"
+    );
+    const paidUsers = await db.get(
+      "SELECT COUNT(*) as count FROM users WHERE plan = 'pro' AND role != 'superadmin'"
+    );
+    const freeUsers = await db.get(
+      "SELECT COUNT(*) as count FROM users WHERE plan = 'free' AND role != 'superadmin'"
+    );
+    const totalGroups = await db.get('SELECT COUNT(*) as count FROM groups');
+    const totalMembers = await db.get('SELECT COUNT(*) as count FROM group_members');
+    const newThisWeek = await db.get(
+      "SELECT COUNT(*) as count FROM users WHERE created_at >= datetime('now', '-7 days') AND role != 'superadmin'"
+    );
 
     res.json({
-      totalUsers:   totalUsers.count,
-      paidUsers:    paidUsers.count,
-      freeUsers:    freeUsers.count,
-      totalGroups:  totalGroups.count,
+      totalUsers: totalUsers.count,
+      paidUsers: paidUsers.count,
+      freeUsers: freeUsers.count,
+      totalGroups: totalGroups.count,
       totalMembers: totalMembers.count,
-      newThisWeek:  newThisWeek.count,
+      newThisWeek: newThisWeek.count,
     });
   } catch (err) {
     console.error(err);
@@ -92,17 +102,18 @@ router.get('/users', async (req, res) => {
     const params = [];
 
     if (search) {
-      conditions.push("(u.name LIKE ? OR u.email LIKE ?)");
+      conditions.push('(u.name LIKE ? OR u.email LIKE ?)');
       params.push(`%${search}%`, `%${search}%`);
     }
     if (plan && plan !== 'all') {
-      conditions.push("u.plan = ?");
+      conditions.push('u.plan = ?');
       params.push(plan);
     }
 
-    const where = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-    const users = await db.all(`
+    const users = await db.all(
+      `
       SELECT
         u.id, u.name, u.email, u.plan, u.role, u.created_at,
         u.must_change_password,
@@ -120,11 +131,16 @@ router.get('/users', async (req, res) => {
       ${where}
       ORDER BY u.created_at DESC
       LIMIT ? OFFSET ?
-    `, [...params, parseInt(limit), offset]);
+    `,
+      [...params, parseInt(limit), offset]
+    );
 
-    const total = await db.get(`
+    const total = await db.get(
+      `
       SELECT COUNT(*) as count FROM users u ${where}
-    `, params);
+    `,
+      params
+    );
 
     res.json({ users, total: total.count, page: parseInt(page), limit: parseInt(limit) });
   } catch (err) {
@@ -137,31 +153,38 @@ router.get('/users', async (req, res) => {
 router.get('/users/:id', async (req, res) => {
   try {
     const db = await getDb();
-    const user = await db.get(`
+    const user = await db.get(
+      `
       SELECT u.id, u.name, u.email, u.plan, u.role, u.created_at,
              u.stripe_customer_id, u.stripe_subscription_id,
              g.id AS group_id, g.name AS group_name, g.invite_code
       FROM users u
       LEFT JOIN groups g ON g.owner_id = u.id
       WHERE u.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Get group members if user owns a group
     let members = [];
     if (user.group_id) {
-      members = await db.all(`
+      members = await db.all(
+        `
         SELECT u.id, u.name, u.email, u.plan, gm.joined_at
         FROM group_members gm
         JOIN users u ON u.id = gm.user_id
         WHERE gm.group_id = ?
         ORDER BY gm.joined_at ASC
-      `, [user.group_id]);
+      `,
+        [user.group_id]
+      );
     }
 
     // Get groups user is a member of (not owner)
-    const memberOf = await db.all(`
+    const memberOf = await db.all(
+      `
       SELECT g.id, g.name, gm.joined_at,
              u.name AS owner_name, u.email AS owner_email
       FROM group_members gm
@@ -169,7 +192,9 @@ router.get('/users/:id', async (req, res) => {
       JOIN users u ON u.id = g.owner_id
       WHERE gm.user_id = ? AND g.owner_id != ?
       ORDER BY gm.joined_at DESC
-    `, [user.id, user.id]);
+    `,
+      [user.id, user.id]
+    );
 
     res.json({ user, members, memberOf });
   } catch (err) {
@@ -181,13 +206,14 @@ router.get('/users/:id', async (req, res) => {
 // PUT /api/admin/users/:id/plan — change user plan (superadmin only)
 router.put('/users/:id/plan', async (req, res) => {
   try {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Only superadmins can change subscription plans' });
+    if (req.user.role !== 'superadmin')
+      return res.status(403).json({ error: 'Only superadmins can change subscription plans' });
     const db = await getDb();
     const { plan } = req.body;
     if (!['free', 'pro'].includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan' });
     }
-    await db.run("UPDATE users SET plan = ? WHERE id = ?", [plan, req.params.id]);
+    await db.run('UPDATE users SET plan = ? WHERE id = ?', [plan, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -208,13 +234,13 @@ router.patch('/users/:id/role', async (req, res) => {
     }
     // Check the caller's role in the database, not the sign-in token, which can be
     // up to 15 minutes out of date.
-    const caller = await db.get("SELECT role FROM users WHERE id = ?", [req.user.id]);
+    const caller = await db.get('SELECT role FROM users WHERE id = ?', [req.user.id]);
     const callerIsSuperadmin = caller?.role === 'superadmin';
     // Only superadmins may assign the superadmin role
     if (role === 'superadmin' && !callerIsSuperadmin) {
       return res.status(403).json({ error: 'Only superadmins can assign the superadmin role' });
     }
-    const user = await db.get("SELECT role FROM users WHERE id = ?", [req.params.id]);
+    const user = await db.get('SELECT role FROM users WHERE id = ?', [req.params.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     // ...or change anything about an existing superadmin
     if (user.role === 'superadmin' && !callerIsSuperadmin) {
@@ -227,9 +253,13 @@ router.patch('/users/:id/role', async (req, res) => {
     // Promote admins/superadmins to paid tier automatically
     const account_tier = ['admin', 'superadmin'].includes(role) ? 'paid' : undefined;
     if (account_tier) {
-      await db.run("UPDATE users SET role = ?, account_tier = ? WHERE id = ?", [role, account_tier, req.params.id]);
+      await db.run('UPDATE users SET role = ?, account_tier = ? WHERE id = ?', [
+        role,
+        account_tier,
+        req.params.id,
+      ]);
     } else {
-      await db.run("UPDATE users SET role = ? WHERE id = ?", [role, req.params.id]);
+      await db.run('UPDATE users SET role = ? WHERE id = ?', [role, req.params.id]);
     }
     res.json({ success: true });
   } catch (err) {
@@ -243,11 +273,12 @@ router.delete('/users/:id', async (req, res) => {
   try {
     const db = await getDb();
     // Don't allow deleting superadmins
-    const user = await db.get("SELECT role FROM users WHERE id = ?", [req.params.id]);
+    const user = await db.get('SELECT role FROM users WHERE id = ?', [req.params.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    if (user.role === 'superadmin') return res.status(403).json({ error: 'Cannot delete superadmin accounts' });
+    if (user.role === 'superadmin')
+      return res.status(403).json({ error: 'Cannot delete superadmin accounts' });
 
-    await db.run("DELETE FROM users WHERE id = ?", [req.params.id]);
+    await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);

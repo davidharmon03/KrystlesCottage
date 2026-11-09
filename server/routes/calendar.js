@@ -10,13 +10,25 @@ function calcUseBy(dateStr, storageType) {
   const d = new Date(dateStr.length === 10 ? dateStr + 'T00:00:00' : dateStr);
   if (isNaN(d.getTime())) return null;
   switch (storageType) {
-    case 'fresh':         d.setDate(d.getDate() + 5);    break;
-    case 'vacuum sealed': d.setDate(d.getDate() + 14);   break;
-    case 'frozen':        d.setDate(d.getDate() + 90);   break;
+    case 'fresh':
+      d.setDate(d.getDate() + 5);
+      break;
+    case 'vacuum sealed':
+      d.setDate(d.getDate() + 14);
+      break;
+    case 'frozen':
+      d.setDate(d.getDate() + 90);
+      break;
     case 'canned':
-    case 'dry storage':   d.setDate(d.getDate() + 180);  break;
-    case 'vacuum-frozen': d.setMonth(d.getMonth() + 12); break;
-    default:              d.setDate(d.getDate() + 14);   break;
+    case 'dry storage':
+      d.setDate(d.getDate() + 180);
+      break;
+    case 'vacuum-frozen':
+      d.setMonth(d.getMonth() + 12);
+      break;
+    default:
+      d.setDate(d.getDate() + 14);
+      break;
   }
   return d.toISOString().split('T')[0];
 }
@@ -28,7 +40,7 @@ function expiryStatus(usebyStr) {
   today.setHours(0, 0, 0, 0);
   const exp = new Date(usebyStr + 'T00:00:00');
   const diffDays = Math.ceil((exp - today) / 86400000);
-  if (diffDays < 0)  return 'expired';
+  if (diffDays < 0) return 'expired';
   if (diffDays <= 7) return 'expiring';
   return 'ok';
 }
@@ -62,10 +74,10 @@ router.get('/', authMiddleware, async (req, res) => {
 
     const m = parseInt(month);
     const y = parseInt(year);
-    const nextM = m === 12 ? 1  : m + 1;
+    const nextM = m === 12 ? 1 : m + 1;
     const nextY = m === 12 ? y + 1 : y;
     const monthStart = `${y}-${String(m).padStart(2, '0')}-01`;
-    const monthEnd   = `${nextY}-${String(nextM).padStart(2, '0')}-01`;
+    const monthEnd = `${nextY}-${String(nextM).padStart(2, '0')}-01`;
 
     const events = [];
 
@@ -140,12 +152,15 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 
     // ── Bulk buy runs ────────────────────────────────────────────────────────
-    const runs = await db.all(`
+    const runs = await db.all(
+      `
       SELECT r.*, u.name AS buyer_name
       FROM bulk_buy_runs r
       LEFT JOIN users u ON u.id = r.buyer_user_id
       WHERE r.group_id = ? AND r.run_date >= ? AND r.run_date < ?
-    `, [group_id, monthStart, monthEnd]);
+    `,
+      [group_id, monthStart, monthEnd]
+    );
 
     for (const run of runs) {
       events.push({
@@ -159,11 +174,14 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 
     // ── Harvest logs ─────────────────────────────────────────────────────────
-    const harvests = await db.all(`
+    const harvests = await db.all(
+      `
       SELECT h.*, u.name AS added_by_name
       FROM harvest_logs h JOIN users u ON u.id = h.added_by
       WHERE h.group_id = ? AND h.harvest_date >= ? AND h.harvest_date < ?
-    `, [group_id, monthStart, monthEnd]);
+    `,
+      [group_id, monthStart, monthEnd]
+    );
 
     for (const h of harvests) {
       events.push({

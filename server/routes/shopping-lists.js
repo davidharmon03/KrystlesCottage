@@ -6,10 +6,10 @@ const requireAuth = authMiddleware;
 
 async function requireMember(req, res, groupId, next) {
   const db = await getDb();
-  const member = await db.get(
-    'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-    [groupId, req.user.id]
-  );
+  const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
+    groupId,
+    req.user.id,
+  ]);
   if (!member) return res.status(403).json({ error: 'Not a member of this group' });
   return next();
 }
@@ -42,10 +42,11 @@ router.post('/', requireAuth, async (req, res) => {
   await requireMember(req, res, group_id, async () => {
     const db = await getDb();
     const id = uuidv4();
-    await db.run(
-      'INSERT INTO shopping_lists (id, group_id, name) VALUES (?, ?, ?)',
-      [id, group_id, name || 'Weekly Shop']
-    );
+    await db.run('INSERT INTO shopping_lists (id, group_id, name) VALUES (?, ?, ?)', [
+      id,
+      group_id,
+      name || 'Weekly Shop',
+    ]);
     const row = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [id]);
     res.status(201).json(row);
   });
@@ -93,8 +94,8 @@ router.post('/:id/items', requireAuth, async (req, res) => {
     if (product_id) {
       const prod = await db.get('SELECT * FROM products WHERE id = ?', [product_id]);
       if (prod) {
-        resolvedName     = resolvedName || prod.name;
-        resolvedSection  = resolvedSection || prod.store_section;
+        resolvedName = resolvedName || prod.name;
+        resolvedSection = resolvedSection || prod.store_section;
         resolvedCategory = resolvedCategory || prod.category;
       }
     }
@@ -104,9 +105,18 @@ router.post('/:id/items', requireAuth, async (req, res) => {
       `INSERT INTO shopping_list_items
          (id, group_id, list_id, name, product_id, quantity, unit, store_section, category, is_checked, added_by)
        VALUES (?,?,?,?,?,?,?,?,?,0,?)`,
-      [id, list.group_id, list.id, resolvedName, product_id || null,
-       quantity || '', unit || '', resolvedSection || 'other',
-       resolvedCategory || 'other', req.user.id]
+      [
+        id,
+        list.group_id,
+        list.id,
+        resolvedName,
+        product_id || null,
+        quantity || '',
+        unit || '',
+        resolvedSection || 'other',
+        resolvedCategory || 'other',
+        req.user.id,
+      ]
     );
 
     const item = await db.get(
@@ -114,7 +124,8 @@ router.post('/:id/items', requireAuth, async (req, res) => {
          p.brand as product_brand
        FROM shopping_list_items sli
        LEFT JOIN products p ON p.id = sli.product_id
-       WHERE sli.id = ?`, [id]
+       WHERE sli.id = ?`,
+      [id]
     );
     res.status(201).json(item);
   });
@@ -129,13 +140,28 @@ router.put('/:id/items/:itemId', requireAuth, async (req, res) => {
   await requireMember(req, res, list.group_id, async () => {
     const { is_checked, quantity, unit, name, store_section } = req.body;
     const updates = [];
-    const vals    = [];
+    const vals = [];
 
-    if (is_checked !== undefined) { updates.push('is_checked = ?'); vals.push(is_checked ? 1 : 0); }
-    if (quantity    !== undefined) { updates.push('quantity = ?');   vals.push(quantity); }
-    if (unit        !== undefined) { updates.push('unit = ?');       vals.push(unit); }
-    if (name        !== undefined) { updates.push('name = ?');       vals.push(name); }
-    if (store_section !== undefined) { updates.push('store_section = ?'); vals.push(store_section); }
+    if (is_checked !== undefined) {
+      updates.push('is_checked = ?');
+      vals.push(is_checked ? 1 : 0);
+    }
+    if (quantity !== undefined) {
+      updates.push('quantity = ?');
+      vals.push(quantity);
+    }
+    if (unit !== undefined) {
+      updates.push('unit = ?');
+      vals.push(unit);
+    }
+    if (name !== undefined) {
+      updates.push('name = ?');
+      vals.push(name);
+    }
+    if (store_section !== undefined) {
+      updates.push('store_section = ?');
+      vals.push(store_section);
+    }
 
     if (!updates.length) return res.status(400).json({ error: 'Nothing to update' });
     vals.push(req.params.itemId);
@@ -144,7 +170,8 @@ router.put('/:id/items/:itemId', requireAuth, async (req, res) => {
     const item = await db.get(
       `SELECT sli.*, p.image_url as product_image_url, p.image_path as product_image_path, p.brand as product_brand
        FROM shopping_list_items sli LEFT JOIN products p ON p.id = sli.product_id
-       WHERE sli.id = ?`, [req.params.itemId]
+       WHERE sli.id = ?`,
+      [req.params.itemId]
     );
     res.json(item);
   });
@@ -157,8 +184,10 @@ router.delete('/:id/items/:itemId', requireAuth, async (req, res) => {
   if (!list) return res.status(404).json({ error: 'List not found' });
 
   await requireMember(req, res, list.group_id, async () => {
-    await db.run('DELETE FROM shopping_list_items WHERE id = ? AND list_id = ?',
-      [req.params.itemId, req.params.id]);
+    await db.run('DELETE FROM shopping_list_items WHERE id = ? AND list_id = ?', [
+      req.params.itemId,
+      req.params.id,
+    ]);
     res.json({ ok: true });
   });
 });
@@ -170,7 +199,9 @@ router.delete('/:id/items', requireAuth, async (req, res) => {
   if (!list) return res.status(404).json({ error: 'List not found' });
 
   await requireMember(req, res, list.group_id, async () => {
-    await db.run('DELETE FROM shopping_list_items WHERE list_id = ? AND is_checked = 1', [req.params.id]);
+    await db.run('DELETE FROM shopping_list_items WHERE list_id = ? AND is_checked = 1', [
+      req.params.id,
+    ]);
     res.json({ ok: true });
   });
 });
@@ -182,10 +213,9 @@ router.put('/:id/complete', requireAuth, async (req, res) => {
   if (!list) return res.status(404).json({ error: 'List not found' });
 
   await requireMember(req, res, list.group_id, async () => {
-    await db.run(
-      "UPDATE shopping_lists SET completed_at = datetime('now') WHERE id = ?",
-      [req.params.id]
-    );
+    await db.run("UPDATE shopping_lists SET completed_at = datetime('now') WHERE id = ?", [
+      req.params.id,
+    ]);
     res.json({ ok: true });
   });
 });

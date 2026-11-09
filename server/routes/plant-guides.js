@@ -1,16 +1,22 @@
 const express = require('express');
-const router  = express.Router();
+const router = express.Router();
 const { getDb } = require('../db');
 
 function parseGuide(g) {
   if (!g) return null;
-  const tryJ = (s, fb) => { try { return JSON.parse(s) } catch { return fb } };
+  const tryJ = (s, fb) => {
+    try {
+      return JSON.parse(s);
+    } catch {
+      return fb;
+    }
+  };
   return {
     ...g,
-    planting_seasons:      tryJ(g.planting_seasons, []),
-    companion_plants:      tryJ(g.companion_plants, []),
-    avoid_planting_with:   tryJ(g.avoid_planting_with, []),
-    resource_links:        tryJ(g.resource_links, []),
+    planting_seasons: tryJ(g.planting_seasons, []),
+    companion_plants: tryJ(g.companion_plants, []),
+    avoid_planting_with: tryJ(g.avoid_planting_with, []),
+    resource_links: tryJ(g.resource_links, []),
   };
 }
 
@@ -41,10 +47,7 @@ router.get('/', async (req, res) => {
     const { type } = req.query;
     let rows;
     if (type && type !== 'all') {
-      rows = await db.all(
-        'SELECT * FROM plant_guides WHERE type = ? ORDER BY common_name',
-        [type]
-      );
+      rows = await db.all('SELECT * FROM plant_guides WHERE type = ? ORDER BY common_name', [type]);
     } else {
       rows = await db.all('SELECT * FROM plant_guides ORDER BY common_name');
     }

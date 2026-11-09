@@ -4,7 +4,7 @@ import { AvatarCircle } from '../components/Layout'
 import api from '../api'
 import { MessageSquare, Send, ChevronUp, Loader2 } from 'lucide-react'
 
-const POLL_MS  = 10_000
+const POLL_MS = 10_000
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -14,7 +14,7 @@ function formatTime(iso) {
   const diffMs = now - d
   const diffMin = Math.floor(diffMs / 60_000)
 
-  if (diffMin < 1)  return 'just now'
+  if (diffMin < 1) return 'just now'
   if (diffMin < 60) return `${diffMin}m ago`
 
   const diffH = Math.floor(diffMin / 60)
@@ -23,7 +23,8 @@ function formatTime(iso) {
   // Same calendar year → month + day; otherwise include year
   const sameYear = d.getFullYear() === now.getFullYear()
   return d.toLocaleDateString(undefined, {
-    month: 'short', day: 'numeric',
+    month: 'short',
+    day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' }),
   })
 }
@@ -46,12 +47,16 @@ function MessageBubble({ msg, isMine, showName, onDelete }) {
     >
       {/* Avatar — show on first message in a run */}
       <div className="flex-shrink-0 self-end">
-        {showName
-          ? <AvatarCircle user={msgUserAvatar(msg)} size="sm" />
-          : <div className="w-6 h-6" />}
+        {showName ? (
+          <AvatarCircle user={msgUserAvatar(msg)} size="sm" />
+        ) : (
+          <div className="w-6 h-6" />
+        )}
       </div>
 
-      <div className={`flex flex-col max-w-[75%] sm:max-w-[60%] ${isMine ? 'items-end' : 'items-start'}`}>
+      <div
+        className={`flex flex-col max-w-[75%] sm:max-w-[60%] ${isMine ? 'items-end' : 'items-start'}`}
+      >
         {showName && !isMine && (
           <span className="text-xs font-semibold text-slate-500 mb-1 px-1">{msg.user_name}</span>
         )}
@@ -68,11 +73,13 @@ function MessageBubble({ msg, isMine, showName, onDelete }) {
             </button>
           )}
 
-          <div className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
-            isMine
-              ? 'bg-moss-500 text-white rounded-br-sm'
-              : 'bg-white text-ink border border-slate-200 rounded-bl-sm'
-          }`}>
+          <div
+            className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+              isMine
+                ? 'bg-moss-500 text-white rounded-br-sm'
+                : 'bg-white text-ink border border-slate-200 rounded-bl-sm'
+            }`}
+          >
             {msg.content}
           </div>
         </div>
@@ -89,16 +96,16 @@ export default function Chat() {
   const { user } = useAuth()
   const groupId = user?.groups?.[0]?.id
 
-  const [messages,    setMessages]    = useState([])
-  const [input,       setInput]       = useState('')
-  const [sending,     setSending]     = useState(false)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore,     setHasMore]     = useState(true)
-  const [error,       setError]       = useState(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [error, setError] = useState(null)
 
-  const bottomRef    = useRef(null)
-  const inputRef     = useRef(null)
-  const latestTsRef  = useRef(null)   // ISO string of newest message we have
+  const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+  const latestTsRef = useRef(null) // ISO string of newest message we have
   const isAtBottomRef = useRef(true)
 
   // ── initial load ──────────────────────────────────────────────────────────
@@ -118,7 +125,9 @@ export default function Chat() {
     }
   }, [groupId])
 
-  useEffect(() => { loadInitial() }, [loadInitial])
+  useEffect(() => {
+    loadInitial()
+  }, [loadInitial])
 
   // ── polling ───────────────────────────────────────────────────────────────
 
@@ -137,7 +146,9 @@ export default function Chat() {
             return [...prev, ...fresh]
           })
         }
-      } catch { /* silent — keep polling */ }
+      } catch {
+        /* silent — keep polling */
+      }
     }
     const id = setInterval(poll, POLL_MS)
     return () => clearInterval(id)
@@ -152,7 +163,7 @@ export default function Chat() {
   }, [messages])
 
   // Track whether user is near the bottom
-  const handleScroll = (e) => {
+  const handleScroll = e => {
     const el = e.currentTarget
     isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
   }
@@ -182,7 +193,7 @@ export default function Chat() {
     }
   }
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       send()
@@ -204,17 +215,22 @@ export default function Chat() {
         const fresh = res.data.filter(m => !existingIds.has(m.id))
         return [...fresh, ...prev]
       })
-    } catch { setError('Could not load older messages.') }
-    finally { setLoadingMore(false) }
+    } catch {
+      setError('Could not load older messages.')
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
   // ── soft-delete ───────────────────────────────────────────────────────────
 
-  const deleteMessage = async (id) => {
+  const deleteMessage = async id => {
     try {
       await api.delete(`/chat/${groupId}/${id}`)
       setMessages(prev => prev.filter(m => m.id !== id))
-    } catch { setError('Could not delete message.') }
+    } catch {
+      setError('Could not delete message.')
+    }
   }
 
   // ── no group state ────────────────────────────────────────────────────────
@@ -235,7 +251,6 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-3xl mx-auto">
-
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <MessageSquare size={22} className="text-moss-500 flex-shrink-0" />
@@ -248,7 +263,9 @@ export default function Chat() {
       {error && (
         <div className="mb-3 px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center justify-between flex-shrink-0">
           {error}
-          <button onClick={() => setError(null)} className="ml-3 text-red-400 hover:text-red-600">✕</button>
+          <button onClick={() => setError(null)} className="ml-3 text-red-400 hover:text-red-600">
+            ✕
+          </button>
         </div>
       )}
 
@@ -265,9 +282,11 @@ export default function Chat() {
               disabled={loadingMore}
               className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-moss-700 transition-colors disabled:opacity-50"
             >
-              {loadingMore
-                ? <Loader2 size={13} className="animate-spin" />
-                : <ChevronUp size={13} />}
+              {loadingMore ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <ChevronUp size={13} />
+              )}
               {loadingMore ? 'Loading…' : 'Load older messages'}
             </button>
           </div>
@@ -326,9 +345,7 @@ export default function Chat() {
           className="flex-shrink-0 w-11 h-11 rounded-xl bg-moss-500 hover:bg-moss-600 disabled:bg-slate-200 disabled:text-slate-400 text-white flex items-center justify-center transition-colors shadow-sm self-end"
           title="Send"
         >
-          {sending
-            ? <Loader2 size={16} className="animate-spin" />
-            : <Send size={16} />}
+          {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
         </button>
       </div>
     </div>

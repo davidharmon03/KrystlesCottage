@@ -1,36 +1,55 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import { Leaf, Plus, Trash2, Calendar, Sprout, X, BookOpen, Sun, CloudSun, Cloud, Ruler, ExternalLink, Search, Loader } from 'lucide-react'
+import {
+  Leaf,
+  Plus,
+  Trash2,
+  Calendar,
+  Sprout,
+  X,
+  BookOpen,
+  Sun,
+  CloudSun,
+  Cloud,
+  Ruler,
+  ExternalLink,
+  Search,
+  Loader,
+} from 'lucide-react'
 
 const STATUSES = ['growing', 'flowering', 'harvesting', 'harvested', 'dormant']
 const STATUS_STYLES = {
-  growing:    'bg-moss-100 text-moss-700',
-  flowering:  'bg-yellow-100 text-yellow-700',
+  growing: 'bg-moss-100 text-moss-700',
+  flowering: 'bg-yellow-100 text-yellow-700',
   harvesting: 'bg-terra-100 text-terra-600',
-  harvested:  'bg-slate-100 text-slate-600',
-  dormant:    'bg-blue-100 text-blue-700',
+  harvested: 'bg-slate-100 text-slate-600',
+  dormant: 'bg-blue-100 text-blue-700',
 }
 const STATUS_ICONS = {
-  growing: '🌱', flowering: '🌸', harvesting: '🌿', harvested: '🧺', dormant: '💤'
+  growing: '🌱',
+  flowering: '🌸',
+  harvesting: '🌿',
+  harvested: '🧺',
+  dormant: '💤',
 }
 
 const TYPE_STYLES = {
-  herb:      { bg: 'bg-moss-100',   text: 'text-moss-700',   label: 'Herb'      },
-  vegetable: { bg: 'bg-terra-100',  text: 'text-terra-600',  label: 'Vegetable' },
-  fruit:     { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Fruit'     },
-  flower:    { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Flower'    },
+  herb: { bg: 'bg-moss-100', text: 'text-moss-700', label: 'Herb' },
+  vegetable: { bg: 'bg-terra-100', text: 'text-terra-600', label: 'Vegetable' },
+  fruit: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Fruit' },
+  flower: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Flower' },
 }
 
 const SUNLIGHT_ICON = {
-  full_sun:      <Sun size={13} className="text-amber-500" />,
+  full_sun: <Sun size={13} className="text-amber-500" />,
   partial_shade: <CloudSun size={13} className="text-slate-500" />,
-  full_shade:    <Cloud size={13} className="text-slate-400" />,
+  full_shade: <Cloud size={13} className="text-slate-400" />,
 }
 const SUNLIGHT_LABEL = {
-  full_sun:      'Full sun',
+  full_sun: 'Full sun',
   partial_shade: 'Part shade',
-  full_shade:    'Full shade',
+  full_shade: 'Full shade',
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -62,8 +81,13 @@ function HarvestModal({ plant, groupId, onClose, onHarvest }) {
   const submit = async e => {
     e.preventDefault()
     setLoading(true)
-    try { await onHarvest(form); onClose() }
-    catch { } finally { setLoading(false) }
+    try {
+      await onHarvest(form)
+      onClose()
+    } catch {
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -71,49 +95,95 @@ function HarvestModal({ plant, groupId, onClose, onHarvest }) {
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h2 className="text-lg font-serif font-semibold text-ink">Log Harvest</h2>
-          <button onClick={onClose}><X size={18} className="text-slate-400" /></button>
+          <button onClick={onClose}>
+            <X size={18} className="text-slate-400" />
+          </button>
         </div>
         <form onSubmit={submit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Plant / Crop</label>
-              <input required className="input" value={form.plant_name} onChange={e => setForm(f => ({ ...f, plant_name: e.target.value }))} />
+              <input
+                required
+                className="input"
+                value={form.plant_name}
+                onChange={e => setForm(f => ({ ...f, plant_name: e.target.value }))}
+              />
             </div>
             <div>
               <label className="label">Harvest date</label>
-              <input required type="date" className="input" value={form.harvest_date} onChange={e => setForm(f => ({ ...f, harvest_date: e.target.value }))} />
+              <input
+                required
+                type="date"
+                className="input"
+                value={form.harvest_date}
+                onChange={e => setForm(f => ({ ...f, harvest_date: e.target.value }))}
+              />
             </div>
             <div>
               <label className="label">Yield</label>
-              <input required className="input" placeholder="e.g. 2 lbs, 6 heads" value={form.yield_amount} onChange={e => setForm(f => ({ ...f, yield_amount: e.target.value }))} />
+              <input
+                required
+                className="input"
+                placeholder="e.g. 2 lbs, 6 heads"
+                value={form.yield_amount}
+                onChange={e => setForm(f => ({ ...f, yield_amount: e.target.value }))}
+              />
             </div>
             <div>
               <label className="label">Notes</label>
-              <input className="input" placeholder="Optional notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              <input
+                className="input"
+                placeholder="Optional notes"
+                value={form.notes}
+                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="add_inv" checked={form.add_to_inventory} onChange={e => setForm(f => ({ ...f, add_to_inventory: e.target.checked }))} className="rounded" />
-            <label htmlFor="add_inv" className="text-sm text-slate-700 font-medium">Auto-add to Cuisine inventory</label>
+            <input
+              type="checkbox"
+              id="add_inv"
+              checked={form.add_to_inventory}
+              onChange={e => setForm(f => ({ ...f, add_to_inventory: e.target.checked }))}
+              className="rounded"
+            />
+            <label htmlFor="add_inv" className="text-sm text-slate-700 font-medium">
+              Auto-add to Cuisine inventory
+            </label>
           </div>
           {form.add_to_inventory && (
             <div className="grid grid-cols-2 gap-3 pl-5">
               <div>
                 <label className="label">Category</label>
-                <select className="input" value={form.inventory_category} onChange={e => setForm(f => ({ ...f, inventory_category: e.target.value }))}>
-                  {['produce', 'protein', 'staple', 'other'].map(c => <option key={c}>{c}</option>)}
+                <select
+                  className="input"
+                  value={form.inventory_category}
+                  onChange={e => setForm(f => ({ ...f, inventory_category: e.target.value }))}
+                >
+                  {['produce', 'protein', 'staple', 'other'].map(c => (
+                    <option key={c}>{c}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="label">Storage</label>
-                <select className="input" value={form.inventory_storage} onChange={e => setForm(f => ({ ...f, inventory_storage: e.target.value }))}>
-                  {['fresh', 'frozen', 'vacuum sealed', 'canned'].map(s => <option key={s}>{s}</option>)}
+                <select
+                  className="input"
+                  value={form.inventory_storage}
+                  onChange={e => setForm(f => ({ ...f, inventory_storage: e.target.value }))}
+                >
+                  {['fresh', 'frozen', 'vacuum sealed', 'canned'].map(s => (
+                    <option key={s}>{s}</option>
+                  ))}
                 </select>
               </div>
             </div>
           )}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-ghost flex-1">
+              Cancel
+            </button>
             <button type="submit" disabled={loading} className="btn-primary flex-1">
               {loading ? 'Logging…' : 'Log Harvest'}
             </button>
@@ -132,13 +202,14 @@ function GuideModal({ guideId, onClose }) {
 
   useEffect(() => {
     setLoading(true)
-    api.get(`/plant-guides/${guideId}`)
+    api
+      .get(`/plant-guides/${guideId}`)
       .then(r => setGuide(r.data))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [guideId])
 
-  const ts = guide ? (TYPE_STYLES[guide.type] || TYPE_STYLES.vegetable) : null
+  const ts = guide ? TYPE_STYLES[guide.type] || TYPE_STYLES.vegetable : null
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -147,12 +218,14 @@ function GuideModal({ guideId, onClose }) {
           <div className="flex items-center gap-3">
             <BookOpen size={18} className="text-moss-500 flex-shrink-0" />
             <div>
-              <h2 className="text-lg font-serif font-semibold text-ink leading-tight">{guide?.common_name || '…'}</h2>
-              {guide?.scientific_name && <p className="text-xs text-slate-400 italic">{guide.scientific_name}</p>}
+              <h2 className="text-lg font-serif font-semibold text-ink leading-tight">
+                {guide?.common_name || '…'}
+              </h2>
+              {guide?.scientific_name && (
+                <p className="text-xs text-slate-400 italic">{guide.scientific_name}</p>
+              )}
             </div>
-            {guide && ts && (
-              <span className={`tag ${ts.bg} ${ts.text} ml-1`}>{ts.label}</span>
-            )}
+            {guide && ts && <span className={`tag ${ts.bg} ${ts.text} ml-1`}>{ts.label}</span>}
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 flex-shrink-0">
             <X size={18} />
@@ -176,19 +249,32 @@ function GuideModal({ guideId, onClose }) {
 
             {/* Key stats strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="Days to Harvest" value={guide.days_to_harvest ? `${guide.days_to_harvest} days` : '—'} />
-              <StatCard label="Germination"     value={guide.days_to_germinate ? `${guide.days_to_germinate} days` : '—'} />
-              <StatCard label="Space / Plant"   value={guide.space_needed_sqft ? `${guide.space_needed_sqft} sq ft` : '—'} />
-              <StatCard label="USDA Zones"      value={guide.usda_zones || '—'} />
+              <StatCard
+                label="Days to Harvest"
+                value={guide.days_to_harvest ? `${guide.days_to_harvest} days` : '—'}
+              />
+              <StatCard
+                label="Germination"
+                value={guide.days_to_germinate ? `${guide.days_to_germinate} days` : '—'}
+              />
+              <StatCard
+                label="Space / Plant"
+                value={guide.space_needed_sqft ? `${guide.space_needed_sqft} sq ft` : '—'}
+              />
+              <StatCard label="USDA Zones" value={guide.usda_zones || '—'} />
             </div>
 
             {/* When to Plant */}
             <GuideSection title="When to Plant" icon="🗓">
               <div className="flex flex-wrap gap-2 mb-2">
                 {(guide.planting_seasons || []).map(s => (
-                  <span key={s} className="tag bg-moss-100 text-moss-700 capitalize">{s}</span>
+                  <span key={s} className="tag bg-moss-100 text-moss-700 capitalize">
+                    {s}
+                  </span>
                 ))}
-                {(guide.planting_seasons || []).length === 0 && <span className="text-slate-400 text-sm">—</span>}
+                {(guide.planting_seasons || []).length === 0 && (
+                  <span className="text-slate-400 text-sm">—</span>
+                )}
               </div>
               {guide.usda_zones && (
                 <p className="text-sm text-slate-600">
@@ -202,15 +288,23 @@ function GuideModal({ guideId, onClose }) {
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div className="text-center">
                   <p className="text-xs text-slate-400 mb-0.5">Per plant</p>
-                  <p className="font-semibold text-ink">{guide.space_needed_sqft ? `${guide.space_needed_sqft} sq ft` : '—'}</p>
+                  <p className="font-semibold text-ink">
+                    {guide.space_needed_sqft ? `${guide.space_needed_sqft} sq ft` : '—'}
+                  </p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-slate-400 mb-0.5">Between plants</p>
-                  <p className="font-semibold text-ink">{guide.spacing_between_plants_inches ? `${guide.spacing_between_plants_inches}"` : '—'}</p>
+                  <p className="font-semibold text-ink">
+                    {guide.spacing_between_plants_inches
+                      ? `${guide.spacing_between_plants_inches}"`
+                      : '—'}
+                  </p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-slate-400 mb-0.5">Row spacing</p>
-                  <p className="font-semibold text-ink">{guide.row_spacing_inches ? `${guide.row_spacing_inches}"` : '—'}</p>
+                  <p className="font-semibold text-ink">
+                    {guide.row_spacing_inches ? `${guide.row_spacing_inches}"` : '—'}
+                  </p>
                 </div>
               </div>
             </GuideSection>
@@ -247,7 +341,9 @@ function GuideModal({ guideId, onClose }) {
               <GuideSection title="Companion Plants" icon="🤝">
                 <div className="flex flex-wrap gap-1.5">
                   {guide.companion_plants.map(p => (
-                    <span key={p} className="tag bg-moss-50 text-moss-700 border border-moss-200">{p}</span>
+                    <span key={p} className="tag bg-moss-50 text-moss-700 border border-moss-200">
+                      {p}
+                    </span>
                   ))}
                 </div>
               </GuideSection>
@@ -258,7 +354,9 @@ function GuideModal({ guideId, onClose }) {
               <GuideSection title="Avoid Planting With" icon="⚠️">
                 <div className="flex flex-wrap gap-1.5">
                   {guide.avoid_planting_with.map(p => (
-                    <span key={p} className="tag bg-red-50 text-red-600 border border-red-200">{p}</span>
+                    <span key={p} className="tag bg-red-50 text-red-600 border border-red-200">
+                      {p}
+                    </span>
                   ))}
                 </div>
               </GuideSection>
@@ -284,10 +382,17 @@ function GuideModal({ guideId, onClose }) {
                       className="flex items-center justify-between gap-2 group px-3 py-2 rounded-lg border border-slate-200 hover:border-moss-300 hover:bg-moss-50 transition-colors"
                     >
                       <div>
-                        <p className="text-sm font-medium text-moss-700 group-hover:text-moss-800 leading-snug">{link.label}</p>
-                        <p className="text-xs text-slate-400">{new URL(link.url).hostname.replace('www.', '')}</p>
+                        <p className="text-sm font-medium text-moss-700 group-hover:text-moss-800 leading-snug">
+                          {link.label}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {new URL(link.url).hostname.replace('www.', '')}
+                        </p>
                       </div>
-                      <ExternalLink size={13} className="text-slate-300 group-hover:text-moss-500 flex-shrink-0" />
+                      <ExternalLink
+                        size={13}
+                        className="text-slate-300 group-hover:text-moss-500 flex-shrink-0"
+                      />
                     </a>
                   ))}
                 </div>
@@ -330,7 +435,9 @@ function GuideCard({ guide, onClick }) {
       className="card p-0 overflow-hidden text-left hover:shadow-md transition-shadow group cursor-pointer"
     >
       {/* Color bar */}
-      <div className={`h-1.5 w-full ${guide.type === 'herb' ? 'bg-moss-400' : guide.type === 'fruit' ? 'bg-amber-400' : guide.type === 'flower' ? 'bg-purple-400' : 'bg-terra-400'}`} />
+      <div
+        className={`h-1.5 w-full ${guide.type === 'herb' ? 'bg-moss-400' : guide.type === 'fruit' ? 'bg-amber-400' : guide.type === 'flower' ? 'bg-purple-400' : 'bg-terra-400'}`}
+      />
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-serif font-semibold text-ink text-sm leading-snug group-hover:text-moss-700 transition-colors">
@@ -378,14 +485,21 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
 
   useEffect(() => {
     clearTimeout(timerRef.current)
-    if (!value || value.length < 2) { setResults([]); setOpen(false); return }
+    if (!value || value.length < 2) {
+      setResults([])
+      setOpen(false)
+      return
+    }
     setSearching(true)
     timerRef.current = setTimeout(async () => {
       try {
         const res = await api.get('/plant-guides/search', { params: { q: value } })
         setResults(res.data)
         setOpen(res.data.length > 0)
-      } catch {} finally { setSearching(false) }
+      } catch {
+      } finally {
+        setSearching(false)
+      }
     }, 280)
     return () => clearTimeout(timerRef.current)
   }, [value])
@@ -393,7 +507,9 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
   // close on outside click
   useEffect(() => {
     if (!open) return
-    const h = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
+    const h = e => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+    }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [open])
@@ -413,18 +529,26 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
           className="input pr-8"
           placeholder="e.g. Heirloom Tomatoes"
           value={value}
-          onChange={e => { onChange(e.target.value); onSelectGuide(null) }}
+          onChange={e => {
+            onChange(e.target.value)
+            onSelectGuide(null)
+          }}
           onFocus={() => results.length > 0 && setOpen(true)}
           autoComplete="off"
         />
         {searching && (
-          <Loader size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 animate-spin" />
+          <Loader
+            size={13}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 animate-spin"
+          />
         )}
       </div>
       {open && (
         <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="px-3 py-1.5 border-b border-slate-100">
-            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Match from growing guides</p>
+            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">
+              Match from growing guides
+            </p>
           </div>
           {results.map(g => {
             const ts = TYPE_STYLES[g.type] || TYPE_STYLES.vegetable
@@ -437,9 +561,13 @@ function PlantNameTypeahead({ value, onChange, onSelectGuide }) {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-ink truncate">{g.common_name}</p>
-                  {g.scientific_name && <p className="text-xs text-slate-400 italic truncate">{g.scientific_name}</p>}
+                  {g.scientific_name && (
+                    <p className="text-xs text-slate-400 italic truncate">{g.scientific_name}</p>
+                  )}
                 </div>
-                <span className={`tag flex-shrink-0 ${ts.bg} ${ts.text} text-[10px]`}>{ts.label}</span>
+                <span className={`tag flex-shrink-0 ${ts.bg} ${ts.text} text-[10px]`}>
+                  {ts.label}
+                </span>
               </button>
             )
           })}
@@ -465,8 +593,12 @@ export default function Garden() {
   const [harvestTarget, setHarvestTarget] = useState(null)
   const [showAddPlant, setShowAddPlant] = useState(false)
   const [plantForm, setPlantForm] = useState({
-    plant_name: '', date_planted: '', expected_harvest: '',
-    status: 'growing', notes: '', plant_guide_id: null
+    plant_name: '',
+    date_planted: '',
+    expected_harvest: '',
+    status: 'growing',
+    notes: '',
+    plant_guide_id: null,
   })
 
   // Guide library state
@@ -484,11 +616,13 @@ export default function Garden() {
       api.get(`/garden/${gid}/plants`),
       api.get(`/garden/${gid}/harvests`),
       api.get(`/garden/${gid}/calendar`),
-    ]).then(([p, h, c]) => {
-      setPlants(p.data)
-      setHarvests(h.data)
-      setCalendar(c.data)
-    }).catch(() => {})
+    ])
+      .then(([p, h, c]) => {
+        setPlants(p.data)
+        setHarvests(h.data)
+        setCalendar(c.data)
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }
 
@@ -499,7 +633,10 @@ export default function Garden() {
       const res = await api.get('/plant-guides')
       setGuides(res.data)
       setGuidesLoaded(true)
-    } catch {} finally { setGuidesLoading(false) }
+    } catch {
+    } finally {
+      setGuidesLoading(false)
+    }
   }, [guidesLoaded])
 
   useEffect(loadAll, [gid])
@@ -511,7 +648,14 @@ export default function Garden() {
   const addPlant = async e => {
     e.preventDefault()
     await api.post(`/garden/${gid}/plants`, plantForm)
-    setPlantForm({ plant_name: '', date_planted: '', expected_harvest: '', status: 'growing', notes: '', plant_guide_id: null })
+    setPlantForm({
+      plant_name: '',
+      date_planted: '',
+      expected_harvest: '',
+      status: 'growing',
+      notes: '',
+      plant_guide_id: null,
+    })
     setShowAddPlant(false)
     loadAll()
   }
@@ -533,25 +677,27 @@ export default function Garden() {
   }
 
   // Wait for auth to resolve before deciding the user has no group
-  if (authLoading) return (
-    <div className="flex justify-center py-16">
-      <div className="w-8 h-8 border-4 border-moss-200 border-t-moss-600 rounded-full animate-spin" />
-    </div>
-  )
+  if (authLoading)
+    return (
+      <div className="flex justify-center py-16">
+        <div className="w-8 h-8 border-4 border-moss-200 border-t-moss-600 rounded-full animate-spin" />
+      </div>
+    )
 
   if (!activeGroup) return <NoGroup />
 
   const tabs = [
-    { id: 'garden',   label: 'Garden'         },
-    { id: 'harvests', label: 'Harvest Log'     },
-    { id: 'calendar', label: 'Calendar'        },
-    { id: 'guides',   label: '📖 Growing Guides' },
+    { id: 'garden', label: 'Garden' },
+    { id: 'harvests', label: 'Harvest Log' },
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'guides', label: '📖 Growing Guides' },
   ]
 
   // Filtered guides for library
   const filteredGuides = guides.filter(g => {
     const matchType = guideTypeFilter === 'all' || g.type === guideTypeFilter
-    const matchSearch = !guideSearch || g.common_name.toLowerCase().includes(guideSearch.toLowerCase())
+    const matchSearch =
+      !guideSearch || g.common_name.toLowerCase().includes(guideSearch.toLowerCase())
     return matchType && matchSearch
   })
 
@@ -568,7 +714,10 @@ export default function Garden() {
           </div>
         </div>
         {tab !== 'guides' && (
-          <button onClick={() => setShowAddPlant(v => !v)} className="btn-primary flex items-center gap-2">
+          <button
+            onClick={() => setShowAddPlant(v => !v)}
+            className="btn-primary flex items-center gap-2"
+          >
             <Plus size={16} /> Add Plant
           </button>
         )}
@@ -577,8 +726,11 @@ export default function Garden() {
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6 overflow-x-auto">
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${tab === t.id ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${tab === t.id ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
             {t.label}
           </button>
         ))}
@@ -593,7 +745,9 @@ export default function Garden() {
               <div>
                 <label className="label">
                   Plant name
-                  <span className="ml-1 text-[10px] text-moss-500 font-normal normal-case">— type to search guides</span>
+                  <span className="ml-1 text-[10px] text-moss-500 font-normal normal-case">
+                    — type to search guides
+                  </span>
                 </label>
                 <PlantNameTypeahead
                   value={plantForm.plant_name}
@@ -608,30 +762,56 @@ export default function Garden() {
               </div>
               <div>
                 <label className="label">Date planted</label>
-                <input required type="date" className="input" value={plantForm.date_planted}
-                  onChange={e => setPlantForm(f => ({ ...f, date_planted: e.target.value }))} />
+                <input
+                  required
+                  type="date"
+                  className="input"
+                  value={plantForm.date_planted}
+                  onChange={e => setPlantForm(f => ({ ...f, date_planted: e.target.value }))}
+                />
               </div>
               <div>
                 <label className="label">Expected harvest</label>
-                <input type="date" className="input" value={plantForm.expected_harvest}
-                  onChange={e => setPlantForm(f => ({ ...f, expected_harvest: e.target.value }))} />
+                <input
+                  type="date"
+                  className="input"
+                  value={plantForm.expected_harvest}
+                  onChange={e => setPlantForm(f => ({ ...f, expected_harvest: e.target.value }))}
+                />
               </div>
               <div>
                 <label className="label">Status</label>
-                <select className="input" value={plantForm.status}
-                  onChange={e => setPlantForm(f => ({ ...f, status: e.target.value }))}>
-                  {STATUSES.map(s => <option key={s}>{s}</option>)}
+                <select
+                  className="input"
+                  value={plantForm.status}
+                  onChange={e => setPlantForm(f => ({ ...f, status: e.target.value }))}
+                >
+                  {STATUSES.map(s => (
+                    <option key={s}>{s}</option>
+                  ))}
                 </select>
               </div>
             </div>
             <div>
               <label className="label">Notes</label>
-              <input className="input" placeholder="Variety, location, care notes…" value={plantForm.notes}
-                onChange={e => setPlantForm(f => ({ ...f, notes: e.target.value }))} />
+              <input
+                className="input"
+                placeholder="Variety, location, care notes…"
+                value={plantForm.notes}
+                onChange={e => setPlantForm(f => ({ ...f, notes: e.target.value }))}
+              />
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setShowAddPlant(false)} className="btn-ghost flex-1">Cancel</button>
-              <button type="submit" className="btn-primary flex-1">Add Plant</button>
+              <button
+                type="button"
+                onClick={() => setShowAddPlant(false)}
+                className="btn-ghost flex-1"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary flex-1">
+                Add Plant
+              </button>
             </div>
           </form>
         </div>
@@ -651,58 +831,70 @@ export default function Garden() {
               <Sprout size={36} className="mx-auto mb-3 opacity-30" />
               <p>Nothing planted yet. Add your first plant!</p>
             </div>
-          ) : plants.map(p => (
-            <div key={p.id} className="card hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div>
-                  <h4 className="font-serif font-semibold text-ink">{p.plant_name}</h4>
-                  <span className={`tag mt-1 ${STATUS_STYLES[p.status] || 'bg-slate-100 text-slate-600'}`}>
-                    {STATUS_ICONS[p.status]} {p.status}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  {p.plant_guide_id && (
-                    <button
-                      onClick={() => setOpenGuideId(p.plant_guide_id)}
-                      title="View growing guide"
-                      className="text-moss-400 hover:text-moss-600 p-1 rounded hover:bg-moss-50 transition-colors"
+          ) : (
+            plants.map(p => (
+              <div key={p.id} className="card hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <h4 className="font-serif font-semibold text-ink">{p.plant_name}</h4>
+                    <span
+                      className={`tag mt-1 ${STATUS_STYLES[p.status] || 'bg-slate-100 text-slate-600'}`}
                     >
-                      <BookOpen size={14} />
+                      {STATUS_ICONS[p.status]} {p.status}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {p.plant_guide_id && (
+                      <button
+                        onClick={() => setOpenGuideId(p.plant_guide_id)}
+                        title="View growing guide"
+                        className="text-moss-400 hover:text-moss-600 p-1 rounded hover:bg-moss-50 transition-colors"
+                      >
+                        <BookOpen size={14} />
+                      </button>
+                    )}
+                    {p.status !== 'harvested' && (
+                      <button
+                        onClick={() => setHarvestTarget(p)}
+                        title="Log harvest"
+                        className="text-moss-400 hover:text-moss-600 p-1 rounded hover:bg-moss-50 transition-colors"
+                      >
+                        🧺
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deletePlant(p.id)}
+                      className="text-slate-300 hover:text-red-500 p-1 rounded transition-colors"
+                    >
+                      <Trash2 size={14} />
                     </button>
+                  </div>
+                </div>
+                <div className="space-y-0.5 text-xs text-slate-500">
+                  <p>Planted: {p.date_planted}</p>
+                  {p.expected_harvest && <p>Harvest: {p.expected_harvest}</p>}
+                  {p.guide_name && (
+                    <p className="text-moss-500 flex items-center gap-1">
+                      <BookOpen size={10} /> {p.guide_name}
+                    </p>
                   )}
-                  {p.status !== 'harvested' && (
-                    <button onClick={() => setHarvestTarget(p)} title="Log harvest"
-                      className="text-moss-400 hover:text-moss-600 p-1 rounded hover:bg-moss-50 transition-colors">
-                      🧺
-                    </button>
-                  )}
-                  <button onClick={() => deletePlant(p.id)}
-                    className="text-slate-300 hover:text-red-500 p-1 rounded transition-colors">
-                    <Trash2 size={14} />
-                  </button>
+                  {p.notes && <p className="text-slate-400 italic mt-1">{p.notes}</p>}
+                  <p className="text-slate-400">by {p.added_by_name}</p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <select
+                    className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 bg-transparent focus:outline-none focus:border-moss-400 w-full"
+                    value={p.status}
+                    onChange={e => updatePlant(p.id, { status: e.target.value })}
+                  >
+                    {STATUSES.map(s => (
+                      <option key={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              <div className="space-y-0.5 text-xs text-slate-500">
-                <p>Planted: {p.date_planted}</p>
-                {p.expected_harvest && <p>Harvest: {p.expected_harvest}</p>}
-                {p.guide_name && (
-                  <p className="text-moss-500 flex items-center gap-1">
-                    <BookOpen size={10} /> {p.guide_name}
-                  </p>
-                )}
-                {p.notes && <p className="text-slate-400 italic mt-1">{p.notes}</p>}
-                <p className="text-slate-400">by {p.added_by_name}</p>
-              </div>
-              <div className="mt-3 pt-3 border-t border-slate-100">
-                <select
-                  className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 bg-transparent focus:outline-none focus:border-moss-400 w-full"
-                  value={p.status}
-                  onChange={e => updatePlant(p.id, { status: e.target.value })}>
-                  {STATUSES.map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -710,29 +902,40 @@ export default function Garden() {
       {!loading && tab === 'harvests' && (
         <div className="space-y-3">
           <div className="flex justify-between items-center mb-2">
-            <p className="text-sm text-slate-500">{harvests.length} harvest{harvests.length !== 1 ? 's' : ''} logged</p>
-            <button onClick={() => setHarvestTarget({ id: null, plant_name: '' })} className="btn-primary flex items-center gap-2 text-sm">
+            <p className="text-sm text-slate-500">
+              {harvests.length} harvest{harvests.length !== 1 ? 's' : ''} logged
+            </p>
+            <button
+              onClick={() => setHarvestTarget({ id: null, plant_name: '' })}
+              className="btn-primary flex items-center gap-2 text-sm"
+            >
               <Plus size={14} /> Log Harvest
             </button>
           </div>
           {harvests.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">No harvests logged yet</div>
-          ) : harvests.map(h => (
-            <div key={h.id} className="card border-l-4 border-moss-300 flex items-start gap-3">
-              <div className="text-xl flex-shrink-0">🧺</div>
-              <div className="flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="font-medium text-ink text-sm">{h.plant_name}</h4>
-                    <p className="text-xs text-slate-500">{h.harvest_date} · Yield: <strong>{h.yield_amount}</strong></p>
+          ) : (
+            harvests.map(h => (
+              <div key={h.id} className="card border-l-4 border-moss-300 flex items-start gap-3">
+                <div className="text-xl flex-shrink-0">🧺</div>
+                <div className="flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="font-medium text-ink text-sm">{h.plant_name}</h4>
+                      <p className="text-xs text-slate-500">
+                        {h.harvest_date} · Yield: <strong>{h.yield_amount}</strong>
+                      </p>
+                    </div>
+                    {h.added_to_inventory ? (
+                      <span className="tag tag-moss text-xs">In Cuisine ✓</span>
+                    ) : null}
                   </div>
-                  {h.added_to_inventory ? <span className="tag tag-moss text-xs">In Cuisine ✓</span> : null}
+                  {h.notes && <p className="text-xs text-slate-400 italic mt-1">{h.notes}</p>}
+                  <p className="text-xs text-slate-400">by {h.added_by_name}</p>
                 </div>
-                {h.notes && <p className="text-xs text-slate-400 italic mt-1">{h.notes}</p>}
-                <p className="text-xs text-slate-400">by {h.added_by_name}</p>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -743,26 +946,30 @@ export default function Garden() {
             <div className="text-center py-10 text-slate-400 text-sm">
               No harvest dates set. Add expected harvest dates to your plants.
             </div>
-          ) : Object.entries(calendar).map(([month, monthPlants]) => (
-            <div key={month}>
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar size={16} className="text-moss-500" />
-                <h3 className="font-serif font-semibold text-ink">{month}</h3>
-                <div className="flex-1 h-px bg-slate-200" />
+          ) : (
+            Object.entries(calendar).map(([month, monthPlants]) => (
+              <div key={month}>
+                <div className="flex items-center gap-3 mb-2">
+                  <Calendar size={16} className="text-moss-500" />
+                  <h3 className="font-serif font-semibold text-ink">{month}</h3>
+                  <div className="flex-1 h-px bg-slate-200" />
+                </div>
+                <div className="space-y-2 pl-4">
+                  {monthPlants.map((p, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span
+                        className={`tag ${STATUS_STYLES[p.status] || 'bg-slate-100 text-slate-600'}`}
+                      >
+                        {STATUS_ICONS[p.status]} {p.status}
+                      </span>
+                      <span className="text-sm font-medium text-ink">{p.plant_name}</span>
+                      <span className="text-xs text-slate-400">{p.expected_harvest}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-2 pl-4">
-                {monthPlants.map((p, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className={`tag ${STATUS_STYLES[p.status] || 'bg-slate-100 text-slate-600'}`}>
-                      {STATUS_ICONS[p.status]} {p.status}
-                    </span>
-                    <span className="text-sm font-medium text-ink">{p.plant_name}</span>
-                    <span className="text-xs text-slate-400">{p.expected_harvest}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -772,7 +979,10 @@ export default function Garden() {
           {/* Search + filter */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
               <input
                 className="input pl-9"
                 placeholder="Search plants…"
@@ -782,18 +992,21 @@ export default function Garden() {
             </div>
             <div className="flex gap-1.5 flex-wrap">
               {[
-                { id: 'all',       label: 'All'        },
+                { id: 'all', label: 'All' },
                 { id: 'vegetable', label: 'Vegetables' },
-                { id: 'herb',      label: 'Herbs'      },
-                { id: 'fruit',     label: 'Fruits'     },
-                { id: 'flower',    label: 'Flowers'    },
+                { id: 'herb', label: 'Herbs' },
+                { id: 'fruit', label: 'Fruits' },
+                { id: 'flower', label: 'Flowers' },
               ].map(f => (
-                <button key={f.id} onClick={() => setGuideTypeFilter(f.id)}
+                <button
+                  key={f.id}
+                  onClick={() => setGuideTypeFilter(f.id)}
                   className={`tag cursor-pointer text-sm px-3 py-1.5 transition-colors ${
                     guideTypeFilter === f.id
                       ? 'bg-moss-500 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-moss-50'
-                  }`}>
+                  }`}
+                >
                   {f.label}
                 </button>
               ))}
@@ -807,11 +1020,15 @@ export default function Garden() {
           ) : filteredGuides.length === 0 ? (
             <div className="text-center py-16 text-slate-400">
               <BookOpen size={36} className="mx-auto mb-3 opacity-30" />
-              <p>{guideSearch ? `No plants matching "${guideSearch}"` : 'No guides in this category'}</p>
+              <p>
+                {guideSearch ? `No plants matching "${guideSearch}"` : 'No guides in this category'}
+              </p>
             </div>
           ) : (
             <>
-              <p className="text-xs text-slate-400 mb-3">{filteredGuides.length} plant{filteredGuides.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-slate-400 mb-3">
+                {filteredGuides.length} plant{filteredGuides.length !== 1 ? 's' : ''}
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredGuides.map(g => (
                   <GuideCard key={g.id} guide={g} onClick={setOpenGuideId} />
@@ -833,12 +1050,7 @@ export default function Garden() {
       )}
 
       {/* Guide detail modal */}
-      {openGuideId && (
-        <GuideModal
-          guideId={openGuideId}
-          onClose={() => setOpenGuideId(null)}
-        />
-      )}
+      {openGuideId && <GuideModal guideId={openGuideId} onClose={() => setOpenGuideId(null)} />}
     </div>
   )
 }

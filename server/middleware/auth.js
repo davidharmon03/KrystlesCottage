@@ -51,7 +51,8 @@ async function twoFaMiddleware(req, res, next) {
       "SELECT * FROM two_fa_sessions WHERE token = ? AND user_id = ? AND datetime(expires_at) > datetime('now')",
       [token, req.user?.id]
     );
-    if (!session) return res.status(403).json({ error: '2FA session expired', code: '2FA_REQUIRED' });
+    if (!session)
+      return res.status(403).json({ error: '2FA session expired', code: '2FA_REQUIRED' });
     next();
   } catch {
     return res.status(500).json({ error: 'Server error' });

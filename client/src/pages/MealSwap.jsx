@@ -3,19 +3,48 @@ import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import RatingModal from '../components/RatingModal'
 import {
-  ArrowLeftRight, Calendar, ChevronDown, ChevronUp,
-  Clock, Edit2, Loader, Plus, X, Check, Star
+  ArrowLeftRight,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Edit2,
+  Loader,
+  Plus,
+  X,
+  Check,
+  Star,
 } from 'lucide-react'
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  assigned:    { label: 'Assigned',    bg: 'bg-slate-100',  text: 'text-slate-600', border: 'border-slate-200' },
-  in_progress: { label: 'In Progress', bg: 'bg-terra-100',  text: 'text-terra-700', border: 'border-terra-200' },
-  ready:       { label: 'Ready',       bg: 'bg-moss-100',   text: 'text-moss-700',  border: 'border-moss-300'  },
-  swapped:     { label: 'Swapped',     bg: 'bg-slate-200',  text: 'text-slate-500', border: 'border-slate-300' },
+  assigned: {
+    label: 'Assigned',
+    bg: 'bg-slate-100',
+    text: 'text-slate-600',
+    border: 'border-slate-200',
+  },
+  in_progress: {
+    label: 'In Progress',
+    bg: 'bg-terra-100',
+    text: 'text-terra-700',
+    border: 'border-terra-200',
+  },
+  ready: { label: 'Ready', bg: 'bg-moss-100', text: 'text-moss-700', border: 'border-moss-300' },
+  swapped: {
+    label: 'Swapped',
+    bg: 'bg-slate-200',
+    text: 'text-slate-500',
+    border: 'border-slate-300',
+  },
 }
 const STATUS_ORDER = ['assigned', 'in_progress', 'ready', 'swapped']
-const NEXT_STATUS  = { assigned: 'in_progress', in_progress: 'ready', ready: 'swapped', swapped: null }
+const NEXT_STATUS = {
+  assigned: 'in_progress',
+  in_progress: 'ready',
+  ready: 'swapped',
+  swapped: null,
+}
 
 const API_BASE = '' // uploads are served from the same address as the site
 
@@ -29,12 +58,21 @@ function daysUntil(dateStr) {
 
 function fmtSwapDay(dateStr) {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric'
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
   })
 }
 
 function initials(name = '') {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+  return (
+    name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '?'
+  )
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
@@ -45,7 +83,9 @@ function Avatar({ user }) {
         src={`${API_BASE}/uploads/avatars/${user.avatar_path.split('/').pop()}`}
         alt={user.user_name}
         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-        onError={e => { e.currentTarget.style.display = 'none' }}
+        onError={e => {
+          e.currentTarget.style.display = 'none'
+        }}
       />
     )
   }
@@ -60,7 +100,9 @@ function Avatar({ user }) {
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.assigned
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.text} ${cfg.border}`}
+    >
       {status === 'ready' && (
         <span className="w-1.5 h-1.5 rounded-full bg-moss-500 mr-1.5 animate-pulse" />
       )}
@@ -74,17 +116,17 @@ export default function MealSwap() {
   const { user } = useAuth()
   const groupId = user?.groups?.[0]?.id
 
-  const [data,          setData]          = useState(null)   // { week, entrees }
-  const [history,       setHistory]       = useState([])
-  const [members,       setMembers]       = useState([])
-  const [recipes,       setRecipes]       = useState([])
-  const [isAdmin,       setIsAdmin]       = useState(false)
-  const [loading,       setLoading]       = useState(true)
-  const [showHistory,   setShowHistory]   = useState(false)
+  const [data, setData] = useState(null) // { week, entrees }
+  const [history, setHistory] = useState([])
+  const [members, setMembers] = useState([])
+  const [recipes, setRecipes] = useState([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [showHistory, setShowHistory] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
-  const [updateEntreeModal, setUpdateEntreeModal] = useState(null)   // entree object
-  const [createModal,   setCreateModal]   = useState(false)
-  const [ratingModal,   setRatingModal]   = useState(null)   // { entree, weekId }
+  const [updateEntreeModal, setUpdateEntreeModal] = useState(null) // entree object
+  const [createModal, setCreateModal] = useState(false)
+  const [ratingModal, setRatingModal] = useState(null) // { entree, weekId }
 
   const load = useCallback(async () => {
     if (!groupId) return
@@ -106,7 +148,9 @@ export default function MealSwap() {
     }
   }, [groupId, user?.id])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const loadHistory = async () => {
     if (historyLoaded) return
@@ -136,7 +180,8 @@ export default function MealSwap() {
 
   const handleCompleteWeek = async () => {
     if (!data?.week) return
-    if (!window.confirm('Mark this swap week as complete? All entrées will be marked as Swapped.')) return
+    if (!window.confirm('Mark this swap week as complete? All entrées will be marked as Swapped.'))
+      return
     try {
       await api.put(`/swaps/${data.week.id}/complete`)
       setHistoryLoaded(false)
@@ -146,7 +191,7 @@ export default function MealSwap() {
     }
   }
 
-  const handleCreate = async (form) => {
+  const handleCreate = async form => {
     try {
       await api.post('/swaps', { group_id: groupId, ...form })
       setCreateModal(false)
@@ -165,9 +210,9 @@ export default function MealSwap() {
     )
   }
 
-  const week           = data?.week
-  const entrees        = data?.entrees || []
-  const days           = week ? daysUntil(week.swap_day) : null
+  const week = data?.week
+  const entrees = data?.entrees || []
+  const days = week ? daysUntil(week.swap_day) : null
   const readyOrSwapped = entrees.filter(e => e.status === 'ready' || e.status === 'swapped').length
 
   return (
@@ -185,12 +230,18 @@ export default function MealSwap() {
             </div>
           </div>
           {isAdmin && !week && (
-            <button onClick={() => setCreateModal(true)} className="btn-primary flex items-center gap-2">
+            <button
+              onClick={() => setCreateModal(true)}
+              className="btn-primary flex items-center gap-2"
+            >
               <Plus size={16} /> New Swap Week
             </button>
           )}
           {isAdmin && week && (
-            <button onClick={() => setCreateModal(true)} className="btn-ghost text-sm flex items-center gap-1.5">
+            <button
+              onClick={() => setCreateModal(true)}
+              className="btn-ghost text-sm flex items-center gap-1.5"
+            >
               <Plus size={14} /> New Week
             </button>
           )}
@@ -204,28 +255,48 @@ export default function MealSwap() {
       ) : week ? (
         <>
           {/* ── Swap Day Banner ── */}
-          <div className={`rounded-2xl p-5 mb-6 border ${
-            days < 0   ? 'bg-slate-50 border-slate-200' :
-            days === 0 ? 'bg-moss-50 border-moss-300'   :
-            days <= 3  ? 'bg-terra-50 border-terra-200'  :
-                         'bg-cream border-slate-200'
-          }`}>
+          <div
+            className={`rounded-2xl p-5 mb-6 border ${
+              days < 0
+                ? 'bg-slate-50 border-slate-200'
+                : days === 0
+                  ? 'bg-moss-50 border-moss-300'
+                  : days <= 3
+                    ? 'bg-terra-50 border-terra-200'
+                    : 'bg-cream border-slate-200'
+            }`}
+          >
             <div className="flex items-start justify-between flex-wrap gap-4">
               {/* Left: date */}
               <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  days === 0 ? 'bg-moss-100'  :
-                  days < 0   ? 'bg-slate-100' :
-                  days <= 3  ? 'bg-terra-100' : 'bg-white border border-slate-200'
-                }`}>
-                  <Calendar size={20} className={
-                    days === 0 ? 'text-moss-600'  :
-                    days < 0   ? 'text-slate-400' :
-                    days <= 3  ? 'text-terra-500' : 'text-slate-500'
-                  } />
+                <div
+                  className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    days === 0
+                      ? 'bg-moss-100'
+                      : days < 0
+                        ? 'bg-slate-100'
+                        : days <= 3
+                          ? 'bg-terra-100'
+                          : 'bg-white border border-slate-200'
+                  }`}
+                >
+                  <Calendar
+                    size={20}
+                    className={
+                      days === 0
+                        ? 'text-moss-600'
+                        : days < 0
+                          ? 'text-slate-400'
+                          : days <= 3
+                            ? 'text-terra-500'
+                            : 'text-slate-500'
+                    }
+                  />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Swap Day</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                    Swap Day
+                  </p>
                   <p className="text-lg font-serif font-semibold text-ink leading-tight">
                     {fmtSwapDay(week.swap_day)}
                   </p>
@@ -244,11 +315,13 @@ export default function MealSwap() {
                 ) : days < 0 ? (
                   <span className="text-slate-400 text-sm">{Math.abs(days)} days ago</span>
                 ) : (
-                  <span className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full border ${
-                    days <= 3
-                      ? 'text-terra-700 bg-terra-50 border-terra-200'
-                      : 'text-slate-600 bg-white border-slate-200'
-                  }`}>
+                  <span
+                    className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full border ${
+                      days <= 3
+                        ? 'text-terra-700 bg-terra-50 border-terra-200'
+                        : 'text-slate-600 bg-white border-slate-200'
+                    }`}
+                  >
                     <Clock size={13} />
                     {days} {days === 1 ? 'day' : 'days'} away
                   </span>
@@ -260,10 +333,13 @@ export default function MealSwap() {
                       key={e.id}
                       title={`${e.user_name}: ${STATUS_CONFIG[e.status]?.label}`}
                       className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                        e.status === 'swapped'     ? 'bg-slate-400' :
-                        e.status === 'ready'       ? 'bg-moss-500'  :
-                        e.status === 'in_progress' ? 'bg-terra-400' :
-                                                     'bg-slate-200'
+                        e.status === 'swapped'
+                          ? 'bg-slate-400'
+                          : e.status === 'ready'
+                            ? 'bg-moss-500'
+                            : e.status === 'in_progress'
+                              ? 'bg-terra-400'
+                              : 'bg-slate-200'
                       }`}
                     />
                   ))}
@@ -284,7 +360,7 @@ export default function MealSwap() {
             ) : (
               entrees.map(entree => {
                 const isMyEntree = entree.user_id === user.id
-                const isReady    = entree.status === 'ready'
+                const isReady = entree.status === 'ready'
                 return (
                   <div
                     key={entree.id}
@@ -341,7 +417,10 @@ export default function MealSwap() {
           {isAdmin && week.status === 'active' && (
             <div className="flex items-center justify-between py-4 border-t border-slate-100 mb-6">
               <p className="text-sm text-slate-400">Everyone exchanged their meals?</p>
-              <button onClick={handleCompleteWeek} className="btn-secondary text-sm flex items-center gap-1.5">
+              <button
+                onClick={handleCompleteWeek}
+                className="btn-secondary text-sm flex items-center gap-1.5"
+              >
                 <Check size={14} /> Mark Swap Complete
               </button>
             </div>
@@ -390,7 +469,9 @@ export default function MealSwap() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="font-semibold text-ink text-sm">{fmtSwapDay(hw.swap_day)}</p>
-                      {hw.week_label && <p className="text-xs text-slate-400 mt-0.5">{hw.week_label}</p>}
+                      {hw.week_label && (
+                        <p className="text-xs text-slate-400 mt-0.5">{hw.week_label}</p>
+                      )}
                     </div>
                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
                       Completed
@@ -398,7 +479,10 @@ export default function MealSwap() {
                   </div>
                   <div className="space-y-1.5">
                     {he.map(e => (
-                      <div key={e.id} className="flex items-center justify-between gap-2 text-sm group">
+                      <div
+                        key={e.id}
+                        className="flex items-center justify-between gap-2 text-sm group"
+                      >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <span className="w-2 h-2 rounded-full bg-slate-300 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -407,7 +491,9 @@ export default function MealSwap() {
                               <span className="text-slate-500">— {e.entree_name}</span>
                             </div>
                             {e.sides && e.sides.length > 0 && (
-                              <p className="text-xs text-slate-400 mt-0.5">Sides: {e.sides.join(', ')}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                Sides: {e.sides.join(', ')}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -465,8 +551,8 @@ export default function MealSwap() {
 // ─── Update Status Modal ──────────────────────────────────────────────────────
 function UpdateStatusModal({ entree, onSave, onClose }) {
   const [status, setStatus] = useState(entree.status)
-  const [notes,  setNotes]  = useState(entree.notes || '')
-  const [sides,  setSides]  = useState(entree.sides ? entree.sides.join(', ') : '')
+  const [notes, setNotes] = useState(entree.notes || '')
+  const [sides, setSides] = useState(entree.sides ? entree.sides.join(', ') : '')
   const [saving, setSaving] = useState(false)
 
   const nextStatus = NEXT_STATUS[entree.status]
@@ -481,10 +567,15 @@ function UpdateStatusModal({ entree, onSave, onClose }) {
       // Save sides separately if they changed
       if (sides !== (entree.sides ? entree.sides.join(', ') : '')) {
         const sidesArray = sides
-          ? sides.split(',').map(s => s.trim()).filter(Boolean)
+          ? sides
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
           : []
         try {
-          await api.post(`/swaps/${entree.week_id}/entrees/${entree.id}/sides`, { sides: sidesArray })
+          await api.post(`/swaps/${entree.week_id}/entrees/${entree.id}/sides`, {
+            sides: sidesArray,
+          })
         } catch (err) {
           console.error('Failed to save sides:', err)
         }
@@ -515,7 +606,9 @@ function UpdateStatusModal({ entree, onSave, onClose }) {
           {/* Quick advance */}
           {nextStatus && (
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">Quick update</p>
+              <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
+                Quick update
+              </p>
               <button
                 type="button"
                 onClick={() => setStatus(nextStatus)}
@@ -535,7 +628,7 @@ function UpdateStatusModal({ entree, onSave, onClose }) {
             <label className="label">Status</label>
             <div className="flex flex-wrap gap-2">
               {STATUS_ORDER.map(s => {
-                const cfg    = STATUS_CONFIG[s]
+                const cfg = STATUS_CONFIG[s]
                 const active = status === s
                 return (
                   <button
@@ -575,13 +668,21 @@ function UpdateStatusModal({ entree, onSave, onClose }) {
               value={sides}
               onChange={e => setSides(e.target.value)}
             />
-            <p className="text-xs text-slate-400 mt-1">Optional - suggest side dishes to accompany this entree</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Optional - suggest side dishes to accompany this entree
+            </p>
           </div>
 
           <div className="flex gap-2 pt-1">
             <div className="flex-1" />
-            <button type="button" onClick={onClose} className="btn-ghost px-4">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary px-4 flex items-center gap-1.5">
+            <button type="button" onClick={onClose} className="btn-ghost px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary px-4 flex items-center gap-1.5"
+            >
               {saving ? <Loader size={14} className="animate-spin" /> : <Check size={14} />}
               Save
             </button>
@@ -594,13 +695,13 @@ function UpdateStatusModal({ entree, onSave, onClose }) {
 
 // ─── Create Swap Week Modal (admin) ───────────────────────────────────────────
 function CreateSwapModal({ members, recipes, onSave, onClose }) {
-  const [swapDay,    setSwapDay]    = useState('')
-  const [weekLabel,  setWeekLabel]  = useState('')
-  const [entreeRows, setEntreeRows] = useState(
-    () => members.map(m => ({ user_id: m.id, entree_name: '', recipe_id: '', notes: '', sides: '' }))
+  const [swapDay, setSwapDay] = useState('')
+  const [weekLabel, setWeekLabel] = useState('')
+  const [entreeRows, setEntreeRows] = useState(() =>
+    members.map(m => ({ user_id: m.id, entree_name: '', recipe_id: '', notes: '', sides: '' }))
   )
   const [saving, setSaving] = useState(false)
-  const [err,    setErr]    = useState('')
+  const [err, setErr] = useState('')
 
   const updateRow = (idx, field, val) => {
     setEntreeRows(rows => {
@@ -616,14 +717,25 @@ function CreateSwapModal({ members, recipes, onSave, onClose }) {
 
   const handleSubmit = async e => {
     e.preventDefault()
-    if (!swapDay) { setErr('Please set a swap day.'); return }
-    const filled = entreeRows.filter(r => r.user_id && r.entree_name.trim()).map(r => ({
-      ...r,
-      sides: r.sides
-        ? r.sides.split(',').map(s => s.trim()).filter(Boolean)
-        : []
-    }))
-    if (filled.length === 0) { setErr('Assign at least one entree.'); return }
+    if (!swapDay) {
+      setErr('Please set a swap day.')
+      return
+    }
+    const filled = entreeRows
+      .filter(r => r.user_id && r.entree_name.trim())
+      .map(r => ({
+        ...r,
+        sides: r.sides
+          ? r.sides
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [],
+      }))
+    if (filled.length === 0) {
+      setErr('Assign at least one entree.')
+      return
+    }
     setSaving(true)
     try {
       await onSave({ swap_day: swapDay, week_label: weekLabel, entrees: filled })
@@ -673,7 +785,10 @@ function CreateSwapModal({ members, recipes, onSave, onClose }) {
               <p className="label mb-2">Entree Assignments</p>
               <div className="space-y-3">
                 {members.map((member, idx) => (
-                  <div key={member.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                  <div
+                    key={member.id}
+                    className="rounded-xl border border-slate-100 bg-slate-50 p-3"
+                  >
                     <p className="text-xs font-semibold text-ink mb-2">{member.name}</p>
                     <div className="space-y-2">
                       <select
@@ -683,7 +798,9 @@ function CreateSwapModal({ members, recipes, onSave, onClose }) {
                       >
                         <option value="">— link a recipe (optional) —</option>
                         {recipes.map(r => (
-                          <option key={r.id} value={r.id}>{r.title}</option>
+                          <option key={r.id} value={r.id}>
+                            {r.title}
+                          </option>
                         ))}
                       </select>
                       <input
@@ -713,8 +830,14 @@ function CreateSwapModal({ members, recipes, onSave, onClose }) {
 
           <div className="flex gap-2 px-5 py-4 border-t border-slate-100">
             <div className="flex-1" />
-            <button type="button" onClick={onClose} className="btn-ghost px-4">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary px-4 flex items-center gap-1.5">
+            <button type="button" onClick={onClose} className="btn-ghost px-4">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary px-4 flex items-center gap-1.5"
+            >
               {saving ? <Loader size={14} className="animate-spin" /> : <Check size={14} />}
               Create Swap Week
             </button>

@@ -1,0 +1,11 @@
+{
+  "singleQuote": true,
+  "printWidth": 100,
+  "trailingComma": "es5",
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "overrides": [
+    { "files": "client/**/*.{js,jsx}", "options": { "semi": false } },
+    { "files": "server/**/*.js", "options": { "semi": true } }
+  ]
+}

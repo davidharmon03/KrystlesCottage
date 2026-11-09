@@ -36,9 +36,10 @@ export default function ResetPassword() {
       })
       setSuccess(true)
     } catch (err) {
-      const msg = err.response?.data?.errors?.[0]?.msg
-        || err.response?.data?.error
-        || 'Something went wrong. The link may have expired.'
+      const msg =
+        err.response?.data?.errors?.[0]?.msg ||
+        err.response?.data?.error ||
+        'Something went wrong. The link may have expired.'
       setError(msg)
     } finally {
       setLoading(false)
@@ -66,11 +67,24 @@ export default function ResetPassword() {
                 className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                 style={{ backgroundColor: '#6B7C5C' + '20' }}
               >
-                <svg className="w-6 h-6" style={{ color: '#6B7C5C' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-6 h-6"
+                  style={{ color: '#6B7C5C' }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
-              <p className="font-medium mb-1" style={{ color: '#6B7C5C' }}>Password updated</p>
+              <p className="font-medium mb-1" style={{ color: '#6B7C5C' }}>
+                Password updated
+              </p>
               <p className="text-sm text-slate-500 mb-6">
                 Your password has been changed. You can now sign in with your new password.
               </p>
@@ -156,7 +170,11 @@ export default function ResetPassword() {
               </form>
 
               <p className="text-center text-sm text-slate-500 mt-5">
-                <Link to="/login" className="font-medium hover:underline" style={{ color: '#6B7C5C' }}>
+                <Link
+                  to="/login"
+                  className="font-medium hover:underline"
+                  style={{ color: '#6B7C5C' }}
+                >
                   Back to Sign In
                 </Link>
               </p>

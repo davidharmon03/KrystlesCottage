@@ -13,19 +13,21 @@ import { X, Camera } from 'lucide-react'
  *   onError  – optional error callback (kept for API compat)
  */
 export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
-  const videoRef    = useRef(null)
-  const controlsRef = useRef(null)   // ZXing IScannerControls
-  const doneRef     = useRef(false)  // guard against double-fire
+  const videoRef = useRef(null)
+  const controlsRef = useRef(null) // ZXing IScannerControls
+  const doneRef = useRef(false) // guard against double-fire
 
   // status: 'loading' | 'scanning' | 'scanned' | 'denied' | 'unavailable'
-  const [status,      setStatus]      = useState('loading')
-  const [manualMode,  setManualMode]  = useState(false)
+  const [status, setStatus] = useState('loading')
+  const [manualMode, setManualMode] = useState(false)
   const [manualValue, setManualValue] = useState('')
-  const [flash,       setFlash]       = useState(false)
+  const [flash, setFlash] = useState(false)
 
   // ── helpers ───────────────────────────────────────────────────────────────
   const stop = () => {
-    try { controlsRef.current?.stop() } catch (_) {}
+    try {
+      controlsRef.current?.stop()
+    } catch (_) {}
     controlsRef.current = null
   }
 
@@ -86,7 +88,10 @@ export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
         }
 
         if (cancelled) return
-        if (!videoRef.current) { setStatus('unavailable'); return }
+        if (!videoRef.current) {
+          setStatus('unavailable')
+          return
+        }
 
         setStatus('scanning')
 
@@ -111,7 +116,9 @@ export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
         )
 
         if (cancelled) {
-          try { controls.stop() } catch (_) {}
+          try {
+            controls.stop()
+          } catch (_) {}
         } else {
           controlsRef.current = controls
         }
@@ -144,7 +151,6 @@ export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black flex flex-col">
-
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-3 bg-black z-10">
         <span className="text-white font-semibold text-sm tracking-wide">Scan Barcode</span>
@@ -159,7 +165,6 @@ export default function BarcodeScanner({ isOpen, onScan, onClose, onError }) {
 
       {/* ── Camera / status area ──────────────────────────────────────────── */}
       <div className="flex-1 relative overflow-hidden bg-black">
-
         {/* Live feed */}
         <video
           ref={videoRef}

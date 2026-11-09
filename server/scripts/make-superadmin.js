@@ -15,7 +15,9 @@ async function run() {
   }
 
   const db = await getDb();
-  const user = await db.get('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase()]);
+  const user = await db.get('SELECT id, name, email, role FROM users WHERE email = ?', [
+    email.toLowerCase(),
+  ]);
 
   if (!user) {
     console.error(`No user found with email: ${email}`);

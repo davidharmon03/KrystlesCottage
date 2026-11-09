@@ -9,10 +9,10 @@ export function SyncProvider({ children }) {
   const groupId = user?.groups?.[0]?.id
 
   // Initialize from server-persisted value; default auto
-  const [syncMode,     setSyncModeLocal] = useState(user?.sync_mode || 'auto')
-  const [syncStatus,   setSyncStatus]    = useState('synced')  // 'synced'|'pending'|'offline'|'syncing'
-  const [lastSyncedAt, setLastSyncedAt]  = useState(null)
-  const [pendingCount, setPendingCount]  = useState(0)
+  const [syncMode, setSyncModeLocal] = useState(user?.sync_mode || 'auto')
+  const [syncStatus, setSyncStatus] = useState('synced') // 'synced'|'pending'|'offline'|'syncing'
+  const [lastSyncedAt, setLastSyncedAt] = useState(null)
+  const [pendingCount, setPendingCount] = useState(0)
   const isSyncingRef = useRef(false)
 
   // Keep syncMode in sync with user object (e.g. after refreshUser)
@@ -40,18 +40,21 @@ export function SyncProvider({ children }) {
 
   // ── update sync mode — persists to server ─────────────────────────────────
 
-  const setSyncMode = useCallback(async (mode) => {
-    setSyncModeLocal(mode)
-    try {
-      await api.put('/auth/profile', { sync_mode: mode })
-      await refreshUser()
-    } catch {}
-    // Switching back to auto: immediately ping + reset counter
-    if (mode === 'auto') {
-      setPendingCount(0)
-      syncNow()
-    }
-  }, [syncNow, refreshUser])
+  const setSyncMode = useCallback(
+    async mode => {
+      setSyncModeLocal(mode)
+      try {
+        await api.put('/auth/profile', { sync_mode: mode })
+        await refreshUser()
+      } catch {}
+      // Switching back to auto: immediately ping + reset counter
+      if (mode === 'auto') {
+        setPendingCount(0)
+        syncNow()
+      }
+    },
+    [syncNow, refreshUser]
+  )
 
   // ── auto-ping on mount + tab focus ────────────────────────────────────────
 
@@ -77,8 +80,10 @@ export function SyncProvider({ children }) {
       const method = res.config?.method?.toUpperCase()
       const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
       const url = res.config?.url || ''
-      const isOverhead = url.includes('/sync-ping') || url.includes('/auth/') ||
-                         url.includes('/notifications/') && method === 'PUT'
+      const isOverhead =
+        url.includes('/sync-ping') ||
+        url.includes('/auth/') ||
+        (url.includes('/notifications/') && method === 'PUT')
       if (isMutation && !isOverhead) {
         setPendingCount(c => c + 1)
         setSyncStatus('pending')
@@ -91,21 +96,23 @@ export function SyncProvider({ children }) {
   // ── online / offline detection ────────────────────────────────────────────
 
   useEffect(() => {
-    const onOnline  = () => {
+    const onOnline = () => {
       if (syncMode === 'auto') syncNow()
       else setSyncStatus(pendingCount > 0 ? 'pending' : 'synced')
     }
     const onOffline = () => setSyncStatus('offline')
-    window.addEventListener('online',  onOnline)
+    window.addEventListener('online', onOnline)
     window.addEventListener('offline', onOffline)
     return () => {
-      window.removeEventListener('online',  onOnline)
+      window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
     }
   }, [syncMode, pendingCount, syncNow])
 
   return (
-    <SyncContext.Provider value={{ syncMode, setSyncMode, syncStatus, lastSyncedAt, pendingCount, syncNow }}>
+    <SyncContext.Provider
+      value={{ syncMode, setSyncMode, syncStatus, lastSyncedAt, pendingCount, syncNow }}
+    >
       {children}
     </SyncContext.Provider>
   )

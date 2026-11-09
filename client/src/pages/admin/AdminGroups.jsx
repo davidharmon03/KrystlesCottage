@@ -3,9 +3,16 @@ import api from '../../api'
 import { useTwoFactor } from '../../hooks/useTwoFactor'
 import { ChevronDown, ChevronUp, Users } from 'lucide-react'
 
-const roleBadge = (role) => role === 'owner'
-  ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-700">OWNER</span>
-  : <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">MEMBER</span>
+const roleBadge = role =>
+  role === 'owner' ? (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-700">
+      OWNER
+    </span>
+  ) : (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+      MEMBER
+    </span>
+  )
 
 export default function AdminGroups() {
   const [groups, setGroups] = useState([])
@@ -14,7 +21,8 @@ export default function AdminGroups() {
   const { getToken } = useTwoFactor()
 
   useEffect(() => {
-    api.get('/admin/groups', { headers: { 'x-2fa-token': getToken('login') || '' } })
+    api
+      .get('/admin/groups', { headers: { 'x-2fa-token': getToken('login') || '' } })
       .then(r => setGroups(r.data))
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -82,7 +90,9 @@ export default function AdminGroups() {
                       {g.members.map(m => (
                         <div key={m.id} className="flex items-center gap-3">
                           <div className="w-7 h-7 rounded-full bg-moss-100 flex items-center justify-center flex-shrink-0">
-                            <span className="text-moss-700 font-semibold text-xs">{m.name?.[0]?.toUpperCase()}</span>
+                            <span className="text-moss-700 font-semibold text-xs">
+                              {m.name?.[0]?.toUpperCase()}
+                            </span>
                           </div>
                           <span className="text-sm font-medium text-ink">{m.name}</span>
                           <span className="text-sm text-slate-400">{m.email}</span>

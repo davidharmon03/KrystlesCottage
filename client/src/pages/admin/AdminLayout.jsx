@@ -7,9 +7,9 @@ export default function AdminLayout() {
   const navigate = useNavigate()
 
   const nav = [
-    { to: '/admin',        label: 'Dashboard',  icon: LayoutDashboard, end: true },
-    { to: '/admin/users',  label: 'Users',       icon: Users },
-    { to: '/admin/groups', label: 'Groups',      icon: UsersRound },
+    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+    { to: '/admin/users', label: 'Users', icon: Users },
+    { to: '/admin/groups', label: 'Groups', icon: UsersRound },
   ]
 
   return (
@@ -22,7 +22,9 @@ export default function AdminLayout() {
               <ChefHat size={16} className="text-white" />
             </div>
             <div>
-              <p className="text-white font-serif font-semibold text-sm leading-tight">Krystle's Cottage</p>
+              <p className="text-white font-serif font-semibold text-sm leading-tight">
+                Krystle's Cottage
+              </p>
               <p className="text-slate-400 text-[10px]">Admin Panel</p>
             </div>
           </div>
@@ -70,7 +72,9 @@ export default function AdminLayout() {
       {/* Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white border-b border-slate-200 px-6 py-4 flex-shrink-0">
-          <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Super Admin</p>
+          <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">
+            Super Admin
+          </p>
         </header>
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />

@@ -2,7 +2,35 @@ import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSync } from '../contexts/SyncContext'
-import { ChefHat, DollarSign, Package, Leaf, LayoutDashboard, LogOut, Menu, X, Wrench, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare, RefreshCw, WifiOff, Clock, FileText, Printer, ChevronDown, ChevronRight, ShoppingCart, Users, Snowflake, Thermometer, Layers } from 'lucide-react'
+import {
+  ChefHat,
+  DollarSign,
+  Package,
+  Leaf,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+  Wrench,
+  Camera,
+  ArrowLeftRight,
+  HelpCircle,
+  Lightbulb,
+  ShoppingBag,
+  MessageSquare,
+  RefreshCw,
+  WifiOff,
+  Clock,
+  FileText,
+  Printer,
+  ChevronDown,
+  ChevronRight,
+  ShoppingCart,
+  Users,
+  Snowflake,
+  Thermometer,
+  Layers,
+} from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
 import InstallPrompt from './InstallPrompt'
@@ -10,11 +38,11 @@ import InstallPrompt from './InstallPrompt'
 function relativeTime(iso) {
   if (!iso) return null
   const diff = Date.now() - new Date(iso).getTime()
-  const min  = Math.floor(diff / 60_000)
-  if (min < 1)  return 'just now'
+  const min = Math.floor(diff / 60_000)
+  if (min < 1) return 'just now'
   if (min < 60) return `${min}m ago`
   const h = Math.floor(min / 60)
-  if (h < 24)   return `${h}h ago`
+  if (h < 24) return `${h}h ago`
   return `${Math.floor(h / 24)}d ago`
 }
 
@@ -22,13 +50,13 @@ function SyncBadge({ onLinkClick }) {
   const { syncMode, syncStatus, lastSyncedAt, pendingCount, syncNow } = useSync()
 
   const statusConfig = {
-    synced:  { dot: 'bg-moss-400',   label: 'Synced',      icon: null },
-    pending: { dot: 'bg-amber-400',  label: 'Pending',     icon: null },
-    offline: { dot: 'bg-red-400',    label: 'Offline',     icon: WifiOff },
+    synced: { dot: 'bg-moss-400', label: 'Synced', icon: null },
+    pending: { dot: 'bg-amber-400', label: 'Pending', icon: null },
+    offline: { dot: 'bg-red-400', label: 'Offline', icon: WifiOff },
     syncing: { dot: 'bg-blue-400 animate-pulse', label: 'Syncing…', icon: null },
   }
   const cfg = statusConfig[syncStatus] || statusConfig.synced
-  const ts  = relativeTime(lastSyncedAt)
+  const ts = relativeTime(lastSyncedAt)
 
   return (
     <div className="mx-3 mb-2 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
@@ -40,7 +68,10 @@ function SyncBadge({ onLinkClick }) {
         </div>
         {syncMode === 'manual' ? (
           <button
-            onClick={() => { syncNow(); onLinkClick?.() }}
+            onClick={() => {
+              syncNow()
+              onLinkClick?.()
+            }}
             disabled={syncStatus === 'syncing'}
             className="flex items-center gap-1 text-[10px] font-semibold text-moss-600 hover:text-moss-800 disabled:opacity-40 flex-shrink-0"
           >
@@ -70,12 +101,17 @@ function AvatarCircle({ user, size = 'md' }) {
         src={`${API_BASE}/uploads/avatars/${user.avatar_path.split('/').pop()}`}
         alt={user.name}
         className={`${sz} rounded-full object-cover flex-shrink-0`}
-        onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling?.style?.removeProperty('display') }}
+        onError={e => {
+          e.currentTarget.style.display = 'none'
+          e.currentTarget.nextSibling?.style?.removeProperty('display')
+        }}
       />
     )
   }
   return (
-    <div className={`${sz} rounded-full bg-terra-100 flex items-center justify-center flex-shrink-0`}>
+    <div
+      className={`${sz} rounded-full bg-terra-100 flex items-center justify-center flex-shrink-0`}
+    >
       <span className="text-terra-600 font-semibold">{user?.name?.[0]?.toUpperCase()}</span>
     </div>
   )
@@ -89,55 +125,71 @@ const NAV_GROUPS = [
     key: 'kitchen',
     label: 'Kitchen',
     links: [
-      { to: '/kitchen',     label: 'Recipe Library', icon: ChefHat,        color: 'text-terra-500' },
-      { to: '/orders',      label: 'Menus & Orders', icon: ShoppingBag,    color: 'text-moss-600'  },
-      { to: '/swap',        label: 'Meal Swap',      icon: ArrowLeftRight, color: 'text-moss-600'  },
-      { to: '/gallery',     label: 'Meal Gallery',   icon: Camera,         color: 'text-terra-400' },
-      { to: '/suggestions', label: 'Suggestions',    icon: Lightbulb,      color: 'text-terra-400' },
-      { to: '/equipment',   label: 'Equipment',      icon: Wrench,         color: 'text-terra-400' },
+      { to: '/kitchen', label: 'Recipe Library', icon: ChefHat, color: 'text-terra-500' },
+      { to: '/orders', label: 'Menus & Orders', icon: ShoppingBag, color: 'text-moss-600' },
+      { to: '/swap', label: 'Meal Swap', icon: ArrowLeftRight, color: 'text-moss-600' },
+      { to: '/gallery', label: 'Meal Gallery', icon: Camera, color: 'text-terra-400' },
+      { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, color: 'text-terra-400' },
+      { to: '/equipment', label: 'Equipment', icon: Wrench, color: 'text-terra-400' },
     ],
   },
   {
     key: 'storage',
     label: 'Storage',
     links: [
-      { to: '/storage/pantry',       label: 'Pantry',        icon: Package,      color: 'text-terra-500' },
-      { to: '/storage/refrigerator', label: 'Refrigerator',  icon: Thermometer,  color: 'text-blue-500'  },
-      { to: '/storage/freezer',      label: 'Freezer',       icon: Snowflake,    color: 'text-blue-400'  },
-      { to: '/storage/shopping',     label: 'Shopping List', icon: ShoppingCart, color: 'text-moss-600'  },
-      { to: '/storage/bulk-buy',     label: 'Bulk Buy Runs', icon: Layers,       color: 'text-moss-500'  },
-      { to: '/labels',               label: 'Print Center',  icon: Printer,      color: 'text-slate-400' },
+      { to: '/storage/pantry', label: 'Pantry', icon: Package, color: 'text-terra-500' },
+      {
+        to: '/storage/refrigerator',
+        label: 'Refrigerator',
+        icon: Thermometer,
+        color: 'text-blue-500',
+      },
+      { to: '/storage/freezer', label: 'Freezer', icon: Snowflake, color: 'text-blue-400' },
+      {
+        to: '/storage/shopping',
+        label: 'Shopping List',
+        icon: ShoppingCart,
+        color: 'text-moss-600',
+      },
+      { to: '/storage/bulk-buy', label: 'Bulk Buy Runs', icon: Layers, color: 'text-moss-500' },
+      { to: '/labels', label: 'Print Center', icon: Printer, color: 'text-slate-400' },
     ],
   },
   {
     key: 'community',
     label: 'Community',
     links: [
-      { to: '/chat',         label: 'Group Chat',        icon: MessageSquare, color: 'text-moss-500'  },
-      { to: '/corner',       label: 'Corner / Finances', icon: DollarSign,    color: 'text-moss-600'  },
-      { to: '/cottage-laws', label: 'Cottage Laws',      icon: FileText,      color: 'text-slate-500' },
+      { to: '/chat', label: 'Group Chat', icon: MessageSquare, color: 'text-moss-500' },
+      { to: '/corner', label: 'Corner / Finances', icon: DollarSign, color: 'text-moss-600' },
+      { to: '/cottage-laws', label: 'Cottage Laws', icon: FileText, color: 'text-slate-500' },
     ],
   },
   {
     key: 'garden',
     label: 'Garden',
     links: [
-      { to: '/garden/plots',   label: 'Plots',          icon: Leaf,          color: 'text-moss-500'  },
-      { to: '/garden/plants',  label: 'Plants',         icon: Leaf,          color: 'text-moss-400'  },
-      { to: '/garden/harvest', label: 'Harvest Log',    icon: Leaf,          color: 'text-terra-500' },
-      { to: '/garden/calendar',label: 'Calendar',       icon: Leaf,          color: 'text-moss-600'  },
-      { to: '/garden/guides',  label: 'Growing Guides', icon: Leaf,          color: 'text-moss-500'  },
+      { to: '/garden/plots', label: 'Plots', icon: Leaf, color: 'text-moss-500' },
+      { to: '/garden/plants', label: 'Plants', icon: Leaf, color: 'text-moss-400' },
+      { to: '/garden/harvest', label: 'Harvest Log', icon: Leaf, color: 'text-terra-500' },
+      { to: '/garden/calendar', label: 'Calendar', icon: Leaf, color: 'text-moss-600' },
+      { to: '/garden/guides', label: 'Growing Guides', icon: Leaf, color: 'text-moss-500' },
     ],
   },
 ]
 
 const ADMIN_LINKS = [
-  { to: '/admin/users',  label: 'Users',     icon: Users,           color: 'text-terra-500' },
-  { to: '/admin/groups', label: 'Groups',    icon: Users,           color: 'text-terra-400' },
-  { to: '/admin',        label: 'Dashboard', icon: LayoutDashboard, color: 'text-terra-600', end: true },
+  { to: '/admin/users', label: 'Users', icon: Users, color: 'text-terra-500' },
+  { to: '/admin/groups', label: 'Groups', icon: Users, color: 'text-terra-400' },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, color: 'text-terra-600', end: true },
 ]
 
-const DEFAULT_NAV_STATE = { kitchen: true, storage: true, community: true, garden: true, admin: true }
+const DEFAULT_NAV_STATE = {
+  kitchen: true,
+  storage: true,
+  community: true,
+  garden: true,
+  admin: true,
+}
 
 function getNavState() {
   try {
@@ -158,10 +210,12 @@ export default function Layout() {
 
   const [navOpen, setNavOpen] = useState(getNavState)
 
-  const toggleGroup = (key) => {
+  const toggleGroup = key => {
     setNavOpen(prev => {
       const next = { ...prev, [key]: !prev[key] }
-      try { localStorage.setItem('cottage_nav_state', JSON.stringify(next)) } catch {}
+      try {
+        localStorage.setItem('cottage_nav_state', JSON.stringify(next))
+      } catch {}
       return next
     })
   }
@@ -176,21 +230,29 @@ export default function Layout() {
       <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-500">
         {label}
       </p>
-      {navOpen[groupKey]
-        ? <ChevronDown size={12} className="text-slate-300 group-hover:text-slate-400" />
-        : <ChevronRight size={12} className="text-slate-300 group-hover:text-slate-400" />}
+      {navOpen[groupKey] ? (
+        <ChevronDown size={12} className="text-slate-300 group-hover:text-slate-400" />
+      ) : (
+        <ChevronRight size={12} className="text-slate-300 group-hover:text-slate-400" />
+      )}
     </button>
   )
 
   // Shared nav content — used by both desktop sidebar and mobile drawer
-  const renderNav = (onLinkClick) => (
+  const renderNav = onLinkClick => (
     <>
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {/* Dashboard — always visible */}
-        <NavLink to="/" end onClick={onLinkClick}
+        <NavLink
+          to="/"
+          end
+          onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+              isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'
+            }`
+          }
+        >
           <LayoutDashboard size={17} className="flex-shrink-0" />
           Dashboard
         </NavLink>
@@ -202,10 +264,17 @@ export default function Layout() {
             {navOpen[group.key] && (
               <div className="space-y-0.5">
                 {group.links.map(ch => (
-                  <NavLink key={ch.to} to={ch.to} end={ch.end} onClick={onLinkClick}
+                  <NavLink
+                    key={ch.to}
+                    to={ch.to}
+                    end={ch.end}
+                    onClick={onLinkClick}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+                        isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'
+                      }`
+                    }
+                  >
                     <ch.icon size={16} className={`flex-shrink-0 ${ch.color}`} />
                     <span className="truncate">{ch.label}</span>
                   </NavLink>
@@ -222,10 +291,17 @@ export default function Layout() {
             {navOpen.admin && (
               <div className="space-y-0.5">
                 {ADMIN_LINKS.map(ch => (
-                  <NavLink key={ch.to} to={ch.to} end={ch.end} onClick={onLinkClick}
+                  <NavLink
+                    key={ch.to}
+                    to={ch.to}
+                    end={ch.end}
+                    onClick={onLinkClick}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        isActive ? 'bg-terra-50 text-terra-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+                        isActive ? 'bg-terra-50 text-terra-700' : 'text-slate-600 hover:bg-slate-50'
+                      }`
+                    }
+                  >
                     <ch.icon size={16} className={`flex-shrink-0 ${ch.color}`} />
                     <span className="truncate">{ch.label}</span>
                   </NavLink>
@@ -240,17 +316,26 @@ export default function Layout() {
         <div className="px-4 py-3 border-t border-slate-100 bg-moss-50">
           <p className="text-xs text-slate-500 font-medium">Active Group</p>
           <p className="text-sm font-semibold text-moss-700 truncate">{activeGroup.name}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Code: <span className="font-mono font-semibold">{activeGroup.invite_code}</span></p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Code: <span className="font-mono font-semibold">{activeGroup.invite_code}</span>
+          </p>
         </div>
       )}
 
       <SyncBadge onLinkClick={onLinkClick} />
 
       <div className="px-4 py-2 border-t border-slate-100 space-y-0.5">
-        <NavLink to="/help" onClick={onLinkClick}
+        <NavLink
+          to="/help"
+          onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
-              isActive ? 'text-moss-700 bg-moss-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}>
+              isActive
+                ? 'text-moss-700 bg-moss-50'
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+            }`
+          }
+        >
           <HelpCircle size={14} />
           Help & Guide
         </NavLink>
@@ -264,11 +349,16 @@ export default function Layout() {
       </div>
 
       <div className="px-4 py-4 border-t border-slate-100 flex items-center gap-3">
-        <Link to="/profile" onClick={onLinkClick}
-          className="flex items-center gap-3 flex-1 min-w-0 group">
+        <Link
+          to="/profile"
+          onClick={onLinkClick}
+          className="flex items-center gap-3 flex-1 min-w-0 group"
+        >
           <AvatarCircle user={user} size="md" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink truncate group-hover:text-moss-700 transition-colors">{user?.name}</p>
+            <p className="text-sm font-medium text-ink truncate group-hover:text-moss-700 transition-colors">
+              {user?.name}
+            </p>
             <p className="text-xs text-slate-400 truncate">Edit profile</p>
           </div>
         </Link>
@@ -282,16 +372,19 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-cream overflow-x-hidden">
-
       {/* ── Desktop sidebar — hidden on mobile ── */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 flex-shrink-0">
         <div className="px-6 py-5 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-serif font-bold text-lg leading-none">{fn[0]?.toUpperCase()}</span>
+              <span className="text-white font-serif font-bold text-lg leading-none">
+                {fn[0]?.toUpperCase()}
+              </span>
             </div>
             <div>
-              <p className="font-serif font-semibold text-ink text-sm leading-tight">{fn}'s Cottage</p>
+              <p className="font-serif font-semibold text-ink text-sm leading-tight">
+                {fn}'s Cottage
+              </p>
             </div>
           </div>
         </div>
@@ -302,16 +395,15 @@ export default function Layout() {
       {drawerOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/40 md:hidden"
-            onClick={closeDrawer}
-          />
+          <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={closeDrawer} />
           {/* Drawer panel */}
           <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col shadow-xl md:hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-moss-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-serif font-bold text-sm leading-none">{fn[0]?.toUpperCase()}</span>
+                  <span className="text-white font-serif font-bold text-sm leading-none">
+                    {fn[0]?.toUpperCase()}
+                  </span>
                 </div>
                 <p className="font-serif font-semibold text-ink text-sm">{fn}'s Cottage</p>
               </div>
@@ -330,7 +422,6 @@ export default function Layout() {
 
       {/* ── Main content area ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
         {/* Top header bar */}
         <header className="flex items-center gap-2 px-4 py-3 bg-white border-b border-slate-200 flex-shrink-0">
           {/* Hamburger — mobile only */}
@@ -358,7 +449,6 @@ export default function Layout() {
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
           <Outlet />
         </main>
-
       </div>
 
       <InstallPrompt />

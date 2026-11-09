@@ -6,17 +6,17 @@ import { ShoppingBag, ChefHat, Plus, X, Eye, EyeOff, Pencil, Trash2, Package } f
 // ── Status config ──────────────────────────────────────────────────────────
 
 const STATUS = {
-  pending:   { label: 'Pending',   color: 'bg-amber-100  text-amber-700'  },
-  accepted:  { label: 'Accepted',  color: 'bg-blue-100   text-blue-700'   },
-  ready:     { label: 'Ready! 🎉', color: 'bg-moss-100   text-moss-700'   },
-  picked_up: { label: 'Picked Up', color: 'bg-slate-100  text-slate-500'  },
-  declined:  { label: 'Declined',  color: 'bg-red-100    text-red-600'    },
+  pending: { label: 'Pending', color: 'bg-amber-100  text-amber-700' },
+  accepted: { label: 'Accepted', color: 'bg-blue-100   text-blue-700' },
+  ready: { label: 'Ready! 🎉', color: 'bg-moss-100   text-moss-700' },
+  picked_up: { label: 'Picked Up', color: 'bg-slate-100  text-slate-500' },
+  declined: { label: 'Declined', color: 'bg-red-100    text-red-600' },
 }
 
 const NEXT_STATUS = {
-  pending:  'accepted',
+  pending: 'accepted',
   accepted: 'ready',
-  ready:    'picked_up',
+  ready: 'picked_up',
 }
 
 function StatusBadge({ status }) {
@@ -35,17 +35,23 @@ function recipeImage(item) {
 
 function formatDate(dt) {
   if (!dt) return ''
-  return new Date(dt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(dt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 // ── Request This modal ─────────────────────────────────────────────────────
 
 function RequestModal({ item, onClose, onSubmit, submitting }) {
-  const [qty, setQty]   = useState(1)
+  const [qty, setQty] = useState(1)
   const [note, setNote] = useState('')
 
   useEffect(() => {
-    const esc = e => { if (e.key === 'Escape') onClose() }
+    const esc = e => {
+      if (e.key === 'Escape') onClose()
+    }
     document.addEventListener('keydown', esc)
     return () => document.removeEventListener('keydown', esc)
   }, [onClose])
@@ -55,7 +61,10 @@ function RequestModal({ item, onClose, onSubmit, submitting }) {
       <div className="modal p-6 max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-serif font-semibold text-ink text-lg">Request Meal</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={18} />
           </button>
         </div>
@@ -72,17 +81,23 @@ function RequestModal({ item, onClose, onSubmit, submitting }) {
               <button
                 onClick={() => setQty(q => Math.max(1, q - 1))}
                 className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors text-lg leading-none"
-              >−</button>
+              >
+                −
+              </button>
               <span className="text-lg font-semibold text-ink w-6 text-center">{qty}</span>
               <button
                 onClick={() => setQty(q => Math.min(10, q + 1))}
                 className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors text-lg leading-none"
-              >+</button>
+              >
+                +
+              </button>
             </div>
           </div>
 
           <div>
-            <label className="label">Note <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="label">
+              Note <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
             <textarea
               className="input resize-none"
               rows={2}
@@ -94,7 +109,9 @@ function RequestModal({ item, onClose, onSubmit, submitting }) {
         </div>
 
         <div className="flex gap-2 mt-5">
-          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button onClick={onClose} className="btn-secondary flex-1">
+            Cancel
+          </button>
           <button
             onClick={() => onSubmit({ qty, note })}
             disabled={submitting}
@@ -111,30 +128,31 @@ function RequestModal({ item, onClose, onSubmit, submitting }) {
 // ── Add to Menu modal ──────────────────────────────────────────────────────
 
 function AddToMenuModal({ groupId, onClose, onAdded }) {
-  const [recipes, setRecipes]   = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [recipes, setRecipes] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
-  const [price, setPrice]       = useState('')
-  const [note, setNote]         = useState('')
-  const [saving, setSaving]     = useState(false)
-  const [search, setSearch]     = useState('')
+  const [price, setPrice] = useState('')
+  const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
-    api.get('/recipes', { params: { group_id: groupId } })
+    api
+      .get('/recipes', { params: { group_id: groupId } })
       .then(r => setRecipes(Array.isArray(r.data) ? r.data : r.data?.recipes || []))
       .catch(() => setRecipes([]))
       .finally(() => setLoading(false))
   }, [groupId])
 
   useEffect(() => {
-    const esc = e => { if (e.key === 'Escape') onClose() }
+    const esc = e => {
+      if (e.key === 'Escape') onClose()
+    }
     document.addEventListener('keydown', esc)
     return () => document.removeEventListener('keydown', esc)
   }, [onClose])
 
-  const filtered = recipes.filter(r =>
-    r.title?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = recipes.filter(r => r.title?.toLowerCase().includes(search.toLowerCase()))
 
   const handleAdd = async () => {
     if (!selected) return
@@ -142,7 +160,7 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
     try {
       const res = await api.post('/orders/menu', {
         recipe_id: selected.id,
-        group_id:  groupId,
+        group_id: groupId,
         price,
         note,
       })
@@ -160,7 +178,10 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
       <div className="modal p-6 max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-serif font-semibold text-ink text-lg">Add Recipe to Menu</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={18} />
           </button>
         </div>
@@ -204,7 +225,9 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
             </p>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="label">Price label <span className="text-slate-400 font-normal">(optional)</span></label>
+                <label className="label">
+                  Price label <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
                 <input
                   className="input"
                   placeholder='e.g. "$12"'
@@ -214,7 +237,9 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
               </div>
             </div>
             <div>
-              <label className="label">Menu note <span className="text-slate-400 font-normal">(optional)</span></label>
+              <label className="label">
+                Menu note <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
               <input
                 className="input"
                 placeholder='e.g. "Feeds 2–3 people"'
@@ -226,12 +251,10 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
         )}
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-          <button
-            onClick={handleAdd}
-            disabled={!selected || saving}
-            className="btn-primary flex-1"
-          >
+          <button onClick={onClose} className="btn-secondary flex-1">
+            Cancel
+          </button>
+          <button onClick={handleAdd} disabled={!selected || saving} className="btn-primary flex-1">
             {saving ? 'Adding…' : 'Add to Menu'}
           </button>
         </div>
@@ -244,9 +267,9 @@ function AddToMenuModal({ groupId, onClose, onAdded }) {
 
 function MenuItemRow({ item, onUpdate, onRemove }) {
   const [editing, setEditing] = useState(false)
-  const [price, setPrice]     = useState(item.price || '')
-  const [note, setNote]       = useState(item.note  || '')
-  const [saving, setSaving]   = useState(false)
+  const [price, setPrice] = useState(item.price || '')
+  const [note, setNote] = useState(item.note || '')
+  const [saving, setSaving] = useState(false)
 
   const save = async () => {
     setSaving(true)
@@ -295,7 +318,11 @@ function MenuItemRow({ item, onUpdate, onRemove }) {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setEditing(false); setPrice(item.price || ''); setNote(item.note || '') }}
+                  onClick={() => {
+                    setEditing(false)
+                    setPrice(item.price || '')
+                    setNote(item.note || '')
+                  }}
                   className="btn-secondary text-xs py-1"
                 >
                   Cancel
@@ -357,11 +384,10 @@ function RequestRow({ req: r, onStatus }) {
           </div>
           <p className="text-xs text-slate-500 mt-1">
             From <span className="font-medium">{r.requester_name}</span>
-            {' · '}{formatDate(r.requested_at)}
+            {' · '}
+            {formatDate(r.requested_at)}
           </p>
-          {r.note && (
-            <p className="text-xs text-slate-400 mt-1 italic">"{r.note}"</p>
-          )}
+          {r.note && <p className="text-xs text-slate-400 mt-1 italic">"{r.note}"</p>}
         </div>
 
         {r.status !== 'picked_up' && r.status !== 'declined' && (
@@ -371,8 +397,8 @@ function RequestRow({ req: r, onStatus }) {
                 onClick={() => onStatus(r.id, next)}
                 className="btn-primary text-xs py-1.5 px-3"
               >
-                {next === 'accepted'  && 'Accept'}
-                {next === 'ready'     && 'Mark Ready'}
+                {next === 'accepted' && 'Accept'}
+                {next === 'ready' && 'Mark Ready'}
                 {next === 'picked_up' && 'Picked Up'}
               </button>
             )}
@@ -410,7 +436,13 @@ function RequestRow({ req: r, onStatus }) {
 
 function MenuCard({ item, onRequest }) {
   const img = recipeImage(item)
-  const tags = (() => { try { return JSON.parse(item.tags || '[]') } catch { return [] } })()
+  const tags = (() => {
+    try {
+      return JSON.parse(item.tags || '[]')
+    } catch {
+      return []
+    }
+  })()
 
   return (
     <div className="card overflow-hidden flex flex-col">
@@ -420,7 +452,9 @@ function MenuCard({ item, onRequest }) {
             src={img}
             alt={item.title}
             className="w-full h-full object-cover"
-            onError={e => { e.currentTarget.parentElement.style.display = 'none' }}
+            onError={e => {
+              e.currentTarget.parentElement.style.display = 'none'
+            }}
           />
         </div>
       ) : (
@@ -443,27 +477,25 @@ function MenuCard({ item, onRequest }) {
 
         {item.sides && (
           <p className="text-xs text-slate-500 mb-2">
-            <span className="font-medium">Sides: </span>{item.sides}
+            <span className="font-medium">Sides: </span>
+            {item.sides}
           </p>
         )}
 
-        {item.note && (
-          <p className="text-xs text-slate-400 italic mb-2">"{item.note}"</p>
-        )}
+        {item.note && <p className="text-xs text-slate-400 italic mb-2">"{item.note}"</p>}
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {tags.slice(0, 3).map(t => (
-              <span key={t} className="tag bg-slate-100 text-slate-500 text-xs">{t}</span>
+              <span key={t} className="tag bg-slate-100 text-slate-500 text-xs">
+                {t}
+              </span>
             ))}
           </div>
         )}
 
         <div className="mt-auto">
-          <button
-            onClick={() => onRequest(item)}
-            className="btn-primary w-full text-sm"
-          >
+          <button onClick={() => onRequest(item)} className="btn-primary w-full text-sm">
             Request This
           </button>
         </div>
@@ -475,19 +507,21 @@ function MenuCard({ item, onRequest }) {
 // ── Admin view ─────────────────────────────────────────────────────────────
 
 function AdminView({ groupId }) {
-  const [tab, setTab]           = useState('menu')
-  const [menuItems, setMenu]    = useState([])
+  const [tab, setTab] = useState('menu')
+  const [menuItems, setMenu] = useState([])
   const [requests, setRequests] = useState([])
-  const [loadingMenu, setLM]    = useState(true)
-  const [loadingReqs, setLR]    = useState(true)
-  const [showAddModal, setAdd]  = useState(false)
+  const [loadingMenu, setLM] = useState(true)
+  const [loadingReqs, setLR] = useState(true)
+  const [showAddModal, setAdd] = useState(false)
 
   const loadMenu = useCallback(async () => {
     setLM(true)
     try {
       const r = await api.get(`/orders/menu/${groupId}/all`)
       setMenu(r.data)
-    } catch { setMenu([]) }
+    } catch {
+      setMenu([])
+    }
     setLM(false)
   }, [groupId])
 
@@ -496,33 +530,45 @@ function AdminView({ groupId }) {
     try {
       const r = await api.get(`/orders/requests/${groupId}`)
       setRequests(r.data)
-    } catch { setRequests([]) }
+    } catch {
+      setRequests([])
+    }
     setLR(false)
   }, [groupId])
 
-  useEffect(() => { loadMenu() }, [loadMenu])
-  useEffect(() => { loadRequests() }, [loadRequests])
+  useEffect(() => {
+    loadMenu()
+  }, [loadMenu])
+  useEffect(() => {
+    loadRequests()
+  }, [loadRequests])
 
   const handleUpdate = async (id, updates) => {
     try {
       const r = await api.put(`/orders/menu/${id}`, updates)
-      setMenu(prev => prev.map(m => m.id === id ? r.data : m))
-    } catch (err) { console.error(err) }
+      setMenu(prev => prev.map(m => (m.id === id ? r.data : m)))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  const handleRemove = async (id) => {
+  const handleRemove = async id => {
     if (!confirm('Remove this item from the menu?')) return
     try {
       await api.delete(`/orders/menu/${id}`)
       setMenu(prev => prev.filter(m => m.id !== id))
-    } catch (err) { console.error(err) }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handleStatus = async (id, status) => {
     try {
       const r = await api.put(`/orders/requests/${id}/status`, { status })
-      setRequests(prev => prev.map(req => req.id === id ? { ...req, ...r.data } : req))
-    } catch (err) { console.error(err) }
+      setRequests(prev => prev.map(req => (req.id === id ? { ...req, ...r.data } : req)))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const pendingCount = requests.filter(r => r.status === 'pending').length
@@ -542,7 +588,9 @@ function AdminView({ groupId }) {
         <button
           onClick={() => setTab('requests')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${
-            tab === 'requests' ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            tab === 'requests'
+              ? 'bg-white text-ink shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
           }`}
         >
           Requests
@@ -558,8 +606,13 @@ function AdminView({ groupId }) {
       {tab === 'menu' && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-500">{menuItems.length} item{menuItems.length !== 1 ? 's' : ''} on menu</p>
-            <button onClick={() => setAdd(true)} className="btn-primary flex items-center gap-2 text-sm">
+            <p className="text-sm text-slate-500">
+              {menuItems.length} item{menuItems.length !== 1 ? 's' : ''} on menu
+            </p>
+            <button
+              onClick={() => setAdd(true)}
+              className="btn-primary flex items-center gap-2 text-sm"
+            >
               <Plus size={15} />
               Add to Menu
             </button>
@@ -567,14 +620,20 @@ function AdminView({ groupId }) {
 
           {loadingMenu ? (
             <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className="card p-4 h-16 bg-slate-50 animate-pulse" />)}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="card p-4 h-16 bg-slate-50 animate-pulse" />
+              ))}
             </div>
           ) : menuItems.length === 0 ? (
             <div className="card p-8 text-center">
               <Package size={32} className="mx-auto text-slate-300 mb-2" />
               <p className="text-slate-500 font-medium">No menu items yet</p>
-              <p className="text-slate-400 text-sm mt-1">Add recipes to your menu so clients can browse and request meals.</p>
-              <button onClick={() => setAdd(true)} className="btn-primary mt-4">Add First Item</button>
+              <p className="text-slate-400 text-sm mt-1">
+                Add recipes to your menu so clients can browse and request meals.
+              </p>
+              <button onClick={() => setAdd(true)} className="btn-primary mt-4">
+                Add First Item
+              </button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -595,19 +654,27 @@ function AdminView({ groupId }) {
       {tab === 'requests' && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-500">{requests.length} total request{requests.length !== 1 ? 's' : ''}</p>
-            <button onClick={loadRequests} className="btn-secondary text-xs py-1.5">Refresh</button>
+            <p className="text-sm text-slate-500">
+              {requests.length} total request{requests.length !== 1 ? 's' : ''}
+            </p>
+            <button onClick={loadRequests} className="btn-secondary text-xs py-1.5">
+              Refresh
+            </button>
           </div>
 
           {loadingReqs ? (
             <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className="card p-4 h-20 bg-slate-50 animate-pulse" />)}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="card p-4 h-20 bg-slate-50 animate-pulse" />
+              ))}
             </div>
           ) : requests.length === 0 ? (
             <div className="card p-8 text-center">
               <ShoppingBag size={32} className="mx-auto text-slate-300 mb-2" />
               <p className="text-slate-500 font-medium">No requests yet</p>
-              <p className="text-slate-400 text-sm mt-1">Once clients submit requests, they'll show up here.</p>
+              <p className="text-slate-400 text-sm mt-1">
+                Once clients submit requests, they'll show up here.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -633,20 +700,22 @@ function AdminView({ groupId }) {
 // ── Client/Member view ─────────────────────────────────────────────────────
 
 function ClientView({ groupId, userId }) {
-  const [tab, setTab]             = useState('browse')
-  const [menu, setMenu]           = useState([])
-  const [myReqs, setMyReqs]       = useState([])
-  const [loadingMenu, setLM]      = useState(true)
-  const [loadingReqs, setLR]      = useState(true)
+  const [tab, setTab] = useState('browse')
+  const [menu, setMenu] = useState([])
+  const [myReqs, setMyReqs] = useState([])
+  const [loadingMenu, setLM] = useState(true)
+  const [loadingReqs, setLR] = useState(true)
   const [requestItem, setReqItem] = useState(null)
-  const [submitting, setSub]      = useState(false)
+  const [submitting, setSub] = useState(false)
 
   const loadMenu = useCallback(async () => {
     setLM(true)
     try {
       const r = await api.get(`/orders/menu/${groupId}`)
       setMenu(r.data)
-    } catch { setMenu([]) }
+    } catch {
+      setMenu([])
+    }
     setLM(false)
   }, [groupId])
 
@@ -655,12 +724,18 @@ function ClientView({ groupId, userId }) {
     try {
       const r = await api.get(`/orders/requests/${groupId}/mine`)
       setMyReqs(r.data)
-    } catch { setMyReqs([]) }
+    } catch {
+      setMyReqs([])
+    }
     setLR(false)
   }, [groupId])
 
-  useEffect(() => { loadMenu() }, [loadMenu])
-  useEffect(() => { loadMine() }, [loadMine])
+  useEffect(() => {
+    loadMenu()
+  }, [loadMenu])
+  useEffect(() => {
+    loadMine()
+  }, [loadMine])
 
   const handleRequest = async ({ qty, note }) => {
     if (!requestItem) return
@@ -668,8 +743,8 @@ function ClientView({ groupId, userId }) {
     try {
       await api.post('/orders/requests', {
         menu_item_id: requestItem.id,
-        group_id:     groupId,
-        quantity:     qty,
+        group_id: groupId,
+        quantity: qty,
         note,
       })
       setReqItem(null)
@@ -709,13 +784,17 @@ function ClientView({ groupId, userId }) {
         <>
           {loadingMenu ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1,2,3].map(i => <div key={i} className="card h-64 bg-slate-50 animate-pulse" />)}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="card h-64 bg-slate-50 animate-pulse" />
+              ))}
             </div>
           ) : menu.length === 0 ? (
             <div className="card p-10 text-center">
               <ChefHat size={40} className="mx-auto text-slate-300 mb-3" />
               <p className="text-slate-500 font-medium">Menu is empty</p>
-              <p className="text-slate-400 text-sm mt-1">Check back soon — new meals will be added here when available.</p>
+              <p className="text-slate-400 text-sm mt-1">
+                Check back soon — new meals will be added here when available.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -731,13 +810,19 @@ function ClientView({ groupId, userId }) {
       {tab === 'mine' && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-500">{myReqs.length} request{myReqs.length !== 1 ? 's' : ''}</p>
-            <button onClick={loadMine} className="btn-secondary text-xs py-1.5">Refresh</button>
+            <p className="text-sm text-slate-500">
+              {myReqs.length} request{myReqs.length !== 1 ? 's' : ''}
+            </p>
+            <button onClick={loadMine} className="btn-secondary text-xs py-1.5">
+              Refresh
+            </button>
           </div>
 
           {loadingReqs ? (
             <div className="space-y-3">
-              {[1,2].map(i => <div key={i} className="card p-4 h-16 bg-slate-50 animate-pulse" />)}
+              {[1, 2].map(i => (
+                <div key={i} className="card p-4 h-16 bg-slate-50 animate-pulse" />
+              ))}
             </div>
           ) : myReqs.length === 0 ? (
             <div className="card p-8 text-center">
@@ -746,7 +831,9 @@ function ClientView({ groupId, userId }) {
               <p className="text-slate-400 text-sm mt-1">
                 Browse the menu and click "Request This" to place your first order.
               </p>
-              <button onClick={() => setTab('browse')} className="btn-primary mt-4">Browse Menu</button>
+              <button onClick={() => setTab('browse')} className="btn-primary mt-4">
+                Browse Menu
+              </button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -762,9 +849,7 @@ function ClientView({ groupId, userId }) {
                         )}
                       </div>
                       <p className="text-xs text-slate-400 mt-1">{formatDate(r.requested_at)}</p>
-                      {r.note && (
-                        <p className="text-xs text-slate-400 italic mt-1">"{r.note}"</p>
-                      )}
+                      {r.note && <p className="text-xs text-slate-400 italic mt-1">"{r.note}"</p>}
                     </div>
                   </div>
                 </div>
@@ -790,16 +875,18 @@ function ClientView({ groupId, userId }) {
 
 export default function Orders() {
   const { user } = useAuth()
-  const group    = user?.groups?.[0]
-  const groupId  = group?.id
-  const isAdmin  = group?.owner_id === user?.id
+  const group = user?.groups?.[0]
+  const groupId = group?.id
+  const isAdmin = group?.owner_id === user?.id
 
   if (!groupId) {
     return (
       <div className="card p-10 text-center max-w-lg mx-auto mt-10">
         <ShoppingBag size={40} className="mx-auto text-slate-300 mb-3" />
         <p className="font-serif font-semibold text-ink text-lg">No group found</p>
-        <p className="text-slate-500 text-sm mt-1">You need to be in a group to use Kitchen Orders.</p>
+        <p className="text-slate-500 text-sm mt-1">
+          You need to be in a group to use Kitchen Orders.
+        </p>
       </div>
     )
   }
@@ -812,9 +899,7 @@ export default function Orders() {
           <ShoppingBag size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="font-serif font-bold text-ink text-2xl leading-tight">
-            Kitchen Orders
-          </h1>
+          <h1 className="font-serif font-bold text-ink text-2xl leading-tight">Kitchen Orders</h1>
           <p className="text-sm text-slate-500">
             {isAdmin
               ? 'Manage your menu and incoming meal requests'

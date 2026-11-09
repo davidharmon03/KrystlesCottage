@@ -27,20 +27,22 @@ export default function RatingDisplay({ recipeId, showCount = true, size = 'sm' 
   const sizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-base',
   }
 
   const starSize = {
     sm: 12,
     md: 14,
-    lg: 16
+    lg: 16,
   }
 
   return (
     <div className={`flex items-center gap-1.5 ${sizeClasses[size]}`}>
       <div className="flex items-center gap-0.5">
         <Star size={starSize[size]} className="fill-terra-500 text-terra-500" />
-        <span className="font-semibold text-ink">{parseFloat(rating.average_rating).toFixed(1)}</span>
+        <span className="font-semibold text-ink">
+          {parseFloat(rating.average_rating).toFixed(1)}
+        </span>
       </div>
       {showCount && (
         <span className="text-slate-400">

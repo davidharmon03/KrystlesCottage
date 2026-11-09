@@ -3,8 +3,21 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import {
-  ChefHat, DollarSign, Package, Leaf, Tag,
-  Users, Plus, ArrowRight, Copy, Check, AlertTriangle, ShieldCheck, User, Mail, Send
+  ChefHat,
+  DollarSign,
+  Package,
+  Leaf,
+  Tag,
+  Users,
+  Plus,
+  ArrowRight,
+  Copy,
+  Check,
+  AlertTriangle,
+  ShieldCheck,
+  User,
+  Mail,
+  Send,
 } from 'lucide-react'
 import SocialLinks from '../components/SocialLinks'
 
@@ -18,11 +31,11 @@ function getGreeting() {
 function relativeTime(iso) {
   if (!iso) return null
   const diff = Date.now() - new Date(iso).getTime()
-  const min  = Math.floor(diff / 60_000)
-  if (min < 1)  return 'just now'
+  const min = Math.floor(diff / 60_000)
+  if (min < 1) return 'just now'
   if (min < 60) return `${min}m ago`
   const h = Math.floor(min / 60)
-  if (h  < 24)  return `${h}h ago`
+  if (h < 24) return `${h}h ago`
   const d = Math.floor(h / 24)
   return `${d}d ago`
 }
@@ -30,8 +43,8 @@ function relativeTime(iso) {
 function syncDotColor(iso) {
   if (!iso) return 'bg-slate-200'
   const days = (Date.now() - new Date(iso).getTime()) / 86_400_000
-  if (days < 1)  return 'bg-moss-400'
-  if (days < 3)  return 'bg-amber-400'
+  if (days < 1) return 'bg-moss-400'
+  if (days < 3) return 'bg-amber-400'
   return 'bg-red-400'
 }
 
@@ -39,51 +52,76 @@ export default function Dashboard() {
   const { user } = useAuth()
   const channels = [
     {
-      to: '/kitchen', label: 'Kitchen', sub: 'Recipes & How-Tos',
-      icon: ChefHat, bg: 'bg-terra-50', border: 'border-terra-200',
-      iconBg: 'bg-terra-100', iconColor: 'text-terra-600',
-      description: 'Healthy organic recipes, freezer-friendly cooking, and professional prep techniques.',
+      to: '/kitchen',
+      label: 'Kitchen',
+      sub: 'Recipes & How-Tos',
+      icon: ChefHat,
+      bg: 'bg-terra-50',
+      border: 'border-terra-200',
+      iconBg: 'bg-terra-100',
+      iconColor: 'text-terra-600',
+      description:
+        'Healthy organic recipes, freezer-friendly cooking, and professional prep techniques.',
     },
     {
-      to: '/corner', label: 'Corner', sub: 'Group Finance Hub',
-      icon: DollarSign, bg: 'bg-moss-50', border: 'border-moss-200',
-      iconBg: 'bg-moss-100', iconColor: 'text-moss-600',
-      description: 'Receipt tracking, The Equalizer, and Meal Credits — split costs fairly across your group.',
+      to: '/corner',
+      label: 'Corner',
+      sub: 'Group Finance Hub',
+      icon: DollarSign,
+      bg: 'bg-moss-50',
+      border: 'border-moss-200',
+      iconBg: 'bg-moss-100',
+      iconColor: 'text-moss-600',
+      description:
+        'Receipt tracking, The Equalizer, and Meal Credits — split costs fairly across your group.',
     },
     {
-      to: '/pantry', label: 'Pantry', sub: 'Prep & Inventory',
-      icon: Package, bg: 'bg-slate-50', border: 'border-slate-200',
-      iconBg: 'bg-slate-100', iconColor: 'text-slate-600',
+      to: '/pantry',
+      label: 'Pantry',
+      sub: 'Prep & Inventory',
+      icon: Package,
+      bg: 'bg-slate-50',
+      border: 'border-slate-200',
+      iconBg: 'bg-slate-100',
+      iconColor: 'text-slate-600',
       description: 'Inventory management, bulk-buy coordination, and vacuum seal logging.',
     },
     {
-      to: '/garden', label: 'Garden', sub: 'Plants & Harvests',
-      icon: Leaf, bg: 'bg-moss-50', border: 'border-moss-200',
-      iconBg: 'bg-moss-100', iconColor: 'text-moss-500',
-      description: 'Track your garden plants, log harvests, and auto-stock inventory from your Garden.',
+      to: '/garden',
+      label: 'Garden',
+      sub: 'Plants & Harvests',
+      icon: Leaf,
+      bg: 'bg-moss-50',
+      border: 'border-moss-200',
+      iconBg: 'bg-moss-100',
+      iconColor: 'text-moss-500',
+      description:
+        'Track your garden plants, log harvests, and auto-stock inventory from your Garden.',
     },
   ]
   const navigate = useNavigate()
   const [recentRecipes, setRecentRecipes] = useState([])
-  const [groupMembers,  setGroupMembers]  = useState([])
+  const [groupMembers, setGroupMembers] = useState([])
   const [copiedCode, setCopiedCode] = useState(false)
   const [showExpandModal, setShowExpandModal] = useState(false)
   const [groupDetail, setGroupDetail] = useState(null)
 
   // Invite by email
-  const [inviteEmail,   setInviteEmail]   = useState('')
+  const [inviteEmail, setInviteEmail] = useState('')
   const [inviteSending, setInviteSending] = useState(false)
-  const [inviteResult,  setInviteResult]  = useState(null) // { ok: bool, msg: string }
+  const [inviteResult, setInviteResult] = useState(null) // { ok: bool, msg: string }
   const [showInviteBox, setShowInviteBox] = useState(false)
 
   const activeGroup = user?.groups?.[0]
 
   useEffect(() => {
     if (activeGroup) {
-      api.get(`/recipes?groupId=${activeGroup.id}`)
+      api
+        .get(`/recipes?groupId=${activeGroup.id}`)
         .then(r => setRecentRecipes(r.data.slice(0, 3)))
         .catch(() => {})
-      api.get(`/groups/${activeGroup.id}`)
+      api
+        .get(`/groups/${activeGroup.id}`)
         .then(r => {
           setGroupMembers(r.data.members || [])
           setGroupDetail(r.data)
@@ -123,7 +161,9 @@ export default function Dashboard() {
         <h1 className="text-2xl md:text-3xl font-serif font-semibold text-ink">
           Good {getGreeting()}, {user?.name?.split(' ')[0]} 🌿
         </h1>
-        <p className="text-slate-500 mt-1 text-sm md:text-base">Welcome to your brand hub. What are we prepping today?</p>
+        <p className="text-slate-500 mt-1 text-sm md:text-base">
+          Welcome to your brand hub. What are we prepping today?
+        </p>
       </div>
 
       {/* Account Status Card */}
@@ -131,7 +171,9 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* Avatar */}
           <div className="w-11 h-11 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
-            <span className="text-slate-600 font-semibold text-base">{user?.name?.[0]?.toUpperCase()}</span>
+            <span className="text-slate-600 font-semibold text-base">
+              {user?.name?.[0]?.toUpperCase()}
+            </span>
           </div>
 
           {/* Identity + group status */}
@@ -161,7 +203,7 @@ export default function Dashboard() {
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <Check size={11} /> Group Member ✓
                 </span>
-              ) : (user?.role === 'superadmin' || user?.role === 'admin') ? (
+              ) : user?.role === 'superadmin' || user?.role === 'admin' ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                   <ShieldCheck size={11} /> Admin Access
                 </span>
@@ -184,18 +226,24 @@ export default function Dashboard() {
                 <span className="text-slate-400">Member of:</span>{' '}
                 <span className="font-medium text-ink">{activeGroup.name}</span>
                 {activeGroup.role && (
-                  <span className="ml-2 text-xs text-slate-400 capitalize">· {activeGroup.role}</span>
+                  <span className="ml-2 text-xs text-slate-400 capitalize">
+                    · {activeGroup.role}
+                  </span>
                 )}
               </p>
             ) : (
               <p className="text-sm text-slate-500 mt-1">
-                Not in a group yet — join or create one to unlock Kitchen, Corner, Cuisine, and Garden features.
+                Not in a group yet — join or create one to unlock Kitchen, Corner, Cuisine, and
+                Garden features.
               </p>
             )}
 
             {/* Password warning */}
             {user?.must_change_password && (
-              <Link to="/profile" className="inline-flex items-center gap-1.5 text-amber-600 text-sm mt-1.5 hover:text-amber-700 font-medium">
+              <Link
+                to="/profile"
+                className="inline-flex items-center gap-1.5 text-amber-600 text-sm mt-1.5 hover:text-amber-700 font-medium"
+              >
                 <AlertTriangle size={13} /> Please update your password
               </Link>
             )}
@@ -239,12 +287,16 @@ export default function Dashboard() {
                 <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded text-moss-700 text-sm border border-moss-200">
                   {activeGroup.invite_code}
                 </span>
-                <button onClick={copyCode} className="flex items-center gap-1 text-xs text-moss-500 hover:text-moss-700">
+                <button
+                  onClick={copyCode}
+                  className="flex items-center gap-1 text-xs text-moss-500 hover:text-moss-700"
+                >
                   {copiedCode ? <Check size={12} /> : <Copy size={12} />}
                   {copiedCode ? 'Copied' : 'Copy'}
                 </button>
                 <span className="text-moss-400 text-xs">
-                  {activeGroup.member_count}/{groupDetail?.max_members ?? activeGroup.max_members ?? 5} members
+                  {activeGroup.member_count}/
+                  {groupDetail?.max_members ?? activeGroup.max_members ?? 5} members
                 </span>
               </div>
             </div>
@@ -258,22 +310,35 @@ export default function Dashboard() {
                 {groupMembers.map(m => {
                   const isMe = m.id === user?.id
                   return (
-                    <div key={m.id} className="flex items-center gap-2.5 bg-white border border-moss-200 rounded-xl px-3 py-2.5">
+                    <div
+                      key={m.id}
+                      className="flex items-center gap-2.5 bg-white border border-moss-200 rounded-xl px-3 py-2.5"
+                    >
                       <div className="relative flex-shrink-0">
                         <div className="w-8 h-8 rounded-full bg-moss-100 flex items-center justify-center">
-                          <span className="text-moss-700 font-semibold text-sm">{m.name?.[0]?.toUpperCase()}</span>
+                          <span className="text-moss-700 font-semibold text-sm">
+                            {m.name?.[0]?.toUpperCase()}
+                          </span>
                         </div>
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${syncDotColor(m.last_synced_at)}`} />
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${syncDotColor(m.last_synced_at)}`}
+                        />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-ink leading-tight">
-                          {m.name}{isMe && <span className="ml-1.5 text-xs text-slate-400 font-normal">you</span>}
+                          {m.name}
+                          {isMe && (
+                            <span className="ml-1.5 text-xs text-slate-400 font-normal">you</span>
+                          )}
                         </p>
                         {m.last_synced_at ? (
-                          <p className={`text-[10px] mt-0.5 ${
-                            (Date.now() - new Date(m.last_synced_at).getTime()) / 86_400_000 >= 3
-                              ? 'text-amber-500' : 'text-slate-400'
-                          }`}>
+                          <p
+                            className={`text-[10px] mt-0.5 ${
+                              (Date.now() - new Date(m.last_synced_at).getTime()) / 86_400_000 >= 3
+                                ? 'text-amber-500'
+                                : 'text-slate-400'
+                            }`}
+                          >
                             Synced {relativeTime(m.last_synced_at)}
                           </p>
                         ) : (
@@ -289,10 +354,12 @@ export default function Dashboard() {
           )}
 
           {/* Action buttons */}
-          {(activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) || activeGroup.owner_id === user?.id) && (
+          {(activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) ||
+            activeGroup.owner_id === user?.id) && (
             <div className="mt-4 pt-3 border-t border-moss-200">
               <div className="flex items-center gap-2 flex-wrap">
-                {activeGroup.member_count < (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
+                {activeGroup.member_count <
+                  (groupDetail?.max_members ?? activeGroup.max_members ?? 5) && (
                   <Link to="/create-group" className="btn-ghost text-sm flex items-center gap-1.5">
                     <Plus size={15} /> Invite more
                   </Link>
@@ -300,7 +367,10 @@ export default function Dashboard() {
                 {activeGroup.owner_id === user?.id && (
                   <>
                     <button
-                      onClick={() => { setShowInviteBox(v => !v); setInviteResult(null) }}
+                      onClick={() => {
+                        setShowInviteBox(v => !v)
+                        setInviteResult(null)
+                      }}
                       className="btn-ghost text-sm flex items-center gap-1.5"
                     >
                       <Mail size={15} /> Invite by Email
@@ -331,15 +401,22 @@ export default function Dashboard() {
                     disabled={inviteSending}
                     className="btn-primary text-sm flex items-center gap-1.5 flex-shrink-0 py-1.5 px-3"
                   >
-                    {inviteSending
-                      ? <><Send size={13} className="animate-pulse" /> Sending…</>
-                      : <><Send size={13} /> Send</>
-                    }
+                    {inviteSending ? (
+                      <>
+                        <Send size={13} className="animate-pulse" /> Sending…
+                      </>
+                    ) : (
+                      <>
+                        <Send size={13} /> Send
+                      </>
+                    )}
                   </button>
                 </form>
               )}
               {inviteResult && (
-                <p className={`text-xs mt-1.5 ${inviteResult.ok ? 'text-moss-600' : 'text-red-500'}`}>
+                <p
+                  className={`text-xs mt-1.5 ${inviteResult.ok ? 'text-moss-600' : 'text-red-500'}`}
+                >
                   {inviteResult.msg}
                 </p>
               )}
@@ -350,18 +427,30 @@ export default function Dashboard() {
         <div className="card border-terra-200 bg-terra-50 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
             <h3 className="font-semibold text-terra-800 font-serif">No group yet</h3>
-            {user?.account_tier === 'paid'
-              ? <p className="text-terra-700 text-sm mt-0.5">Create or join a group of up to 5 to unlock the Corner, Cuisine, and Garden channels.</p>
-              : <p className="text-terra-700 text-sm mt-0.5">Join a group with an invite code to unlock the Corner, Cuisine, and Garden channels.</p>
-            }
+            {user?.account_tier === 'paid' ? (
+              <p className="text-terra-700 text-sm mt-0.5">
+                Create or join a group of up to 5 to unlock the Corner, Cuisine, and Garden
+                channels.
+              </p>
+            ) : (
+              <p className="text-terra-700 text-sm mt-0.5">
+                Join a group with an invite code to unlock the Corner, Cuisine, and Garden channels.
+              </p>
+            )}
           </div>
           <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
             {user?.account_tier === 'paid' ? (
-              <button onClick={() => navigate('/welcome')} className="btn-terra flex items-center gap-2 flex-1 sm:flex-none justify-center">
+              <button
+                onClick={() => navigate('/welcome')}
+                className="btn-terra flex items-center gap-2 flex-1 sm:flex-none justify-center"
+              >
                 <Users size={16} /> Join or Create
               </button>
             ) : (
-              <button onClick={() => navigate('/welcome')} className="btn-primary flex items-center gap-2 flex-1 sm:flex-none justify-center">
+              <button
+                onClick={() => navigate('/welcome')}
+                className="btn-primary flex items-center gap-2 flex-1 sm:flex-none justify-center"
+              >
                 <Users size={16} /> Join a Group
               </button>
             )}
@@ -372,15 +461,24 @@ export default function Dashboard() {
       {/* Channel cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {channels.map(ch => (
-          <Link key={ch.to} to={ch.to} className={`card ${ch.bg} ${ch.border} hover:shadow-md transition-shadow group`}>
+          <Link
+            key={ch.to}
+            to={ch.to}
+            className={`card ${ch.bg} ${ch.border} hover:shadow-md transition-shadow group`}
+          >
             <div className="flex items-start gap-3">
-              <div className={`w-10 h-10 rounded-xl ${ch.iconBg} flex items-center justify-center flex-shrink-0`}>
+              <div
+                className={`w-10 h-10 rounded-xl ${ch.iconBg} flex items-center justify-center flex-shrink-0`}
+              >
                 <ch.icon size={20} className={ch.iconColor} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h3 className="font-serif font-semibold text-ink">{ch.label}</h3>
-                  <ArrowRight size={15} className="text-slate-400 group-hover:text-moss-600 transition-colors" />
+                  <ArrowRight
+                    size={15}
+                    className="text-slate-400 group-hover:text-moss-600 transition-colors"
+                  />
                 </div>
                 <p className="text-xs font-medium text-slate-500 mt-0.5">{ch.sub}</p>
                 <p className="text-sm text-slate-600 mt-2 leading-snug">{ch.description}</p>
@@ -395,7 +493,10 @@ export default function Dashboard() {
         <div>
           <div className="section-header">
             <h2 className="text-lg font-serif font-semibold text-ink">Recent Recipes</h2>
-            <Link to="/kitchen" className="text-sm text-moss-600 hover:text-moss-700 font-medium flex items-center gap-1">
+            <Link
+              to="/kitchen"
+              className="text-sm text-moss-600 hover:text-moss-700 font-medium flex items-center gap-1"
+            >
               View all <ArrowRight size={14} />
             </Link>
           </div>
@@ -405,7 +506,11 @@ export default function Dashboard() {
                 <h4 className="font-medium text-ink text-sm leading-snug">{r.title}</h4>
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">{r.description}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {r.tags?.slice(0, 2).map(t => <span key={t} className="tag-moss">{t}</span>)}
+                  {r.tags?.slice(0, 2).map(t => (
+                    <span key={t} className="tag-moss">
+                      {t}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
@@ -418,9 +523,13 @@ export default function Dashboard() {
         <Tag size={28} className="text-terra-500 flex-shrink-0" />
         <div className="flex-1">
           <h3 className="font-serif font-semibold text-ink">Label Generator</h3>
-          <p className="text-sm text-slate-600 mt-0.5">Print parchment-ready instruction cards for vacuum-sealed bags.</p>
+          <p className="text-sm text-slate-600 mt-0.5">
+            Print parchment-ready instruction cards for vacuum-sealed bags.
+          </p>
         </div>
-        <Link to="/labels" className="btn-terra text-sm flex-shrink-0">Open</Link>
+        <Link to="/labels" className="btn-terra text-sm flex-shrink-0">
+          Open
+        </Link>
       </div>
 
       {/* Expand Group Modal */}
@@ -447,7 +556,11 @@ export default function Dashboard() {
               <strong>{groupDetail?.max_members ?? activeGroup?.max_members ?? 5} members</strong>.
             </p>
             <p className="text-sm text-slate-600 mb-6">
-              Expanding to <strong>{(groupDetail?.max_members ?? activeGroup?.max_members ?? 5) + 5} members</strong> will be available for purchase soon.
+              Expanding to{' '}
+              <strong>
+                {(groupDetail?.max_members ?? activeGroup?.max_members ?? 5) + 5} members
+              </strong>{' '}
+              will be available for purchase soon.
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -466,7 +579,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
     </div>
   )
 }

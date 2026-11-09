@@ -1,0 +1,8 @@
+node_modules/
+client/dist/
+**/package-lock.json
+server/uploads/
+server/backups/
+*.md
+# Hand-written on purpose (see CLAUDE.md) — leave it exactly as it is.
+client/src/sw.js

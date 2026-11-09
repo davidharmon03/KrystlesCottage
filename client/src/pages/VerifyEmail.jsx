@@ -16,7 +16,8 @@ export default function VerifyEmail() {
       setMessage('No verification token found.')
       return
     }
-    api.get(`/auth/verify-email?token=${token}`)
+    api
+      .get(`/auth/verify-email?token=${token}`)
       .then(() => setStatus('success'))
       .catch(err => {
         setStatus('error')
@@ -37,7 +38,9 @@ export default function VerifyEmail() {
           <>
             <CheckCircle size={48} className="text-moss-500 mx-auto mb-4" />
             <h1 className="font-serif font-semibold text-ink text-xl mb-2">Email Verified!</h1>
-            <p className="text-slate-500 text-sm mb-6">Your email address has been confirmed. You're good to go.</p>
+            <p className="text-slate-500 text-sm mb-6">
+              Your email address has been confirmed. You're good to go.
+            </p>
             <Link to="/" className="btn-primary w-full block text-center">
               Go to Dashboard
             </Link>

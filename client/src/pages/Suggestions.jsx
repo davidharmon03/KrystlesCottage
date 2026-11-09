@@ -7,45 +7,33 @@ import { Lightbulb, ThumbsUp, ThumbsDown, Plus, X, ChevronDown, ChevronUp } from
 
 function SuggestionStatusBadge({ status }) {
   const map = {
-    open:     'bg-slate-100 text-slate-600',
+    open: 'bg-slate-100 text-slate-600',
     accepted: 'bg-moss-100 text-moss-700',
     declined: 'bg-gray-100 text-gray-500',
-    used:     'bg-amber-100 text-amber-700',
+    used: 'bg-amber-100 text-amber-700',
   }
-  return (
-    <span className={`tag ${map[status] || 'bg-slate-100 text-slate-500'}`}>
-      {status}
-    </span>
-  )
+  return <span className={`tag ${map[status] || 'bg-slate-100 text-slate-500'}`}>{status}</span>
 }
 
 function FeatureStatusBadge({ status }) {
   const map = {
     submitted: 'bg-slate-100 text-slate-600',
     reviewing: 'bg-terra-100 text-terra-600',
-    planned:   'bg-amber-100 text-amber-700',
-    shipped:   'bg-moss-100 text-moss-700',
-    declined:  'bg-gray-100 text-gray-500',
+    planned: 'bg-amber-100 text-amber-700',
+    shipped: 'bg-moss-100 text-moss-700',
+    declined: 'bg-gray-100 text-gray-500',
   }
-  return (
-    <span className={`tag ${map[status] || 'bg-slate-100 text-slate-500'}`}>
-      {status}
-    </span>
-  )
+  return <span className={`tag ${map[status] || 'bg-slate-100 text-slate-500'}`}>{status}</span>
 }
 
 function CategoryBadge({ category }) {
   const map = {
-    bug:         'bg-red-100 text-red-700',
-    feature:     'bg-moss-100 text-moss-700',
+    bug: 'bg-red-100 text-red-700',
+    feature: 'bg-moss-100 text-moss-700',
     improvement: 'bg-terra-100 text-terra-600',
-    other:       'bg-slate-100 text-slate-600',
+    other: 'bg-slate-100 text-slate-600',
   }
-  return (
-    <span className={`tag ${map[category] || 'bg-slate-100 text-slate-500'}`}>
-      {category}
-    </span>
-  )
+  return <span className={`tag ${map[category] || 'bg-slate-100 text-slate-500'}`}>{category}</span>
 }
 
 // ── suggest meal modal ─────────────────────────────────────────────────────
@@ -54,7 +42,9 @@ function SuggestMealModal({ onClose, onSubmit, submitting }) {
   const [form, setForm] = useState({ meal_name: '', description: '', recipe_id: '' })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const handleKey = e => { if (e.key === 'Escape') onClose() }
+  const handleKey = e => {
+    if (e.key === 'Escape') onClose()
+  }
   useEffect(() => {
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
@@ -65,7 +55,10 @@ function SuggestMealModal({ onClose, onSubmit, submitting }) {
       <div className="modal p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-serif font-semibold text-ink text-lg">Suggest an Entrée</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={18} />
           </button>
         </div>
@@ -91,7 +84,9 @@ function SuggestMealModal({ onClose, onSubmit, submitting }) {
             />
           </div>
           <div>
-            <label className="label">Recipe link <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="label">
+              Recipe link <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
             <input
               className="input"
               placeholder="https://..."
@@ -102,7 +97,9 @@ function SuggestMealModal({ onClose, onSubmit, submitting }) {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="btn-ghost flex-1 text-sm">Cancel</button>
+          <button onClick={onClose} className="btn-ghost flex-1 text-sm">
+            Cancel
+          </button>
           <button
             onClick={() => onSubmit(form)}
             disabled={!form.meal_name.trim() || submitting}
@@ -122,7 +119,9 @@ function SubmitIdeaModal({ onClose, onSubmit, submitting }) {
   const [form, setForm] = useState({ title: '', description: '', category: 'feature' })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const handleKey = e => { if (e.key === 'Escape') onClose() }
+  const handleKey = e => {
+    if (e.key === 'Escape') onClose()
+  }
   useEffect(() => {
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
@@ -133,7 +132,10 @@ function SubmitIdeaModal({ onClose, onSubmit, submitting }) {
       <div className="modal p-6">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-serif font-semibold text-ink text-lg">Submit an Idea</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={18} />
           </button>
         </div>
@@ -174,7 +176,9 @@ function SubmitIdeaModal({ onClose, onSubmit, submitting }) {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="btn-ghost flex-1 text-sm">Cancel</button>
+          <button onClick={onClose} className="btn-ghost flex-1 text-sm">
+            Cancel
+          </button>
           <button
             onClick={() => onSubmit(form)}
             disabled={!form.title.trim() || submitting}
@@ -191,9 +195,9 @@ function SubmitIdeaModal({ onClose, onSubmit, submitting }) {
 // ── suggestion card ────────────────────────────────────────────────────────
 
 function SuggestionCard({ s, isAdmin, onVote, onStatus }) {
-  const upvotes   = Number(s.upvotes)
+  const upvotes = Number(s.upvotes)
   const downvotes = Number(s.downvotes)
-  const net       = upvotes - downvotes
+  const net = upvotes - downvotes
 
   return (
     <div className="card flex flex-col gap-3">
@@ -246,8 +250,11 @@ function SuggestionCard({ s, isAdmin, onVote, onStatus }) {
         </button>
 
         {net !== 0 && (
-          <span className={`text-xs font-semibold ml-auto ${net > 0 ? 'text-moss-600' : 'text-terra-600'}`}>
-            {net > 0 ? '+' : ''}{net}
+          <span
+            className={`text-xs font-semibold ml-auto ${net > 0 ? 'text-moss-600' : 'text-terra-600'}`}
+          >
+            {net > 0 ? '+' : ''}
+            {net}
           </span>
         )}
       </div>
@@ -298,67 +305,74 @@ function SuggestionCard({ s, isAdmin, onVote, onStatus }) {
 // ── meal ideas tab ─────────────────────────────────────────────────────────
 
 const MEAL_FILTERS = [
-  { key: 'open',     label: 'Open'     },
+  { key: 'open', label: 'Open' },
   { key: 'accepted', label: 'Accepted' },
-  { key: 'past',     label: 'Past'     },
+  { key: 'past', label: 'Past' },
 ]
 
 function MealIdeasTab({ user, activeGroup, isAdmin }) {
   const [suggestions, setSuggestions] = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [filter, setFilter]           = useState('open')
-  const [showModal, setShowModal]     = useState(false)
-  const [submitting, setSubmitting]   = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('open')
+  const [showModal, setShowModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const load = useCallback(() => {
     if (!activeGroup?.id) return
     setLoading(true)
-    api.get(`/suggestions?group_id=${activeGroup.id}&status=${filter}`)
+    api
+      .get(`/suggestions?group_id=${activeGroup.id}&status=${filter}`)
       .then(r => setSuggestions(r.data))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [activeGroup?.id, filter])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const handleVote = async (id, vote) => {
     try {
       const res = await api.post(`/suggestions/${id}/vote`, { vote })
-      setSuggestions(prev => prev.map(s => {
-        if (s.id !== id) return s
-        const old     = s.my_vote
-        const newVote = res.data.my_vote
-        let upvotes   = Number(s.upvotes)
-        let downvotes = Number(s.downvotes)
-        if (old   === 'up')   upvotes--
-        if (old   === 'down') downvotes--
-        if (newVote === 'up')   upvotes++
-        if (newVote === 'down') downvotes++
-        return { ...s, my_vote: newVote, upvotes, downvotes }
-      }))
+      setSuggestions(prev =>
+        prev.map(s => {
+          if (s.id !== id) return s
+          const old = s.my_vote
+          const newVote = res.data.my_vote
+          let upvotes = Number(s.upvotes)
+          let downvotes = Number(s.downvotes)
+          if (old === 'up') upvotes--
+          if (old === 'down') downvotes--
+          if (newVote === 'up') upvotes++
+          if (newVote === 'down') downvotes++
+          return { ...s, my_vote: newVote, upvotes, downvotes }
+        })
+      )
     } catch {}
   }
 
   const handleStatus = async (id, status) => {
     try {
       await api.put(`/suggestions/${id}/status`, { status })
-      setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s))
+      setSuggestions(prev => prev.map(s => (s.id === id ? { ...s, status } : s)))
     } catch {}
   }
 
-  const handleSubmit = async (form) => {
+  const handleSubmit = async form => {
     setSubmitting(true)
     try {
       const res = await api.post('/suggestions', {
-        group_id:    activeGroup.id,
-        meal_name:   form.meal_name,
+        group_id: activeGroup.id,
+        meal_name: form.meal_name,
         description: form.description,
-        recipe_id:   form.recipe_id || null,
+        recipe_id: form.recipe_id || null,
       })
       if (filter === 'open') setSuggestions(prev => [res.data, ...prev])
       setShowModal(false)
-    } catch {}
-    finally { setSubmitting(false) }
+    } catch {
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (!activeGroup) {
@@ -369,7 +383,8 @@ function MealIdeasTab({ user, activeGroup, isAdmin }) {
         </div>
         <h3 className="font-serif font-semibold text-ink text-lg mb-2">Join a group first</h3>
         <p className="text-slate-500 text-sm max-w-xs mx-auto leading-relaxed">
-          Meal suggestions are shared within your group. Create or join a group from your dashboard to get started.
+          Meal suggestions are shared within your group. Create or join a group from your dashboard
+          to get started.
         </p>
       </div>
     )
@@ -385,9 +400,7 @@ function MealIdeasTab({ user, activeGroup, isAdmin }) {
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                filter === f.key
-                  ? 'bg-white text-ink shadow-sm'
-                  : 'text-slate-500 hover:text-ink'
+                filter === f.key ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-ink'
               }`}
             >
               {f.label}
@@ -420,7 +433,15 @@ function MealIdeasTab({ user, activeGroup, isAdmin }) {
           <p className="text-slate-400 text-sm">
             No {filter} suggestions yet.
             {filter === 'open' && (
-              <> <button onClick={() => setShowModal(true)} className="text-moss-600 hover:underline">Be the first to suggest an entrée.</button></>
+              <>
+                {' '}
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="text-moss-600 hover:underline"
+                >
+                  Be the first to suggest an entrée.
+                </button>
+              </>
             )}
           </p>
         </div>
@@ -456,7 +477,9 @@ const FEATURE_STATUSES = ['submitted', 'reviewing', 'planned', 'shipped', 'decli
 
 function FeatureRequestRow({ r, isAdmin, expanded, onToggle, onVote, onStatus }) {
   const dateStr = new Date(r.created_at).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   })
 
   return (
@@ -498,7 +521,10 @@ function FeatureRequestRow({ r, isAdmin, expanded, onToggle, onVote, onStatus })
             <div className="mt-2">
               <select
                 value={r.status}
-                onChange={e => { e.stopPropagation(); onStatus(r.id, e.target.value) }}
+                onChange={e => {
+                  e.stopPropagation()
+                  onStatus(r.id, e.target.value)
+                }}
                 onClick={e => e.stopPropagation()}
                 className="text-xs border border-slate-200 rounded-md px-2 py-1 text-slate-600 bg-white focus:outline-none focus:ring-1 focus:ring-moss-400 cursor-pointer"
               >
@@ -529,56 +555,65 @@ function FeatureRequestRow({ r, isAdmin, expanded, onToggle, onVote, onStatus })
 // ── app feedback tab ───────────────────────────────────────────────────────
 
 function AppFeedbackTab({ user, isAdmin }) {
-  const [requests, setRequests]   = useState([])
-  const [loading, setLoading]     = useState(true)
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [expanded, setExpanded]   = useState(null)
+  const [expanded, setExpanded] = useState(null)
 
   const load = useCallback(() => {
     setLoading(true)
-    api.get('/feature-requests')
+    api
+      .get('/feature-requests')
       .then(r => setRequests(r.data))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const handleVote = async (id) => {
+  const handleVote = async id => {
     try {
       const res = await api.post(`/feature-requests/${id}/vote`)
-      setRequests(prev => prev.map(r => {
-        if (r.id !== id) return r
-        const delta = res.data.my_vote ? 1 : -1
-        return { ...r, votes: Number(r.votes) + delta, my_vote: res.data.my_vote }
-      }))
+      setRequests(prev =>
+        prev.map(r => {
+          if (r.id !== id) return r
+          const delta = res.data.my_vote ? 1 : -1
+          return { ...r, votes: Number(r.votes) + delta, my_vote: res.data.my_vote }
+        })
+      )
     } catch {}
   }
 
   const handleStatus = async (id, status) => {
     try {
       await api.put(`/feature-requests/${id}`, { status })
-      setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r))
+      setRequests(prev => prev.map(r => (r.id === id ? { ...r, status } : r)))
     } catch {}
   }
 
-  const handleSubmit = async (form) => {
+  const handleSubmit = async form => {
     setSubmitting(true)
     try {
       const res = await api.post('/feature-requests', form)
       setRequests(prev => [res.data, ...prev])
       setShowModal(false)
-    } catch {}
-    finally { setSubmitting(false) }
+    } catch {
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const toggleExpand = (id) => setExpanded(prev => prev === id ? null : id)
+  const toggleExpand = id => setExpanded(prev => (prev === id ? null : id))
 
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <p className="text-sm text-slate-500">Vote on ideas or flag bugs. All members see this list.</p>
+        <p className="text-sm text-slate-500">
+          Vote on ideas or flag bugs. All members see this list.
+        </p>
         <button
           onClick={() => setShowModal(true)}
           className="btn-primary text-sm flex items-center gap-1.5"
@@ -633,7 +668,7 @@ function AppFeedbackTab({ user, isAdmin }) {
 // ── main page ──────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'meals',    label: 'Meal Ideas'   },
+  { key: 'meals', label: 'Meal Ideas' },
   { key: 'feedback', label: 'App Feedback' },
 ]
 
@@ -641,7 +676,7 @@ export default function Suggestions() {
   const { user } = useAuth()
   const [tab, setTab] = useState('meals')
   const activeGroup = user?.groups?.[0]
-  const isAdmin     = !!(user?.groups?.some(g => g.owner_id === user?.id))
+  const isAdmin = !!user?.groups?.some(g => g.owner_id === user?.id)
 
   return (
     <div className="max-w-5xl mx-auto">

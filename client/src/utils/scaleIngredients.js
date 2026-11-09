@@ -9,15 +9,15 @@ const TOLERANCE = 0.04
 
 // Ordered from smallest to largest so mixed-number decomposition picks right
 const FRACTIONS = [
-  [1/8,  '1/8'],
-  [1/4,  '1/4'],
-  [1/3,  '1/3'],
-  [3/8,  '3/8'],
-  [1/2,  '1/2'],
-  [5/8,  '5/8'],
-  [2/3,  '2/3'],
-  [3/4,  '3/4'],
-  [7/8,  '7/8'],
+  [1 / 8, '1/8'],
+  [1 / 4, '1/4'],
+  [1 / 3, '1/3'],
+  [3 / 8, '3/8'],
+  [1 / 2, '1/2'],
+  [5 / 8, '5/8'],
+  [2 / 3, '2/3'],
+  [3 / 4, '3/4'],
+  [7 / 8, '7/8'],
 ]
 
 /**
@@ -72,8 +72,8 @@ function parseLeadingNumber(str) {
   const mixedMatch = s.match(/^(\d+)\s+(\d+)\/(\d+)(.*)$/s)
   if (mixedMatch) {
     const whole = parseInt(mixedMatch[1], 10)
-    const num   = parseInt(mixedMatch[2], 10)
-    const den   = parseInt(mixedMatch[3], 10)
+    const num = parseInt(mixedMatch[2], 10)
+    const den = parseInt(mixedMatch[3], 10)
     if (den !== 0) {
       return { value: whole + num / den, rest: mixedMatch[4] }
     }
@@ -119,7 +119,7 @@ export function scaleIngredients(ingredients, originalServings, targetServings) 
     const parsed = parseLeadingNumber(ing)
     if (!parsed) return ing
 
-    const scaled    = parsed.value * ratio
+    const scaled = parsed.value * ratio
     const formatted = formatNumber(scaled)
     return formatted + parsed.rest
   })

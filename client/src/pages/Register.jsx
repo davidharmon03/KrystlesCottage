@@ -15,7 +15,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm,  setShowConfirm]  = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   // If they arrived via invite link, pre-fill the email
   useEffect(() => {
@@ -25,8 +25,14 @@ export default function Register() {
   const handleSubmit = async e => {
     e.preventDefault()
     setError('')
-    if (form.password !== form.confirm) { setError('Passwords do not match'); return }
-    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return }
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match')
+      return
+    }
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
     setLoading(true)
     try {
       // Register with invite_token so the server can auto-add them to the group
@@ -83,13 +89,25 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Your name</label>
-              <input type="text" required className="input" placeholder="Krystle" value={form.name} onChange={set('name')} autoFocus={!inviteEmail} />
+              <input
+                type="text"
+                required
+                className="input"
+                placeholder="Krystle"
+                value={form.name}
+                onChange={set('name')}
+                autoFocus={!inviteEmail}
+              />
             </div>
             <div>
               <label className="label">Email</label>
               <input
-                type="email" required className="input" placeholder="you@example.com"
-                value={form.email} onChange={set('email')}
+                type="email"
+                required
+                className="input"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={set('email')}
                 readOnly={!!inviteEmail}
                 style={inviteEmail ? { background: '#f8f7f4' } : {}}
               />
@@ -98,7 +116,8 @@ export default function Register() {
               <label className="label">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'} required
+                  type={showPassword ? 'text' : 'password'}
+                  required
                   className="input pr-10"
                   placeholder="At least 6 characters"
                   value={form.password}
@@ -119,7 +138,8 @@ export default function Register() {
               <label className="label">Confirm password</label>
               <div className="relative">
                 <input
-                  type={showConfirm ? 'text' : 'password'} required
+                  type={showConfirm ? 'text' : 'password'}
+                  required
                   className="input pr-10"
                   placeholder="••••••••"
                   value={form.confirm}
@@ -136,13 +156,20 @@ export default function Register() {
               </div>
             </div>
             <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-              {loading ? 'Creating account…' : inviteToken ? 'Create Account & Join Group' : 'Create Account'}
+              {loading
+                ? 'Creating account…'
+                : inviteToken
+                  ? 'Create Account & Join Group'
+                  : 'Create Account'}
             </button>
           </form>
 
           <p className="text-center text-sm text-slate-500 mt-5">
             Already have an account?{' '}
-            <Link to={inviteToken ? `/login?invite=${inviteToken}` : '/login'} className="text-moss-600 font-medium hover:text-moss-700">
+            <Link
+              to={inviteToken ? `/login?invite=${inviteToken}` : '/login'}
+              className="text-moss-600 font-medium hover:text-moss-700"
+            >
               Sign in
             </Link>
           </p>

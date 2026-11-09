@@ -7,31 +7,40 @@ const { notifyGroupMembers } = require('./notifications');
 
 async function requireMember(groupId, userId) {
   const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId]);
+  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
+    groupId,
+    userId,
+  ]);
 }
 
 // GET /:groupId/plants
 router.get('/:groupId/plants', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    const rows = await db.all(`
+    const rows = await db.all(
+      `
       SELECT p.*, u.name AS added_by_name, g.common_name AS guide_name
       FROM garden_plants p
       JOIN users u ON u.id = p.added_by
       LEFT JOIN plant_guides g ON g.id = p.plant_guide_id
       WHERE p.group_id = ?
       ORDER BY p.date_planted DESC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
     res.json(rows);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // POST /:groupId/plants
 router.post('/:groupId/plants', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { plant_name, date_planted, expected_harvest, status, notes, plant_guide_id } = req.body;
     if (!plant_name || !date_planted)
@@ -40,7 +49,17 @@ router.post('/:groupId/plants', authMiddleware, async (req, res) => {
     const id = uuidv4();
     await db.run(
       'INSERT INTO garden_plants (id, group_id, plant_name, date_planted, expected_harvest, status, notes, added_by, plant_guide_id) VALUES (?,?,?,?,?,?,?,?,?)',
-      [id, req.params.groupId, plant_name, date_planted, expected_harvest || '', status || 'growing', notes || '', req.user.id, plant_guide_id || null]
+      [
+        id,
+        req.params.groupId,
+        plant_name,
+        date_planted,
+        expected_harvest || '',
+        status || 'growing',
+        notes || '',
+        req.user.id,
+        plant_guide_id || null,
+      ]
     );
     const created = await db.get(
       `SELECT p.*, u.name AS added_by_name, g.common_name AS guide_name
@@ -50,21 +69,35 @@ router.post('/:groupId/plants', authMiddleware, async (req, res) => {
       [id]
     );
     res.status(201).json(created);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PUT /:groupId/plants/:id
 router.put('/:groupId/plants/:id', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    const plant = await db.get('SELECT * FROM garden_plants WHERE id = ? AND group_id = ?', [req.params.id, req.params.groupId]);
+    const plant = await db.get('SELECT * FROM garden_plants WHERE id = ? AND group_id = ?', [
+      req.params.id,
+      req.params.groupId,
+    ]);
     if (!plant) return res.status(404).json({ error: 'Plant not found' });
     const { plant_name, date_planted, expected_harvest, status, notes, plant_guide_id } = req.body;
     await db.run(
       'UPDATE garden_plants SET plant_name=?, date_planted=?, expected_harvest=?, status=?, notes=?, plant_guide_id=? WHERE id=?',
-      [plant_name ?? plant.plant_name, date_planted ?? plant.date_planted, expected_harvest ?? plant.expected_harvest, status ?? plant.status, notes ?? plant.notes, plant_guide_id !== undefined ? plant_guide_id : plant.plant_guide_id, req.params.id]
+      [
+        plant_name ?? plant.plant_name,
+        date_planted ?? plant.date_planted,
+        expected_harvest ?? plant.expected_harvest,
+        status ?? plant.status,
+        notes ?? plant.notes,
+        plant_guide_id !== undefined ? plant_guide_id : plant.plant_guide_id,
+        req.params.id,
+      ]
     );
     const updated = await db.get(
       `SELECT p.*, u.name AS added_by_name, g.common_name AS guide_name
@@ -74,49 +107,82 @@ router.put('/:groupId/plants/:id', authMiddleware, async (req, res) => {
       [req.params.id]
     );
     res.json(updated);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // DELETE /:groupId/plants/:id
 router.delete('/:groupId/plants/:id', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    await db.run('DELETE FROM garden_plants WHERE id = ? AND group_id = ?', [req.params.id, req.params.groupId]);
+    await db.run('DELETE FROM garden_plants WHERE id = ? AND group_id = ?', [
+      req.params.id,
+      req.params.groupId,
+    ]);
     res.json({ message: 'Deleted' });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // GET /:groupId/harvests
 router.get('/:groupId/harvests', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    const rows = await db.all(`
+    const rows = await db.all(
+      `
       SELECT h.*, u.name AS added_by_name
       FROM harvest_logs h JOIN users u ON u.id = h.added_by
       WHERE h.group_id = ?
       ORDER BY h.harvest_date DESC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
     res.json(rows);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // POST /:groupId/harvests
 router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
-    const { plant_id, plant_name, harvest_date, yield_amount, notes, add_to_inventory, inventory_category, inventory_storage } = req.body;
+    const {
+      plant_id,
+      plant_name,
+      harvest_date,
+      yield_amount,
+      notes,
+      add_to_inventory,
+      inventory_category,
+      inventory_storage,
+    } = req.body;
     if (!plant_name || !harvest_date || !yield_amount)
       return res.status(400).json({ error: 'plant_name, harvest_date, yield_amount required' });
     const db = await getDb();
     const id = uuidv4();
     await db.run(
       'INSERT INTO harvest_logs (id, group_id, plant_id, plant_name, harvest_date, yield_amount, notes, added_by) VALUES (?,?,?,?,?,?,?,?)',
-      [id, req.params.groupId, plant_id || null, plant_name, harvest_date, yield_amount, notes || '', req.user.id]
+      [
+        id,
+        req.params.groupId,
+        plant_id || null,
+        plant_name,
+        harvest_date,
+        yield_amount,
+        notes || '',
+        req.user.id,
+      ]
     );
     if (plant_id) {
       await db.run("UPDATE garden_plants SET status = 'harvested' WHERE id = ?", [plant_id]);
@@ -124,7 +190,16 @@ router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
     if (add_to_inventory) {
       await db.run(
         'INSERT INTO inventory_items (id, group_id, name, quantity, category, storage_type, notes, added_by) VALUES (?,?,?,?,?,?,?,?)',
-        [uuidv4(), req.params.groupId, plant_name, yield_amount, inventory_category || 'produce', inventory_storage || 'fresh', `From harvest on ${harvest_date}`, req.user.id]
+        [
+          uuidv4(),
+          req.params.groupId,
+          plant_name,
+          yield_amount,
+          inventory_category || 'produce',
+          inventory_storage || 'fresh',
+          `From harvest on ${harvest_date}`,
+          req.user.id,
+        ]
       );
       await db.run('UPDATE harvest_logs SET added_to_inventory = 1 WHERE id = ?', [id]);
     }
@@ -139,10 +214,13 @@ router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
       type: 'harvest_logged',
       title: 'Harvest logged!',
       message: `${created.added_by_name} logged a harvest: ${yield_amount} of ${plant_name}.`,
-      link: '/garden'
+      link: '/garden',
     });
     res.status(201).json(created);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // GET /:groupId/calendar
@@ -150,17 +228,20 @@ router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
 //   { "May 2026": [{plant_name, status, expected_harvest}, ...], ... }
 router.get('/:groupId/calendar', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    const rows = await db.all(`
+    const rows = await db.all(
+      `
       SELECT plant_name, expected_harvest, status
       FROM garden_plants
       WHERE group_id = ?
         AND expected_harvest IS NOT NULL
         AND expected_harvest != ''
       ORDER BY expected_harvest ASC
-    `, [req.params.groupId]);
+    `,
+      [req.params.groupId]
+    );
 
     // Group into { "Month Year": [plants] }
     const calendar = {};
@@ -172,13 +253,16 @@ router.get('/:groupId/calendar', authMiddleware, async (req, res) => {
       calendar[key].push(row);
     }
     res.json(calendar);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // POST /:groupId/calendar
 router.post('/:groupId/calendar', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { title, event_type, start_date, end_date, description } = req.body;
     if (!title || !event_type || !start_date)
@@ -187,25 +271,43 @@ router.post('/:groupId/calendar', authMiddleware, async (req, res) => {
     const id = uuidv4();
     await db.run(
       'INSERT INTO seasonal_calendar (id, group_id, title, event_type, start_date, end_date, description, added_by) VALUES (?,?,?,?,?,?,?,?)',
-      [id, req.params.groupId, title, event_type, start_date, end_date || '', description || '', req.user.id]
+      [
+        id,
+        req.params.groupId,
+        title,
+        event_type,
+        start_date,
+        end_date || '',
+        description || '',
+        req.user.id,
+      ]
     );
     const created = await db.get(
       'SELECT c.*, u.name AS added_by_name FROM seasonal_calendar c JOIN users u ON u.id = c.added_by WHERE c.id = ?',
       [id]
     );
     res.status(201).json(created);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // DELETE /:groupId/calendar/:id
 router.delete('/:groupId/calendar/:id', authMiddleware, async (req, res) => {
   try {
-    if (!await requireMember(req.params.groupId, req.user.id))
+    if (!(await requireMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
-    await db.run('DELETE FROM seasonal_calendar WHERE id = ? AND group_id = ?', [req.params.id, req.params.groupId]);
+    await db.run('DELETE FROM seasonal_calendar WHERE id = ? AND group_id = ?', [
+      req.params.id,
+      req.params.groupId,
+    ]);
     res.json({ message: 'Deleted' });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // ─── Garden Plots ────────────────────────────────────────────────────────────
@@ -220,11 +322,14 @@ async function getUserGroupId(userId) {
 // counting numbers, so every route that takes one must check this.
 async function getMemberPlot(plotId, userId) {
   const db = await getDb();
-  return db.get(`
+  return db.get(
+    `
     SELECT p.* FROM garden_plots p
     JOIN group_members gm ON gm.group_id = p.group_id AND gm.user_id = ?
     WHERE p.id = ?
-  `, [userId, plotId]);
+  `,
+    [userId, plotId]
+  );
 }
 
 const PLOT_TYPES = ['raised_bed', 'bucket', 'row'];
@@ -232,11 +337,17 @@ const MAX_CELLS = 2500;
 
 function plotFieldsError(body) {
   const { name, type } = body;
-  if (typeof name !== 'string' || !name.trim() || name.length > 100) return 'Plot name is required (up to 100 characters)';
+  if (typeof name !== 'string' || !name.trim() || name.length > 100)
+    return 'Plot name is required (up to 100 characters)';
   if (type !== undefined && type !== null && !PLOT_TYPES.includes(type)) return 'Unknown plot type';
   for (const k of ['width', 'length', 'bucket_count']) {
     const v = body[k];
-    if (v !== undefined && v !== null && v !== '' && !(Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= 1000))
+    if (
+      v !== undefined &&
+      v !== null &&
+      v !== '' &&
+      !(Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= 1000)
+    )
       return `${k} must be a number from 0 to 1000`;
   }
   if (body.notes != null && String(body.notes).length > 2000) return 'Notes are too long';
@@ -254,7 +365,10 @@ router.get('/plots', authMiddleware, async (req, res) => {
       [groupId]
     );
     res.json(plots);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // POST /api/garden/plots
@@ -268,17 +382,29 @@ router.post('/plots', authMiddleware, async (req, res) => {
     const db = await getDb();
     const result = await db.run(
       'INSERT INTO garden_plots (group_id, name, type, width, length, bucket_size, bucket_count, notes) VALUES (?,?,?,?,?,?,?,?)',
-      [groupId, name, type || 'raised_bed', width || null, length || null, bucket_size || null, bucket_count || 1, notes || null]
+      [
+        groupId,
+        name,
+        type || 'raised_bed',
+        width || null,
+        length || null,
+        bucket_size || null,
+        bucket_count || 1,
+        notes || null,
+      ]
     );
     const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [result.lastID]);
     res.status(201).json(plot);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PATCH /api/garden/plots/:id
 router.patch('/plots/:id', authMiddleware, async (req, res) => {
   try {
-    if (!await getMemberPlot(req.params.id, req.user.id))
+    if (!(await getMemberPlot(req.params.id, req.user.id)))
       return res.status(404).json({ error: 'Plot not found' });
     const invalid = plotFieldsError(req.body);
     if (invalid) return res.status(400).json({ error: invalid });
@@ -290,43 +416,63 @@ router.patch('/plots/:id', authMiddleware, async (req, res) => {
     );
     const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [req.params.id]);
     res.json(plot);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // DELETE /api/garden/plots/:id
 router.delete('/plots/:id', authMiddleware, async (req, res) => {
   try {
-    if (!await getMemberPlot(req.params.id, req.user.id))
+    if (!(await getMemberPlot(req.params.id, req.user.id)))
       return res.status(404).json({ error: 'Plot not found' });
     const db = await getDb();
     await db.run('DELETE FROM garden_plots WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // GET /api/garden/plots/:id/cells
 router.get('/plots/:id/cells', authMiddleware, async (req, res) => {
   try {
-    if (!await getMemberPlot(req.params.id, req.user.id))
+    if (!(await getMemberPlot(req.params.id, req.user.id)))
       return res.status(404).json({ error: 'Plot not found' });
     const db = await getDb();
-    const cells = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+    const cells = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [
+      req.params.id,
+    ]);
     res.json(cells);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PUT /api/garden/plots/:id/cells — replace entire grid
 router.put('/plots/:id/cells', authMiddleware, async (req, res) => {
   try {
-    if (!await getMemberPlot(req.params.id, req.user.id))
+    if (!(await getMemberPlot(req.params.id, req.user.id)))
       return res.status(404).json({ error: 'Plot not found' });
     const { cells } = req.body;
     if (!Array.isArray(cells) || cells.length > MAX_CELLS)
       return res.status(400).json({ error: `cells must be a list of up to ${MAX_CELLS}` });
     for (const c of cells) {
-      if (!c || !Number.isInteger(c.cell_x) || !Number.isInteger(c.cell_y) || c.cell_x < 0 || c.cell_y < 0
-          || (c.label != null && String(c.label).length > 50) || (c.color != null && String(c.color).length > 30))
-        return res.status(400).json({ error: 'Each cell needs whole-number cell_x and cell_y, a short label and color' });
+      if (
+        !c ||
+        !Number.isInteger(c.cell_x) ||
+        !Number.isInteger(c.cell_y) ||
+        c.cell_x < 0 ||
+        c.cell_y < 0 ||
+        (c.label != null && String(c.label).length > 50) ||
+        (c.color != null && String(c.color).length > 30)
+      )
+        return res.status(400).json({
+          error: 'Each cell needs whole-number cell_x and cell_y, a short label and color',
+        });
     }
     const db = await getDb();
     // Replace the grid in one transaction so a failure can't leave it half-saved.
@@ -342,10 +488,18 @@ router.put('/plots/:id/cells', authMiddleware, async (req, res) => {
         }
       }
       await db.run('COMMIT');
-    } catch (e) { await db.run('ROLLBACK'); throw e; }
-    const saved = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+    } catch (e) {
+      await db.run('ROLLBACK');
+      throw e;
+    }
+    const saved = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [
+      req.params.id,
+    ]);
     res.json(saved);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;

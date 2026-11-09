@@ -7,7 +7,9 @@
     @apply bg-cream text-ink font-sans;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     @apply font-serif;
   }
 }
@@ -82,14 +84,23 @@
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f5f0e8; }
-::-webkit-scrollbar-thumb { background: #95bda5; border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f0e8;
+}
+::-webkit-scrollbar-thumb {
+  background: #95bda5;
+  border-radius: 3px;
+}
 
 /* Print styles */
 @media print {
   /* Hide everything that shouldn't print */
-  .no-print { display: none !important; }
+  .no-print {
+    display: none !important;
+  }
 
   /* Reset layout for printing */
   body {

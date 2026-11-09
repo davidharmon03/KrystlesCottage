@@ -5,16 +5,28 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('kbh_user')) } catch { return null }
+    try {
+      return JSON.parse(localStorage.getItem('kbh_user'))
+    } catch {
+      return null
+    }
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const token = localStorage.getItem('kbh_token')
-    if (!token) { setLoading(false); return }
-    api.get('/auth/me')
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    api
+      .get('/auth/me')
       .then(res => setUser(res.data))
-      .catch(() => { localStorage.removeItem('kbh_token'); localStorage.removeItem('kbh_user'); setUser(null) })
+      .catch(() => {
+        localStorage.removeItem('kbh_token')
+        localStorage.removeItem('kbh_user')
+        setUser(null)
+      })
       .finally(() => setLoading(false))
   }, [])
 

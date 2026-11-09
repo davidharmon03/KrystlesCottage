@@ -23,7 +23,7 @@ export default function RatingModal({ isOpen, entree, weekId, onClose, onSave })
     try {
       await api.post(`/swaps/${weekId}/entrees/${entree.id}/rate`, {
         stars,
-        comment: comment.trim()
+        comment: comment.trim(),
       })
       onSave?.()
       handleClose()
@@ -55,7 +55,9 @@ export default function RatingModal({ isOpen, entree, weekId, onClose, onSave })
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <p className="text-sm font-medium text-slate-600 mb-2">{entree.user_name}'s {entree.entree_name}</p>
+            <p className="text-sm font-medium text-slate-600 mb-2">
+              {entree.user_name}'s {entree.entree_name}
+            </p>
             {entree.recipe_title && (
               <p className="text-xs text-slate-400">Recipe: {entree.recipe_title}</p>
             )}
@@ -83,9 +85,7 @@ export default function RatingModal({ isOpen, entree, weekId, onClose, onSave })
                   <Star
                     size={32}
                     className={`transition-colors ${
-                      n <= displayStars
-                        ? 'fill-terra-500 text-terra-500'
-                        : 'text-slate-300'
+                      n <= displayStars ? 'fill-terra-500 text-terra-500' : 'text-slate-300'
                     }`}
                   />
                 </button>
@@ -109,9 +109,7 @@ export default function RatingModal({ isOpen, entree, weekId, onClose, onSave })
               onChange={e => setComment(e.target.value)}
               maxLength={200}
             />
-            <p className="text-xs text-slate-400 mt-1">
-              {comment.length}/200
-            </p>
+            <p className="text-xs text-slate-400 mt-1">{comment.length}/200</p>
           </div>
 
           <div className="flex gap-2 pt-2">

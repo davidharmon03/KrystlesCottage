@@ -50,7 +50,8 @@ export default function Login() {
             <div>
               <label className="label">Email</label>
               <input
-                type="email" required
+                type="email"
+                required
                 className="input"
                 placeholder="you@example.com"
                 value={form.email}
@@ -61,7 +62,8 @@ export default function Login() {
               <label className="label">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'} required
+                  type={showPassword ? 'text' : 'password'}
+                  required
                   className="input pr-10"
                   placeholder="••••••••"
                   value={form.password}
@@ -82,7 +84,10 @@ export default function Login() {
             </button>
 
             <div className="text-center mt-3">
-              <Link to="/forgot-password" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+              >
                 Forgot your password?
               </Link>
             </div>
@@ -94,7 +99,6 @@ export default function Login() {
               Create an account
             </Link>
           </p>
-
         </div>
       </div>
     </div>

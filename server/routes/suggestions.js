@@ -4,23 +4,23 @@ const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 
 const suggestionsRouter = express.Router();
-const featureRouter     = express.Router();
+const featureRouter = express.Router();
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
 async function isMember(db, groupId, userId) {
-  const row = await db.get(
-    'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-    [groupId, userId]
-  );
+  const row = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
+    groupId,
+    userId,
+  ]);
   return !!row;
 }
 
 async function isGroupOwner(db, groupId, userId) {
-  const row = await db.get(
-    'SELECT id FROM groups WHERE id = ? AND owner_id = ?',
-    [groupId, userId]
-  );
+  const row = await db.get('SELECT id FROM groups WHERE id = ? AND owner_id = ?', [
+    groupId,
+    userId,
+  ]);
   return !!row;
 }
 
@@ -53,7 +53,8 @@ suggestionsRouter.get('/', authMiddleware, async (req, res) => {
       }
     }
 
-    const suggestions = await db.all(`
+    const suggestions = await db.all(
+      `
       SELECT
         ms.id,
         ms.group_id,
@@ -76,7 +77,9 @@ suggestionsRouter.get('/', authMiddleware, async (req, res) => {
         (COALESCE(SUM(CASE WHEN sv.vote = 'up'   THEN 1 ELSE 0 END), 0)
          - COALESCE(SUM(CASE WHEN sv.vote = 'down' THEN 1 ELSE 0 END), 0)) DESC,
         ms.created_at DESC
-    `, params);
+    `,
+      params
+    );
 
     res.json(suggestions);
   } catch (err) {
@@ -104,12 +107,15 @@ suggestionsRouter.post('/', authMiddleware, async (req, res) => {
       [id, group_id, req.user.id, meal_name.trim(), (description || '').trim(), recipe_id || null]
     );
 
-    const row = await db.get(`
+    const row = await db.get(
+      `
       SELECT ms.*, u.name AS suggested_by_name
       FROM   meal_suggestions ms
       JOIN   users u ON u.id = ms.suggested_by_user_id
       WHERE  ms.id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     res.status(201).json({ ...row, upvotes: 0, downvotes: 0, my_vote: null });
   } catch (err) {
@@ -189,7 +195,8 @@ suggestionsRouter.put('/:id/status', authMiddleware, async (req, res) => {
 featureRouter.get('/', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const requests = await db.all(`
+    const requests = await db.all(
+      `
       SELECT
         fr.id,
         fr.title,
@@ -206,7 +213,9 @@ featureRouter.get('/', authMiddleware, async (req, res) => {
       LEFT JOIN feature_request_votes frv ON frv.request_id = fr.id
       GROUP BY fr.id
       ORDER BY COUNT(frv.id) DESC, fr.created_at DESC
-    `, [req.user.id]);
+    `,
+      [req.user.id]
+    );
 
     res.json(requests);
   } catch (err) {
@@ -231,12 +240,15 @@ featureRouter.post('/', authMiddleware, async (req, res) => {
       [id, req.user.id, title.trim(), (description || '').trim(), cat]
     );
 
-    const row = await db.get(`
+    const row = await db.get(
+      `
       SELECT fr.*, u.name AS submitted_by
       FROM   feature_requests fr
       JOIN   users u ON u.id = fr.user_id
       WHERE  fr.id = ?
-    `, [id]);
+    `,
+      [id]
+    );
 
     res.status(201).json({ ...row, votes: 0, my_vote: 0 });
   } catch (err) {
@@ -261,10 +273,11 @@ featureRouter.post('/:id/vote', authMiddleware, async (req, res) => {
       await db.run('DELETE FROM feature_request_votes WHERE id = ?', [existing.id]);
       return res.json({ my_vote: 0 });
     } else {
-      await db.run(
-        'INSERT INTO feature_request_votes (id, request_id, user_id) VALUES (?,?,?)',
-        [uuidv4(), req.params.id, req.user.id]
-      );
+      await db.run('INSERT INTO feature_request_votes (id, request_id, user_id) VALUES (?,?,?)', [
+        uuidv4(),
+        req.params.id,
+        req.user.id,
+      ]);
       return res.json({ my_vote: 1 });
     }
   } catch (err) {

@@ -13,15 +13,16 @@ const PRO_FEATURES = [
 
 export default function Billing() {
   const [searchParams] = useSearchParams()
-  const success  = searchParams.get('success') === 'true'
+  const success = searchParams.get('success') === 'true'
   const canceled = searchParams.get('canceled') === 'true'
 
-  const [status,   setStatus]   = useState(null)   // null = loading
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
+  const [status, setStatus] = useState(null) // null = loading
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    api.get('/billing/status')
+    api
+      .get('/billing/status')
       .then(res => setStatus(res.data))
       .catch(() => setStatus({ plan: 'free' }))
   }, [])
@@ -65,7 +66,10 @@ export default function Billing() {
             <p className="text-sm text-slate-500">Manage your subscription</p>
           </div>
         </div>
-        <Link to="/profile" className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600">
+        <Link
+          to="/profile"
+          className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600"
+        >
           <ArrowLeft size={14} /> Back to profile
         </Link>
       </div>
@@ -76,7 +80,9 @@ export default function Billing() {
           <CheckCircle size={20} className="text-moss-600 flex-shrink-0" />
           <div>
             <p className="font-semibold text-moss-800">You're now on Pro!</p>
-            <p className="text-sm text-moss-600">Thanks for upgrading. All pro features are now active.</p>
+            <p className="text-sm text-moss-600">
+              Thanks for upgrading. All pro features are now active.
+            </p>
           </div>
         </div>
       )}
@@ -85,7 +91,9 @@ export default function Billing() {
           <XCircle size={20} className="text-amber-500 flex-shrink-0" />
           <div>
             <p className="font-semibold text-amber-800">Checkout canceled</p>
-            <p className="text-sm text-amber-600">No charge was made. You can upgrade whenever you're ready.</p>
+            <p className="text-sm text-amber-600">
+              No charge was made. You can upgrade whenever you're ready.
+            </p>
           </div>
         </div>
       )}
@@ -100,12 +108,15 @@ export default function Billing() {
           <div className="card mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Plan</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  Current Plan
+                </p>
                 <div className="flex items-center gap-2">
-                  {isPro
-                    ? <Star size={18} className="text-amber-500" />
-                    : <Zap size={18} className="text-slate-400" />
-                  }
+                  {isPro ? (
+                    <Star size={18} className="text-amber-500" />
+                  ) : (
+                    <Zap size={18} className="text-slate-400" />
+                  )}
                   <p className="text-2xl font-serif font-semibold text-ink">
                     {isPro ? 'Pro' : 'Free'}
                   </p>
@@ -115,9 +126,13 @@ export default function Billing() {
                 )}
               </div>
               {isPro ? (
-                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Active</span>
+                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                  Active
+                </span>
               ) : (
-                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">Free tier</span>
+                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+                  Free tier
+                </span>
               )}
             </div>
           </div>
@@ -126,7 +141,9 @@ export default function Billing() {
           {!isPro ? (
             <div className="card mb-6">
               <h2 className="font-serif font-semibold text-ink mb-1">Upgrade to Pro</h2>
-              <p className="text-sm text-slate-500 mb-4">Unlock the full Krystle's Cottage experience.</p>
+              <p className="text-sm text-slate-500 mb-4">
+                Unlock the full Krystle's Cottage experience.
+              </p>
 
               <ul className="space-y-2 mb-6">
                 {PRO_FEATURES.map(f => (
@@ -144,17 +161,23 @@ export default function Billing() {
                 disabled={loading}
                 className="btn-primary w-full flex items-center justify-center gap-2"
               >
-                {loading
-                  ? <><Loader size={15} className="animate-spin" /> Redirecting…</>
-                  : <><Star size={15} /> Upgrade to Pro</>
-                }
+                {loading ? (
+                  <>
+                    <Loader size={15} className="animate-spin" /> Redirecting…
+                  </>
+                ) : (
+                  <>
+                    <Star size={15} /> Upgrade to Pro
+                  </>
+                )}
               </button>
             </div>
           ) : (
             <div className="card mb-6">
               <h2 className="font-serif font-semibold text-ink mb-1">Manage Subscription</h2>
               <p className="text-sm text-slate-500 mb-4">
-                Update payment method, view invoices, or cancel your plan via the Stripe billing portal.
+                Update payment method, view invoices, or cancel your plan via the Stripe billing
+                portal.
               </p>
 
               {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
@@ -164,10 +187,15 @@ export default function Billing() {
                 disabled={loading}
                 className="btn-primary flex items-center gap-2"
               >
-                {loading
-                  ? <><Loader size={15} className="animate-spin" /> Opening portal…</>
-                  : <><CreditCard size={15} /> Open Billing Portal</>
-                }
+                {loading ? (
+                  <>
+                    <Loader size={15} className="animate-spin" /> Opening portal…
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={15} /> Open Billing Portal
+                  </>
+                )}
               </button>
             </div>
           )}

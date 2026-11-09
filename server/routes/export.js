@@ -1,15 +1,15 @@
-const express  = require('express')
-const archiver = require('archiver')
-const { getDb } = require('../db')
-const { authMiddleware } = require('../middleware/auth')
+const express = require('express');
+const archiver = require('archiver');
+const { getDb } = require('../db');
+const { authMiddleware } = require('../middleware/auth');
 
-const router = express.Router()
+const router = express.Router();
 
 // GET /api/export/my-data  — streams a ZIP of user's data
 router.get('/my-data', authMiddleware, async (req, res) => {
   try {
-    const db     = await getDb()
-    const userId = req.user.id
+    const db = await getDb();
+    const userId = req.user.id;
 
     const [recipes, receipts, inventory, swaps, plants, harvests] = await Promise.all([
       db.all('SELECT * FROM recipes WHERE author_id = ?', userId),
@@ -18,18 +18,21 @@ router.get('/my-data', authMiddleware, async (req, res) => {
       db.all('SELECT * FROM swap_entrees WHERE user_id = ? ORDER BY created_at DESC', userId),
       db.all('SELECT * FROM garden_plants WHERE added_by = ? ORDER BY created_at DESC', userId),
       db.all('SELECT * FROM harvest_logs WHERE added_by = ? ORDER BY created_at DESC', userId),
-    ])
+    ]);
 
-    const filename = `krystles-hub-export-${new Date().toISOString().split('T')[0]}.zip`
-    res.setHeader('Content-Type', 'application/zip')
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    const filename = `krystles-hub-export-${new Date().toISOString().split('T')[0]}.zip`;
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-    const archive = archiver('zip', { zlib: { level: 6 } })
-    archive.on('error', err => { console.error('[export] archiver error:', err); res.end() })
-    archive.pipe(res)
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.on('error', err => {
+      console.error('[export] archiver error:', err);
+      res.end();
+    });
+    archive.pipe(res);
 
     // recipes.json
-    archive.append(JSON.stringify(recipes, null, 2), { name: 'recipes.json' })
+    archive.append(JSON.stringify(recipes, null, 2), { name: 'recipes.json' });
 
     // spending.csv
     const spendingRows = [
@@ -37,8 +40,8 @@ router.get('/my-data', authMiddleware, async (req, res) => {
       ...receipts.map(r =>
         [r.created_at, r.amount, `"${(r.description || '').replace(/"/g, '""')}"`].join(',')
       ),
-    ]
-    archive.append(spendingRows.join('\n'), { name: 'spending.csv' })
+    ];
+    archive.append(spendingRows.join('\n'), { name: 'spending.csv' });
 
     // inventory.csv
     const inventoryRows = [
@@ -54,8 +57,8 @@ router.get('/my-data', authMiddleware, async (req, res) => {
           i.created_at || '',
         ].join(',')
       ),
-    ]
-    archive.append(inventoryRows.join('\n'), { name: 'inventory.csv' })
+    ];
+    archive.append(inventoryRows.join('\n'), { name: 'inventory.csv' });
 
     // swaps.csv
     const swapsRows = [
@@ -68,8 +71,8 @@ router.get('/my-data', authMiddleware, async (req, res) => {
           s.created_at || '',
         ].join(',')
       ),
-    ]
-    archive.append(swapsRows.join('\n'), { name: 'swaps.csv' })
+    ];
+    archive.append(swapsRows.join('\n'), { name: 'swaps.csv' });
 
     // garden.csv
     const gardenRows = [
@@ -84,8 +87,8 @@ router.get('/my-data', authMiddleware, async (req, res) => {
           p.created_at || '',
         ].join(',')
       ),
-    ]
-    archive.append(gardenRows.join('\n'), { name: 'garden.csv' })
+    ];
+    archive.append(gardenRows.join('\n'), { name: 'garden.csv' });
 
     // harvests.csv
     const harvestRows = [
@@ -99,14 +102,14 @@ router.get('/my-data', authMiddleware, async (req, res) => {
           h.created_at || '',
         ].join(',')
       ),
-    ]
-    archive.append(harvestRows.join('\n'), { name: 'harvests.csv' })
+    ];
+    archive.append(harvestRows.join('\n'), { name: 'harvests.csv' });
 
-    await archive.finalize()
+    await archive.finalize();
   } catch (err) {
-    console.error('[export] error:', err)
-    if (!res.headersSent) res.status(500).json({ error: 'Export failed' })
+    console.error('[export] error:', err);
+    if (!res.headersSent) res.status(500).json({ error: 'Export failed' });
   }
-})
+});
 
-module.exports = router
+module.exports = router;

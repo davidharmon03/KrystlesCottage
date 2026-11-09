@@ -1,0 +1,12 @@
+{
+  "name": "krystlescottage",
+  "private": true,
+  "description": "Root tools for Krystle's Cottage. The app itself lives in client/ and server/.",
+  "scripts": {
+    "format": "prettier --write \"client/src/**/*.{js,jsx,css}\" \"client/*.{js,html}\" \"client/scripts/**/*.js\" \"server/**/*.js\"",
+    "format:check": "prettier --check \"client/src/**/*.{js,jsx,css}\" \"client/*.{js,html}\" \"client/scripts/**/*.js\" \"server/**/*.js\""
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}

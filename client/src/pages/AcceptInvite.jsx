@@ -13,7 +13,10 @@ export default function AcceptInvite() {
   const email = params.get('email')
 
   useEffect(() => {
-    if (!token) { navigate('/login'); return }
+    if (!token) {
+      navigate('/login')
+      return
+    }
 
     if (user) {
       // Already logged in — the server already added them when it redirected here

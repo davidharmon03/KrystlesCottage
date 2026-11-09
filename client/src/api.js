@@ -8,13 +8,31 @@ let isRefreshing = false
 let failedQueue = []
 
 const storage = {
-  get: key => { try { return localStorage.getItem(key) } catch { return null } },
-  set: (key, value) => { try { localStorage.setItem(key, value) } catch {} },
-  remove: key => { try { localStorage.removeItem(key) } catch {} },
+  get: key => {
+    try {
+      return localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  set: (key, value) => {
+    try {
+      localStorage.setItem(key, value)
+    } catch {}
+  },
+  remove: key => {
+    try {
+      localStorage.removeItem(key)
+    } catch {}
+  },
 }
 
-export const setRefreshToken = (token) => { if (token) storage.set(REFRESH_KEY, token) }
-export const clearRefreshToken = () => { storage.remove(REFRESH_KEY) }
+export const setRefreshToken = token => {
+  if (token) storage.set(REFRESH_KEY, token)
+}
+export const clearRefreshToken = () => {
+  storage.remove(REFRESH_KEY)
+}
 export const getRefreshToken = () => storage.get(REFRESH_KEY)
 
 const processQueue = (error, token = null) => {
@@ -60,10 +78,12 @@ api.interceptors.response.use(
       // Queue requests that arrive while a refresh is already in-flight
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject })
-      }).then(token => {
-        originalRequest.headers.Authorization = `Bearer ${token}`
-        return api(originalRequest)
-      }).catch(err => Promise.reject(err))
+      })
+        .then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`
+          return api(originalRequest)
+        })
+        .catch(err => Promise.reject(err))
     }
 
     originalRequest._retry = true

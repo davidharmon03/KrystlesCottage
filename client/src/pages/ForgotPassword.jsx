@@ -43,13 +43,27 @@ export default function ForgotPassword() {
                 className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                 style={{ backgroundColor: '#6B7C5C' + '20' }}
               >
-                <svg className="w-6 h-6" style={{ color: '#6B7C5C' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <svg
+                  className="w-6 h-6"
+                  style={{ color: '#6B7C5C' }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
                 </svg>
               </div>
-              <p className="font-medium mb-1" style={{ color: '#6B7C5C' }}>Check your email</p>
+              <p className="font-medium mb-1" style={{ color: '#6B7C5C' }}>
+                Check your email
+              </p>
               <p className="text-sm text-slate-500 mb-6">
-                If an account exists for <strong>{email}</strong>, we've sent a password reset link. Check your inbox (and spam folder).
+                If an account exists for <strong>{email}</strong>, we've sent a password reset link.
+                Check your inbox (and spam folder).
               </p>
               <Link
                 to="/login"
@@ -95,7 +109,11 @@ export default function ForgotPassword() {
 
               <p className="text-center text-sm text-slate-500 mt-5">
                 Remember your password?{' '}
-                <Link to="/login" className="font-medium hover:underline" style={{ color: '#6B7C5C' }}>
+                <Link
+                  to="/login"
+                  className="font-medium hover:underline"
+                  style={{ color: '#6B7C5C' }}
+                >
                   Sign In
                 </Link>
               </p>

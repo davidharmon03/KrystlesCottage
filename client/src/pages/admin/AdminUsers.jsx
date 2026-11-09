@@ -3,28 +3,62 @@ import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTwoFactor } from '../../hooks/useTwoFactor'
-import { Search, ChevronDown, ChevronUp, Trash2, ShieldCheck, Pencil, Check, X, UserPlus, Copy, Eye, EyeOff } from 'lucide-react'
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  ShieldCheck,
+  Pencil,
+  Check,
+  X,
+  UserPlus,
+  Copy,
+  Eye,
+  EyeOff,
+} from 'lucide-react'
 
-const roleBadge = (role) => {
-  if (role === 'superadmin') return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 whitespace-nowrap">SUPERADMIN</span>
-  if (role === 'admin')      return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">ADMIN</span>
-  return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">MEMBER</span>
+const roleBadge = role => {
+  if (role === 'superadmin')
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 whitespace-nowrap">
+        SUPERADMIN
+      </span>
+    )
+  if (role === 'admin')
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">
+        ADMIN
+      </span>
+    )
+  return (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+      MEMBER
+    </span>
+  )
 }
 
-const planBadge = (plan) => plan === 'pro'
-  ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">PRO</span>
-  : <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">FREE</span>
+const planBadge = plan =>
+  plan === 'pro' ? (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-moss-100 text-moss-700">
+      PRO
+    </span>
+  ) : (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+      FREE
+    </span>
+  )
 
 // Modal: Create new user
 function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
-  const [name, setName]       = useState('')
-  const [email, setEmail]     = useState('')
-  const [role, setRole]       = useState('member')
-  const [saving, setSaving]   = useState(false)
-  const [error, setError]     = useState('')
-  const [result, setResult]   = useState(null) // { user, tempPassword }
-  const [copied, setCopied]   = useState(false)
-  const [showPw, setShowPw]   = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('member')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState(null) // { user, tempPassword }
+  const [copied, setCopied] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -51,9 +85,11 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={!result ? onClose : undefined} />
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={!result ? onClose : undefined}
+      />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md z-10">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <h2 className="font-serif font-semibold text-ink text-lg">
@@ -101,21 +137,28 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
-                  This password is shown once. The user will be prompted to set a new password on first login.
+                  This password is shown once. The user will be prompted to set a new password on
+                  first login.
                 </p>
               </div>
 
-              <button onClick={onClose} className="btn-primary w-full">Done</button>
+              <button onClick={onClose} className="btn-primary w-full">
+                Done
+              </button>
             </div>
           ) : (
             /* Create form */
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">{error}</div>
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Name</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Name
+                </label>
                 <input
                   className="input w-full"
                   required
@@ -126,7 +169,9 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Email</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Email
+                </label>
                 <input
                   type="email"
                   className="input w-full"
@@ -138,7 +183,9 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Role</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Role
+                </label>
                 <select
                   className="input w-full bg-white"
                   value={role}
@@ -156,7 +203,9 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+                <button type="button" onClick={onClose} className="btn-ghost flex-1">
+                  Cancel
+                </button>
                 <button type="submit" disabled={saving} className="btn-terra flex-1">
                   {saving ? 'Creating…' : 'Create & Get Password'}
                 </button>
@@ -171,16 +220,16 @@ function CreateUserModal({ onClose, onCreated, twoFaHeaders }) {
 
 export default function AdminUsers() {
   const [searchParams] = useSearchParams()
-  const [users, setUsers]           = useState([])
-  const [total, setTotal]           = useState(0)
-  const [search, setSearch]         = useState('')
-  const [plan, setPlan]             = useState(searchParams.get('plan') || 'all')
-  const [page, setPage]             = useState(1)
-  const [loading, setLoading]       = useState(true)
-  const [expanded, setExpanded]     = useState(null)
-  const [detail, setDetail]         = useState({})
+  const [users, setUsers] = useState([])
+  const [total, setTotal] = useState(0)
+  const [search, setSearch] = useState('')
+  const [plan, setPlan] = useState(searchParams.get('plan') || 'all')
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(null)
+  const [detail, setDetail] = useState({})
   const [editingRole, setEditingRole] = useState(null)
-  const [roleValue, setRoleValue]   = useState('')
+  const [roleValue, setRoleValue] = useState('')
   const [roleSaving, setRoleSaving] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const { user } = useAuth()
@@ -192,16 +241,25 @@ export default function AdminUsers() {
   const load = () => {
     setLoading(true)
     const params = { search, plan, page, limit: LIMIT }
-    api.get('/admin/users', { params, headers: twoFaHeaders() })
-      .then(r => { setUsers(r.data.users); setTotal(r.data.total) })
+    api
+      .get('/admin/users', { params, headers: twoFaHeaders() })
+      .then(r => {
+        setUsers(r.data.users)
+        setTotal(r.data.total)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [search, plan, page])
+  useEffect(() => {
+    load()
+  }, [search, plan, page])
 
-  const toggleExpand = async (userId) => {
-    if (expanded === userId) { setExpanded(null); return }
+  const toggleExpand = async userId => {
+    if (expanded === userId) {
+      setExpanded(null)
+      return
+    }
     setExpanded(userId)
     if (!detail[userId]) {
       const r = await api.get(`/admin/users/${userId}`, { headers: twoFaHeaders() })
@@ -219,11 +277,15 @@ export default function AdminUsers() {
     setRoleValue('')
   }
 
-  const saveRole = async (userId) => {
+  const saveRole = async userId => {
     setRoleSaving(true)
     try {
-      await api.patch(`/admin/users/${userId}/role`, { role: roleValue }, { headers: twoFaHeaders() })
-      setUsers(u => u.map(x => x.id === userId ? { ...x, role: roleValue } : x))
+      await api.patch(
+        `/admin/users/${userId}/role`,
+        { role: roleValue },
+        { headers: twoFaHeaders() }
+      )
+      setUsers(u => u.map(x => (x.id === userId ? { ...x, role: roleValue } : x)))
       setEditingRole(null)
     } catch (err) {
       console.error(err)
@@ -234,9 +296,12 @@ export default function AdminUsers() {
 
   const changePlan = async (userId, newPlan) => {
     await api.put(`/admin/users/${userId}/plan`, { plan: newPlan }, { headers: twoFaHeaders() })
-    setUsers(u => u.map(x => x.id === userId ? { ...x, plan: newPlan } : x))
+    setUsers(u => u.map(x => (x.id === userId ? { ...x, plan: newPlan } : x)))
     if (detail[userId]) {
-      setDetail(d => ({ ...d, [userId]: { ...d[userId], user: { ...d[userId].user, plan: newPlan } } }))
+      setDetail(d => ({
+        ...d,
+        [userId]: { ...d[userId], user: { ...d[userId].user, plan: newPlan } },
+      }))
     }
   }
 
@@ -247,7 +312,7 @@ export default function AdminUsers() {
     setTotal(t => t - 1)
   }
 
-  const handleUserCreated = (newUser) => {
+  const handleUserCreated = newUser => {
     setUsers(u => [newUser, ...u])
     setTotal(t => t + 1)
   }
@@ -283,13 +348,19 @@ export default function AdminUsers() {
             className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-300"
             placeholder="Search name or email…"
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            onChange={e => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
           />
         </div>
         <select
           className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-moss-300 bg-white"
           value={plan}
-          onChange={e => { setPlan(e.target.value); setPage(1) }}
+          onChange={e => {
+            setPlan(e.target.value)
+            setPage(1)
+          }}
         >
           <option value="all">All plans</option>
           <option value="free">Free</option>
@@ -323,7 +394,9 @@ export default function AdminUsers() {
                     <td className="px-4 py-3 font-medium text-ink">
                       {u.name}
                       {u.must_change_password ? (
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-100 text-amber-700">TEMP PW</span>
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-100 text-amber-700">
+                          TEMP PW
+                        </span>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-slate-500">{u.email}</td>
@@ -347,7 +420,10 @@ export default function AdminUsers() {
                           >
                             <Check size={14} />
                           </button>
-                          <button onClick={cancelEditRole} className="p-1 text-slate-400 hover:text-slate-600">
+                          <button
+                            onClick={cancelEditRole}
+                            className="p-1 text-slate-400 hover:text-slate-600"
+                          >
                             <X size={14} />
                           </button>
                         </div>
@@ -365,10 +441,11 @@ export default function AdminUsers() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-slate-500">
-                      {u.group_name
-                        ? <span className="text-moss-700 font-medium">{u.group_name}</span>
-                        : <span className="text-slate-300">—</span>
-                      }
+                      {u.group_name ? (
+                        <span className="text-moss-700 font-medium">{u.group_name}</span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-400 text-xs capitalize">
                       {u.group_role ?? <span className="text-slate-300">—</span>}
@@ -396,10 +473,12 @@ export default function AdminUsers() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Actions */}
                             <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Actions</p>
+                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                                Actions
+                              </p>
                               <div className="flex flex-wrap gap-2">
-                                {user?.role === 'superadmin' && (
-                                  u.plan === 'free' ? (
+                                {user?.role === 'superadmin' &&
+                                  (u.plan === 'free' ? (
                                     <button
                                       onClick={() => changePlan(u.id, 'pro')}
                                       className="flex items-center gap-1 px-3 py-1.5 text-xs bg-moss-600 text-white rounded-lg hover:bg-moss-700 transition-colors"
@@ -413,8 +492,7 @@ export default function AdminUsers() {
                                     >
                                       Downgrade to Free
                                     </button>
-                                  )
-                                )}
+                                  ))}
                                 <button
                                   onClick={() => deleteUser(u.id, u.name)}
                                   className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
@@ -427,12 +505,19 @@ export default function AdminUsers() {
                             {/* Group members */}
                             {detail[u.id]?.members?.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Group Members ({detail[u.id].members.length})</p>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                                  Group Members ({detail[u.id].members.length})
+                                </p>
                                 <div className="space-y-1">
                                   {detail[u.id].members.map(m => (
-                                    <div key={m.id} className="flex items-center gap-2 text-xs text-slate-600">
+                                    <div
+                                      key={m.id}
+                                      className="flex items-center gap-2 text-xs text-slate-600"
+                                    >
                                       <div className="w-5 h-5 rounded-full bg-terra-100 flex items-center justify-center flex-shrink-0">
-                                        <span className="text-terra-600 font-semibold text-[9px]">{m.name[0]?.toUpperCase()}</span>
+                                        <span className="text-terra-600 font-semibold text-[9px]">
+                                          {m.name[0]?.toUpperCase()}
+                                        </span>
                                       </div>
                                       <span className="font-medium">{m.name}</span>
                                       <span className="text-slate-400">{m.email}</span>
@@ -446,10 +531,13 @@ export default function AdminUsers() {
                             {/* Member of other groups */}
                             {detail[u.id]?.memberOf?.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Member of Group</p>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                                  Member of Group
+                                </p>
                                 {detail[u.id].memberOf.map(g => (
                                   <p key={g.id} className="text-xs text-slate-600">
-                                    <span className="font-medium">{g.name}</span> — owned by {g.owner_name}
+                                    <span className="font-medium">{g.name}</span> — owned by{' '}
+                                    {g.owner_name}
                                   </p>
                                 ))}
                               </div>
@@ -458,8 +546,12 @@ export default function AdminUsers() {
                             {/* Stripe info */}
                             {detail[u.id]?.user?.stripe_customer_id && (
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Stripe</p>
-                                <p className="text-xs text-slate-400 font-mono">{detail[u.id].user.stripe_customer_id}</p>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                  Stripe
+                                </p>
+                                <p className="text-xs text-slate-400 font-mono">
+                                  {detail[u.id].user.stripe_customer_id}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -477,14 +569,22 @@ export default function AdminUsers() {
       {/* Pagination */}
       {total > LIMIT && (
         <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
-          <p>Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</p>
+          <p>
+            Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}
+          </p>
           <div className="flex gap-2">
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors"
+            >
               Previous
             </button>
-            <button disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors">
+            <button
+              disabled={page * LIMIT >= total}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition-colors"
+            >
               Next
             </button>
           </div>

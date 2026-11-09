@@ -8,7 +8,7 @@ export function useTwoFactor() {
   const [state, setState] = useState('idle') // idle | sending | waiting | verifying | error
   const [error, setError] = useState('')
   const resolveRef = useRef(null)
-  const rejectRef  = useRef(null)
+  const rejectRef = useRef(null)
   const purposeRef = useRef('login')
 
   // Returns a promise — resolves with twoFaToken on success, rejects on cancel
@@ -23,11 +23,12 @@ export function useTwoFactor() {
 
     return new Promise((resolve, reject) => {
       resolveRef.current = resolve
-      rejectRef.current  = reject
+      rejectRef.current = reject
       setState('sending')
       setError('')
 
-      api.post('/auth/2fa/send', { purpose })
+      api
+        .post('/auth/2fa/send', { purpose })
         .then(() => setState('waiting'))
         .catch(() => {
           setError('Failed to send code. Check your email settings.')
@@ -37,14 +38,14 @@ export function useTwoFactor() {
     })
   }
 
-  const submit = async (code) => {
+  const submit = async code => {
     setState('verifying')
     setError('')
     try {
       const res = await api.post('/auth/2fa/verify', { code, purpose: purposeRef.current })
       // Cache the session token in memory
       sessions[purposeRef.current] = {
-        token:     res.data.twoFaToken,
+        token: res.data.twoFaToken,
         expiresAt: res.data.expiresAt,
       }
       setState('idle')
@@ -61,7 +62,8 @@ export function useTwoFactor() {
     rejectRef.current?.(new Error('cancelled'))
   }
 
-  const isOpen = state === 'waiting' || state === 'verifying' || state === 'sending' || state === 'error'
+  const isOpen =
+    state === 'waiting' || state === 'verifying' || state === 'sending' || state === 'error'
 
   // Get current session token for a purpose (to attach to sensitive requests)
   const getToken = (purpose = 'login') => {

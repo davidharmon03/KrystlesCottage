@@ -2,16 +2,33 @@ import { useState } from 'react'
 import { X, Loader, AlertCircle, Plus, Link, Image } from 'lucide-react'
 import api from '../api'
 
-const TAGS = ['healthy', 'organic', 'freezer-friendly', 'vegan', 'protein', 'garden', 'batch prep', 'quick']
-const SKILL_TAGS = ['flash freeze', 'vacuum seal', 'slow cook', 'batch prep', 'sous vide', 'ferment', 'dehydrate']
+const TAGS = [
+  'healthy',
+  'organic',
+  'freezer-friendly',
+  'vegan',
+  'protein',
+  'garden',
+  'batch prep',
+  'quick',
+]
+const SKILL_TAGS = [
+  'flash freeze',
+  'vacuum seal',
+  'slow cook',
+  'batch prep',
+  'sous vide',
+  'ferment',
+  'dehydrate',
+]
 
 export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
-  const [step,    setStep]    = useState('input') // 'input' | 'preview'
-  const [url,     setUrl]     = useState('')
+  const [step, setStep] = useState('input') // 'input' | 'preview'
+  const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+  const [error, setError] = useState('')
   const [partial, setPartial] = useState(false)
-  const [form,    setForm]    = useState(null)
+  const [form, setForm] = useState(null)
 
   const handleImport = async e => {
     e.preventDefault()
@@ -23,23 +40,25 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
       const data = res.data
       setPartial(!!data._partial)
       setForm({
-        title:       data.title       || '',
+        title: data.title || '',
         description: data.description || '',
         ingredients: (data.ingredients || []).join('\n'),
-        steps:       (data.steps      || []).join('\n'),
-        tags:        data.tags        || [],
-        skill_tags:  data.skill_tags  || [],
-        sides:       data.sides       || '',
-        is_public:   data.is_public   || false,
-        servings:    data.servings    || '1',
-        imageUrl:    data.imageUrl    || '',
-        prepTime:    data.prepTime    != null ? String(data.prepTime) : '',
-        cookTime:    data.cookTime    != null ? String(data.cookTime) : '',
-        source_url:  data.source_url  || url.trim(),
+        steps: (data.steps || []).join('\n'),
+        tags: data.tags || [],
+        skill_tags: data.skill_tags || [],
+        sides: data.sides || '',
+        is_public: data.is_public || false,
+        servings: data.servings || '1',
+        imageUrl: data.imageUrl || '',
+        prepTime: data.prepTime != null ? String(data.prepTime) : '',
+        cookTime: data.cookTime != null ? String(data.cookTime) : '',
+        source_url: data.source_url || url.trim(),
       })
       setStep('preview')
     } catch (err) {
-      setError(err.response?.data?.error || "We couldn't read that page. Try copying the recipe manually.")
+      setError(
+        err.response?.data?.error || "We couldn't read that page. Try copying the recipe manually."
+      )
     } finally {
       setLoading(false)
     }
@@ -50,18 +69,22 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
     setError('')
     try {
       // Append source credit to description / notes
-      const sourceNote = form.source_url
-        ? `\n\nImported from: ${form.source_url}`
-        : ''
+      const sourceNote = form.source_url ? `\n\nImported from: ${form.source_url}` : ''
       const payload = {
-        title:       form.title,
+        title: form.title,
         description: (form.description + sourceNote).trim(),
-        ingredients: form.ingredients.split('\n').map(s => s.trim()).filter(Boolean),
-        steps:       form.steps.split('\n').map(s => s.trim()).filter(Boolean),
-        tags:        form.tags,
-        skill_tags:  form.skill_tags,
-        sides:       form.sides.trim(),
-        is_public:   form.is_public,
+        ingredients: form.ingredients
+          .split('\n')
+          .map(s => s.trim())
+          .filter(Boolean),
+        steps: form.steps
+          .split('\n')
+          .map(s => s.trim())
+          .filter(Boolean),
+        tags: form.tags,
+        skill_tags: form.skill_tags,
+        sides: form.sides.trim(),
+        is_public: form.is_public,
       }
       await onSave(payload)
       handleClose()
@@ -84,15 +107,16 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
   const toggleTag = (tag, field) => {
     setForm(f => ({
       ...f,
-      [field]: f[field].includes(tag)
-        ? f[field].filter(t => t !== tag)
-        : [...f[field], tag],
+      [field]: f[field].includes(tag) ? f[field].filter(t => t !== tag) : [...f[field], tag],
     }))
   }
 
   const sourceDomain = (() => {
-    try { return new URL(form?.source_url || url).hostname.replace(/^www\./, '') }
-    catch { return null }
+    try {
+      return new URL(form?.source_url || url).hostname.replace(/^www\./, '')
+    } catch {
+      return null
+    }
   })()
 
   if (!isOpen) return null
@@ -100,7 +124,6 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
   return (
     <div className="modal-backdrop" onClick={handleClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h2 className="text-xl font-serif font-semibold text-ink flex items-center gap-2">
@@ -113,7 +136,6 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
         </div>
 
         <div className="p-5 space-y-4 overflow-y-auto" style={{ maxHeight: '70vh' }}>
-
           {/* Error banner */}
           {error && (
             <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -131,14 +153,18 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                   type="url"
                   placeholder="https://www.allrecipes.com/recipe/..."
                   value={url}
-                  onChange={e => { setUrl(e.target.value); setError('') }}
+                  onChange={e => {
+                    setUrl(e.target.value)
+                    setError('')
+                  }}
                   className="input"
                   required
                   autoFocus
                 />
               </div>
               <p className="text-xs text-slate-500">
-                Paste a link from AllRecipes, NYT Cooking, Serious Eats, Food Network, or any site with recipe data.
+                Paste a link from AllRecipes, NYT Cooking, Serious Eats, Food Network, or any site
+                with recipe data.
               </p>
               <div className="flex gap-2">
                 <button type="button" onClick={handleClose} className="btn-ghost flex-1">
@@ -149,7 +175,13 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                   disabled={loading || !url.trim()}
                   className="btn-primary flex-1 flex items-center justify-center gap-2"
                 >
-                  {loading ? <><Loader size={14} className="animate-spin" /> Importing…</> : 'Import'}
+                  {loading ? (
+                    <>
+                      <Loader size={14} className="animate-spin" /> Importing…
+                    </>
+                  ) : (
+                    'Import'
+                  )}
                 </button>
               </div>
             </form>
@@ -158,7 +190,6 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
           {/* ── Step 2: Preview & edit ────────────────────────────── */}
           {step === 'preview' && form && (
             <div className="space-y-4">
-
               {/* Partial data warning */}
               {partial && (
                 <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
@@ -177,7 +208,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                     src={form.imageUrl}
                     alt={form.title}
                     className="w-full max-h-48 object-cover"
-                    onError={e => { e.currentTarget.style.display = 'none' }}
+                    onError={e => {
+                      e.currentTarget.style.display = 'none'
+                    }}
                   />
                 </div>
               )}
@@ -277,7 +310,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                   onChange={e => setForm(f => ({ ...f, sides: e.target.value }))}
                   placeholder="e.g. roasted vegetables, rice pilaf, garlic bread"
                 />
-                <p className="text-xs text-slate-400 mt-1">Optional — side dishes that pair well with this entrée</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Optional — side dishes that pair well with this entrée
+                </p>
               </div>
 
               {/* Image URL */}
@@ -297,7 +332,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                     src={form.imageUrl}
                     alt="preview"
                     className="mt-2 h-16 w-24 object-cover rounded-lg border border-slate-200"
-                    onError={e => { e.currentTarget.style.display = 'none' }}
+                    onError={e => {
+                      e.currentTarget.style.display = 'none'
+                    }}
                   />
                 )}
               </div>
@@ -316,7 +353,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                           ? 'bg-moss-500 text-white'
                           : 'bg-slate-100 text-slate-600 hover:bg-moss-100'
                       }`}
-                    >{t}</button>
+                    >
+                      {t}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -335,7 +374,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                           ? 'bg-terra-500 text-white'
                           : 'bg-slate-100 text-slate-600 hover:bg-terra-100'
                       }`}
-                    >{t}</button>
+                    >
+                      {t}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -358,7 +399,10 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => { setStep('input'); setError('') }}
+                  onClick={() => {
+                    setStep('input')
+                    setError('')
+                  }}
                   className="btn-ghost flex-1"
                   disabled={loading}
                 >
@@ -369,10 +413,15 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                   disabled={loading || !form.title || !form.ingredients || !form.steps}
                   className="btn-primary flex-1 flex items-center justify-center gap-1.5"
                 >
-                  {loading
-                    ? <><Loader size={14} className="animate-spin" /> Saving…</>
-                    : <><Plus size={14} /> Save Recipe</>
-                  }
+                  {loading ? (
+                    <>
+                      <Loader size={14} className="animate-spin" /> Saving…
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={14} /> Save Recipe
+                    </>
+                  )}
                 </button>
               </div>
 

@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { ShieldCheck, X, Loader } from 'lucide-react'
 
-export default function TwoFactorModal({ isOpen, state, error, onSubmit, onCancel, purpose = 'login' }) {
+export default function TwoFactorModal({
+  isOpen,
+  state,
+  error,
+  onSubmit,
+  onCancel,
+  purpose = 'login',
+}) {
   const [code, setCode] = useState('')
   const inputRef = useRef(null)
 
@@ -15,17 +22,17 @@ export default function TwoFactorModal({ isOpen, state, error, onSubmit, onCance
   if (!isOpen) return null
 
   const purposeLabels = {
-    login:          'access the Admin Panel',
-    billing:        'manage billing',
-    remove_member:  'remove a group member',
-    change_password:'change your password',
-    change_email:   'change your email',
+    login: 'access the Admin Panel',
+    billing: 'manage billing',
+    remove_member: 'remove a group member',
+    change_password: 'change your password',
+    change_email: 'change your email',
     delete_account: 'delete your account',
   }
 
   const label = purposeLabels[purpose] || 'continue'
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault()
     if (code.length === 6) onSubmit(code)
   }
@@ -40,7 +47,10 @@ export default function TwoFactorModal({ isOpen, state, error, onSubmit, onCance
             </div>
             <h2 className="font-semibold text-ink">Verification Required</h2>
           </div>
-          <button onClick={onCancel} className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
+          <button
+            onClick={onCancel}
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
             <X size={18} />
           </button>
         </div>

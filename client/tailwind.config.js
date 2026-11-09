@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         moss: {
-          50:  '#f2f7f4',
+          50: '#f2f7f4',
           100: '#e0ece4',
           200: '#c2d9cb',
           300: '#95bda5',
@@ -17,7 +17,7 @@ export default {
           900: '#1e3424',
         },
         terra: {
-          50:  '#fdf5f0',
+          50: '#fdf5f0',
           100: '#fae6d9',
           200: '#f5c9b0',
           300: '#eda47e',

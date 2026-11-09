@@ -2,30 +2,32 @@ import { useState, useEffect, useRef } from 'react'
 import api from '../../api'
 
 const PALETTE = [
-  { label: 'Empty',    color: null,      bg: 'bg-white',          border: 'border-gray-300' },
-  { label: 'Red',      color: '#ef4444', bg: 'bg-red-400',        border: 'border-red-500' },
-  { label: 'Orange',   color: '#f97316', bg: 'bg-orange-400',     border: 'border-orange-500' },
-  { label: 'Green',    color: '#22c55e', bg: 'bg-green-400',      border: 'border-green-500' },
-  { label: 'Lavender', color: '#a78bfa', bg: 'bg-violet-400',     border: 'border-violet-500' },
-  { label: 'Yellow',   color: '#eab308', bg: 'bg-yellow-400',     border: 'border-yellow-500' },
-  { label: 'Blue',     color: '#38bdf8', bg: 'bg-sky-400',        border: 'border-sky-500' },
-  { label: 'Brown',    color: '#92400e', bg: 'bg-amber-800',      border: 'border-amber-900' },
+  { label: 'Empty', color: null, bg: 'bg-white', border: 'border-gray-300' },
+  { label: 'Red', color: '#ef4444', bg: 'bg-red-400', border: 'border-red-500' },
+  { label: 'Orange', color: '#f97316', bg: 'bg-orange-400', border: 'border-orange-500' },
+  { label: 'Green', color: '#22c55e', bg: 'bg-green-400', border: 'border-green-500' },
+  { label: 'Lavender', color: '#a78bfa', bg: 'bg-violet-400', border: 'border-violet-500' },
+  { label: 'Yellow', color: '#eab308', bg: 'bg-yellow-400', border: 'border-yellow-500' },
+  { label: 'Blue', color: '#38bdf8', bg: 'bg-sky-400', border: 'border-sky-500' },
+  { label: 'Brown', color: '#92400e', bg: 'bg-amber-800', border: 'border-amber-900' },
 ]
 
 const TYPE_LABELS = {
   raised_bed: 'Raised Bed',
-  bucket:     'Bucket',
-  row:        'Row',
+  bucket: 'Bucket',
+  row: 'Row',
 }
 
 function PlotTypeBadge({ type }) {
   const styles = {
     raised_bed: 'bg-green-100 text-green-800',
-    bucket:     'bg-sky-100 text-sky-800',
-    row:        'bg-amber-100 text-amber-800',
+    bucket: 'bg-sky-100 text-sky-800',
+    row: 'bg-amber-100 text-amber-800',
   }
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles[type] || 'bg-gray-100 text-gray-700'}`}>
+    <span
+      className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles[type] || 'bg-gray-100 text-gray-700'}`}
+    >
       {TYPE_LABELS[type] || type}
     </span>
   )
@@ -61,7 +63,9 @@ function CellPopover({ x, y, initial, onSave, onClose }) {
       className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-52"
       style={{ top: '110%', left: '50%', transform: 'translateX(-50%)' }}
     >
-      <p className="text-xs text-gray-500 mb-1 font-medium">Cell ({x}, {y})</p>
+      <p className="text-xs text-gray-500 mb-1 font-medium">
+        Cell ({x}, {y})
+      </p>
       <input
         autoFocus
         type="text"
@@ -121,10 +125,7 @@ function GridBlueprint({ plot, cells, onChange }) {
 
   return (
     <div className="overflow-x-auto">
-      <div
-        className="inline-grid gap-0.5"
-        style={{ gridTemplateColumns: `repeat(${cols}, 48px)` }}
-      >
+      <div className="inline-grid gap-0.5" style={{ gridTemplateColumns: `repeat(${cols}, 48px)` }}>
         {Array.from({ length: rows }, (_, y) =>
           Array.from({ length: cols }, (_, x) => {
             const key = cellKey(x, y)
@@ -144,7 +145,9 @@ function GridBlueprint({ plot, cells, onChange }) {
                   }}
                 >
                   {cell?.label ? (
-                    <span className="px-0.5 text-center leading-tight line-clamp-2">{cell.label}</span>
+                    <span className="px-0.5 text-center leading-tight line-clamp-2">
+                      {cell.label}
+                    </span>
                   ) : (
                     <span className="text-green-300 text-xs">+</span>
                   )}
@@ -203,7 +206,9 @@ function BucketBlueprint({ plot, cells, onChange }) {
                   <span className="text-green-300 text-lg">+</span>
                 )}
               </button>
-              <span className="text-[10px] text-gray-500 mt-1">{plot.bucket_size || ''} #{i + 1}</span>
+              <span className="text-[10px] text-gray-500 mt-1">
+                {plot.bucket_size || ''} #{i + 1}
+              </span>
               {isActive && (
                 <CellPopover
                   x={i + 1}
@@ -227,13 +232,13 @@ function BucketBlueprint({ plot, cells, onChange }) {
 // ─── Add / Edit Plot Modal ────────────────────────────────────────────────────
 function PlotModal({ initial, onSave, onClose }) {
   const [form, setForm] = useState({
-    name:         initial?.name         || '',
-    type:         initial?.type         || 'raised_bed',
-    width:        initial?.width        || '',
-    length:       initial?.length       || '',
-    bucket_size:  initial?.bucket_size  || '5gal',
+    name: initial?.name || '',
+    type: initial?.type || 'raised_bed',
+    width: initial?.width || '',
+    length: initial?.length || '',
+    bucket_size: initial?.bucket_size || '5gal',
     bucket_count: initial?.bucket_count || 1,
-    notes:        initial?.notes        || '',
+    notes: initial?.notes || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -255,7 +260,12 @@ function PlotModal({ initial, onSave, onClose }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h3 className="font-semibold text-gray-800">{initial ? 'Edit Plot' : 'Add Plot'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+          >
+            ×
+          </button>
         </div>
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           <div>
@@ -372,25 +382,29 @@ function PlotModal({ initial, onSave, onClose }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Plots() {
-  const [plots, setPlots]           = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
+  const [plots, setPlots] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
-  const [cells, setCells]           = useState({})       // { plotId: [...cells] }
-  const [dirtyIds, setDirtyIds]     = useState(new Set())
-  const [savingId, setSavingId]     = useState(null)
-  const [showModal, setShowModal]   = useState(false)
-  const [editPlot, setEditPlot]     = useState(null)
+  const [cells, setCells] = useState({}) // { plotId: [...cells] }
+  const [dirtyIds, setDirtyIds] = useState(new Set())
+  const [savingId, setSavingId] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [editPlot, setEditPlot] = useState(null)
 
   useEffect(() => {
-    api.get('/garden/plots')
+    api
+      .get('/garden/plots')
       .then(r => setPlots(r.data))
       .catch(e => setError(e.response?.data?.error || 'Failed to load plots'))
       .finally(() => setLoading(false))
   }, [])
 
   async function selectPlot(id) {
-    if (selectedId === id) { setSelectedId(null); return }
+    if (selectedId === id) {
+      setSelectedId(null)
+      return
+    }
     setSelectedId(id)
     if (!cells[id]) {
       const r = await api.get(`/garden/plots/${id}/cells`)
@@ -401,9 +415,8 @@ export default function Plots() {
   function updateCell(plotId, x, y, label, color) {
     setCells(prev => {
       const existing = (prev[plotId] || []).filter(c => !(c.cell_x === x && c.cell_y === y))
-      const updated = (label || color)
-        ? [...existing, { cell_x: x, cell_y: y, label, color }]
-        : existing
+      const updated =
+        label || color ? [...existing, { cell_x: x, cell_y: y, label, color }] : existing
       return { ...prev, [plotId]: updated }
     })
     setDirtyIds(d => new Set([...d, plotId]))
@@ -419,7 +432,11 @@ export default function Plots() {
     try {
       const r = await api.put(`/garden/plots/${plotId}/cells`, { cells: cells[plotId] || [] })
       setCells(c => ({ ...c, [plotId]: r.data }))
-      setDirtyIds(d => { const next = new Set(d); next.delete(plotId); return next })
+      setDirtyIds(d => {
+        const next = new Set(d)
+        next.delete(plotId)
+        return next
+      })
     } catch (e) {
       alert(e.response?.data?.error || 'Save failed')
     } finally {
@@ -435,7 +452,7 @@ export default function Plots() {
 
   async function handleEditPlot(form) {
     const r = await api.patch(`/garden/plots/${editPlot.id}`, form)
-    setPlots(p => p.map(x => x.id === editPlot.id ? r.data : x))
+    setPlots(p => p.map(x => (x.id === editPlot.id ? r.data : x)))
     setEditPlot(null)
   }
 
@@ -450,8 +467,15 @@ export default function Plots() {
     return (
       <div className="flex items-center justify-center py-16 text-gray-400">
         <svg className="animate-spin w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
         </svg>
         Loading plots…
       </div>
@@ -464,7 +488,9 @@ export default function Plots() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-gray-800">Garden Plots</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Design and track your beds, rows, and containers</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Design and track your beds, rows, and containers
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -522,27 +548,35 @@ export default function Plots() {
                 </div>
                 <div className="flex items-center gap-2 ml-3 shrink-0">
                   <button
-                    onClick={e => { e.stopPropagation(); setEditPlot(plot) }}
+                    onClick={e => {
+                      e.stopPropagation()
+                      setEditPlot(plot)
+                    }}
                     className="text-gray-400 hover:text-green-700 text-sm px-2 py-1 rounded hover:bg-green-50 transition-colors"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={e => { e.stopPropagation(); handleDelete(plot) }}
+                    onClick={e => {
+                      e.stopPropagation()
+                      handleDelete(plot)
+                    }}
                     className="text-gray-400 hover:text-red-600 text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
                   >
                     Delete
                   </button>
-                  <span className={`text-gray-400 text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`}>▾</span>
+                  <span
+                    className={`text-gray-400 text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                  >
+                    ▾
+                  </span>
                 </div>
               </div>
 
               {/* Blueprint */}
               {isOpen && (
                 <div className="px-5 pb-5 pt-4 border-t border-green-100 bg-white">
-                  {plot.notes && (
-                    <p className="text-sm text-gray-500 italic mb-4">{plot.notes}</p>
-                  )}
+                  {plot.notes && <p className="text-sm text-gray-500 italic mb-4">{plot.notes}</p>}
 
                   {/* Render blueprint based on type */}
                   {plot.type === 'bucket' ? (
@@ -586,20 +620,11 @@ export default function Plots() {
       </div>
 
       {/* Add modal */}
-      {showModal && (
-        <PlotModal
-          onSave={handleAddPlot}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      {showModal && <PlotModal onSave={handleAddPlot} onClose={() => setShowModal(false)} />}
 
       {/* Edit modal */}
       {editPlot && (
-        <PlotModal
-          initial={editPlot}
-          onSave={handleEditPlot}
-          onClose={() => setEditPlot(null)}
-        />
+        <PlotModal initial={editPlot} onSave={handleEditPlot} onClose={() => setEditPlot(null)} />
       )}
     </div>
   )

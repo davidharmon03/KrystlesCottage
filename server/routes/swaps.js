@@ -7,7 +7,10 @@ const { notifyGroupMembers } = require('./notifications');
 
 async function requireMember(groupId, userId) {
   const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId]);
+  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
+    groupId,
+    userId,
+  ]);
 }
 
 async function requireAdmin(groupId, userId) {
@@ -29,7 +32,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const { group_id } = req.query;
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
-    if (!await requireMember(group_id, req.user.id))
+    if (!(await requireMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const db = await getDb();
@@ -63,7 +66,7 @@ router.get('/history', authMiddleware, async (req, res) => {
   try {
     const { group_id } = req.query;
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
-    if (!await requireMember(group_id, req.user.id))
+    if (!(await requireMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const db = await getDb();
@@ -99,10 +102,11 @@ router.get('/history', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { group_id, swap_day, week_label, entrees } = req.body;
-    if (!group_id || !swap_day) return res.status(400).json({ error: 'group_id and swap_day required' });
-    if (!await requireMember(group_id, req.user.id))
+    if (!group_id || !swap_day)
+      return res.status(400).json({ error: 'group_id and swap_day required' });
+    if (!(await requireMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
-    if (!await requireAdmin(group_id, req.user.id))
+    if (!(await requireAdmin(group_id, req.user.id)))
       return res.status(403).json({ error: 'Admin only' });
 
     const db = await getDb();
@@ -118,7 +122,15 @@ router.post('/', authMiddleware, async (req, res) => {
         const entreeId = uuidv4();
         await db.run(
           'INSERT INTO swap_entrees (id, week_id, user_id, entree_name, recipe_id, notes, status) VALUES (?,?,?,?,?,?,?)',
-          [entreeId, weekId, e.user_id, e.entree_name, e.recipe_id || null, e.notes || '', 'assigned']
+          [
+            entreeId,
+            weekId,
+            e.user_id,
+            e.entree_name,
+            e.recipe_id || null,
+            e.notes || '',
+            'assigned',
+          ]
         );
         // Add sides if provided
         if (Array.isArray(e.sides) && e.sides.length > 0) {
@@ -138,7 +150,9 @@ router.post('/', authMiddleware, async (req, res) => {
     // Notify all group members
     const creator = await db.get('SELECT name FROM users WHERE id = ?', [req.user.id]);
     const swapDate = new Date(swap_day + 'T00:00:00').toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric'
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
     });
     notifyGroupMembers({
       group_id,
@@ -146,7 +160,7 @@ router.post('/', authMiddleware, async (req, res) => {
       type: 'swap_week_created',
       title: 'New Entree Swap Week',
       message: `${creator?.name} set up a new entree swap. Swap Day is ${swapDate}.`,
-      link: '/swap'
+      link: '/swap',
     });
 
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [weekId]);
@@ -164,13 +178,13 @@ router.put('/:weekId/entrees/:entreeId', authMiddleware, async (req, res) => {
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!await requireMember(week.group_id, req.user.id))
+    if (!(await requireMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
-    const entree = await db.get(
-      'SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?',
-      [req.params.entreeId, req.params.weekId]
-    );
+    const entree = await db.get('SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?', [
+      req.params.entreeId,
+      req.params.weekId,
+    ]);
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
@@ -183,10 +197,10 @@ router.put('/:weekId/entrees/:entreeId', authMiddleware, async (req, res) => {
     if (status && !validStatuses.includes(status))
       return res.status(400).json({ error: 'Invalid status' });
 
-    const newStatus      = status      !== undefined ? status      : entree.status;
-    const newNotes       = notes       !== undefined ? notes       : entree.notes;
-    const newEntreeName  = entree_name !== undefined ? entree_name : entree.entree_name;
-    const newRecipeId    = recipe_id   !== undefined ? (recipe_id || null) : entree.recipe_id;
+    const newStatus = status !== undefined ? status : entree.status;
+    const newNotes = notes !== undefined ? notes : entree.notes;
+    const newEntreeName = entree_name !== undefined ? entree_name : entree.entree_name;
+    const newRecipeId = recipe_id !== undefined ? recipe_id || null : entree.recipe_id;
 
     await db.run(
       "UPDATE swap_entrees SET status=?, notes=?, entree_name=?, recipe_id=?, updated_at=datetime('now') WHERE id=?",
@@ -202,7 +216,7 @@ router.put('/:weekId/entrees/:entreeId', authMiddleware, async (req, res) => {
         type: 'entree_ready',
         title: 'Entree is Ready! 🟢',
         message: `${member?.name}'s ${newEntreeName} is ready for swap day!`,
-        link: '/swap'
+        link: '/swap',
       });
     }
 
@@ -235,7 +249,7 @@ router.put('/:weekId/complete', authMiddleware, async (req, res) => {
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!await requireAdmin(week.group_id, req.user.id))
+    if (!(await requireAdmin(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Admin only' });
 
     await db.run("UPDATE swap_weeks SET status = 'completed' WHERE id = ?", [req.params.weekId]);
@@ -265,7 +279,7 @@ router.post('/:weekId/entrees/:entreeId/rate', authMiddleware, async (req, res) 
       [req.params.entreeId]
     );
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
-    if (!await requireMember(entree.group_id, req.user.id))
+    if (!(await requireMember(entree.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     // Check if week is completed (can only rate completed entrees)
@@ -283,10 +297,10 @@ router.post('/:weekId/entrees/:entreeId/rate', authMiddleware, async (req, res) 
       [id, req.params.entreeId, req.user.id, stars, comment || '']
     );
 
-    const rating = await db.get(
-      'SELECT * FROM meal_ratings WHERE entree_id = ? AND rated_by = ?',
-      [req.params.entreeId, req.user.id]
-    );
+    const rating = await db.get('SELECT * FROM meal_ratings WHERE entree_id = ? AND rated_by = ?', [
+      req.params.entreeId,
+      req.user.id,
+    ]);
 
     res.status(201).json(rating);
   } catch (err) {
@@ -301,25 +315,29 @@ router.get('/ratings/:recipeId', authMiddleware, async (req, res) => {
     const db = await getDb();
 
     // Get all ratings for entrees with this recipe
-    const ratings = await db.all(`
+    const ratings = await db.all(
+      `
       SELECT mr.*, se.entree_name, u.name AS rater_name
       FROM meal_ratings mr
       JOIN swap_entrees se ON se.id = mr.entree_id
       JOIN users u ON u.id = mr.rated_by
       WHERE se.recipe_id = ?
       ORDER BY mr.created_at DESC
-    `, [req.params.recipeId]);
+    `,
+      [req.params.recipeId]
+    );
 
     // Calculate average
-    const avgRating = ratings.length > 0
-      ? (ratings.reduce((sum, r) => sum + r.stars, 0) / ratings.length).toFixed(1)
-      : null;
+    const avgRating =
+      ratings.length > 0
+        ? (ratings.reduce((sum, r) => sum + r.stars, 0) / ratings.length).toFixed(1)
+        : null;
 
     res.json({
       recipe_id: req.params.recipeId,
       average_rating: parseFloat(avgRating) || null,
       rating_count: ratings.length,
-      ratings
+      ratings,
     });
   } catch (err) {
     console.error(err);
@@ -333,7 +351,7 @@ router.get('/:weekId/entrees/:entreeId/sides', authMiddleware, async (req, res) 
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!await requireMember(week.group_id, req.user.id))
+    if (!(await requireMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const sides = await db.all(
@@ -359,13 +377,13 @@ router.post('/:weekId/entrees/:entreeId/sides', authMiddleware, async (req, res)
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!await requireMember(week.group_id, req.user.id))
+    if (!(await requireMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
-    const entree = await db.get(
-      'SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?',
-      [req.params.entreeId, req.params.weekId]
-    );
+    const entree = await db.get('SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?', [
+      req.params.entreeId,
+      req.params.weekId,
+    ]);
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
@@ -406,7 +424,7 @@ router.delete('/:weekId/entrees/:entreeId/sides/:sideId', authMiddleware, async 
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!await requireMember(week.group_id, req.user.id))
+    if (!(await requireMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const side = await db.get('SELECT * FROM entree_sides WHERE id = ?', [req.params.sideId]);

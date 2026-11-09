@@ -7,20 +7,34 @@ const PLATFORMS = [
     label: 'Website',
     color: 'text-slate-500 hover:text-slate-700',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10" />
         <line x1="2" y1="12" x2="22" y2="12" />
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
       </svg>
     ),
-    toUrl: v => v.startsWith('http') ? v : `https://${v}`,
+    toUrl: v => (v.startsWith('http') ? v : `https://${v}`),
   },
   {
     key: 'instagram',
     label: 'Instagram',
     color: 'text-pink-500 hover:text-pink-700',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
@@ -48,7 +62,7 @@ const PLATFORMS = [
         <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.56 12 3.56 12 3.56s-7.54 0-9.38.49A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.44 12 20.44 12 20.44s7.54 0 9.38-.49a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z" />
       </svg>
     ),
-    toUrl: v => v.startsWith('http') ? v : `https://youtube.com/@${v.replace(/^@/, '')}`,
+    toUrl: v => (v.startsWith('http') ? v : `https://youtube.com/@${v.replace(/^@/, '')}`),
   },
   {
     key: 'facebook',
@@ -59,7 +73,7 @@ const PLATFORMS = [
         <path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97H15.8c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z" />
       </svg>
     ),
-    toUrl: v => v.startsWith('http') ? v : `https://facebook.com/${v}`,
+    toUrl: v => (v.startsWith('http') ? v : `https://facebook.com/${v}`),
   },
   {
     key: 'twitter',

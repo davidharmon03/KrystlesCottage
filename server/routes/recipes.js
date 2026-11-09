@@ -9,10 +9,10 @@ function parseRecipe(r) {
   return {
     ...r,
     ingredients: JSON.parse(r.ingredients || '[]'),
-    steps:       JSON.parse(r.steps       || '[]'),
-    tags:        JSON.parse(r.tags        || '[]'),
-    skill_tags:  JSON.parse(r.skill_tags  || '[]'),
-    sides:       r.sides || '',
+    steps: JSON.parse(r.steps || '[]'),
+    tags: JSON.parse(r.tags || '[]'),
+    skill_tags: JSON.parse(r.skill_tags || '[]'),
+    sides: r.sides || '',
   };
 }
 
@@ -30,21 +30,27 @@ router.get('/', authMiddleware, async (req, res) => {
       );
       if (!member) return res.status(403).json({ error: 'Not a member of this group' });
 
-      rows = await db.all(`
+      rows = await db.all(
+        `
         SELECT r.*, u.name AS author_name,
           (SELECT image_path FROM meal_photos WHERE recipe_id = r.id ORDER BY created_at ASC LIMIT 1) AS primary_photo_path
         FROM recipes r JOIN users u ON u.id = r.author_id
         WHERE r.group_id = ? OR r.is_public = 1
         ORDER BY r.created_at DESC
-      `, [groupId]);
+      `,
+        [groupId]
+      );
     } else {
-      rows = await db.all(`
+      rows = await db.all(
+        `
         SELECT r.*, u.name AS author_name,
           (SELECT image_path FROM meal_photos WHERE recipe_id = r.id ORDER BY created_at ASC LIMIT 1) AS primary_photo_path
         FROM recipes r JOIN users u ON u.id = r.author_id
         WHERE r.is_public = 1 OR r.author_id = ?
         ORDER BY r.created_at DESC
-      `, [req.user.id]);
+      `,
+        [req.user.id]
+      );
     }
 
     res.json(rows.map(parseRecipe));
@@ -58,11 +64,14 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const row = await db.get(`
+    const row = await db.get(
+      `
       SELECT r.*, u.name AS author_name
       FROM recipes r JOIN users u ON u.id = r.author_id
       WHERE r.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     if (!row) return res.status(404).json({ error: 'Recipe not found' });
     res.json(parseRecipe(row));
   } catch (err) {
@@ -74,26 +83,32 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // POST /api/recipes
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { title, description, ingredients, steps, tags, skill_tags, group_id, is_public, sides } = req.body;
+    const { title, description, ingredients, steps, tags, skill_tags, group_id, is_public, sides } =
+      req.body;
     if (!title || !ingredients || !steps)
       return res.status(400).json({ error: 'title, ingredients, and steps are required' });
 
     const db = await getDb();
     const id = uuidv4();
-    await db.run(`
+    await db.run(
+      `
       INSERT INTO recipes (id, title, description, ingredients, steps, tags, skill_tags, author_id, group_id, is_public, sides)
       VALUES (?,?,?,?,?,?,?,?,?,?,?)
-    `, [
-      id, title, description || '',
-      JSON.stringify(Array.isArray(ingredients) ? ingredients : [ingredients]),
-      JSON.stringify(Array.isArray(steps) ? steps : [steps]),
-      JSON.stringify(tags || []),
-      JSON.stringify(skill_tags || []),
-      req.user.id,
-      group_id || null,
-      is_public ? 1 : 0,
-      sides || '',
-    ]);
+    `,
+      [
+        id,
+        title,
+        description || '',
+        JSON.stringify(Array.isArray(ingredients) ? ingredients : [ingredients]),
+        JSON.stringify(Array.isArray(steps) ? steps : [steps]),
+        JSON.stringify(tags || []),
+        JSON.stringify(skill_tags || []),
+        req.user.id,
+        group_id || null,
+        is_public ? 1 : 0,
+        sides || '',
+      ]
+    );
 
     const created = await db.get('SELECT * FROM recipes WHERE id = ?', [id]);
     res.status(201).json(parseRecipe(created));
@@ -112,20 +127,23 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (recipe.author_id !== req.user.id) return res.status(403).json({ error: 'Not your recipe' });
 
     const { title, description, ingredients, steps, tags, skill_tags, is_public, sides } = req.body;
-    await db.run(`
+    await db.run(
+      `
       UPDATE recipes SET title=?, description=?, ingredients=?, steps=?, tags=?, skill_tags=?, is_public=?, sides=?
       WHERE id=?
-    `, [
-      title       ?? recipe.title,
-      description ?? recipe.description,
-      JSON.stringify(ingredients  ?? JSON.parse(recipe.ingredients)),
-      JSON.stringify(steps        ?? JSON.parse(recipe.steps)),
-      JSON.stringify(tags         ?? JSON.parse(recipe.tags)),
-      JSON.stringify(skill_tags   ?? JSON.parse(recipe.skill_tags)),
-      is_public !== undefined ? (is_public ? 1 : 0) : recipe.is_public,
-      sides !== undefined ? sides : (recipe.sides || ''),
-      req.params.id,
-    ]);
+    `,
+      [
+        title ?? recipe.title,
+        description ?? recipe.description,
+        JSON.stringify(ingredients ?? JSON.parse(recipe.ingredients)),
+        JSON.stringify(steps ?? JSON.parse(recipe.steps)),
+        JSON.stringify(tags ?? JSON.parse(recipe.tags)),
+        JSON.stringify(skill_tags ?? JSON.parse(recipe.skill_tags)),
+        is_public !== undefined ? (is_public ? 1 : 0) : recipe.is_public,
+        sides !== undefined ? sides : recipe.sides || '',
+        req.params.id,
+      ]
+    );
 
     const updated = await db.get('SELECT * FROM recipes WHERE id = ?', [req.params.id]);
     res.json(parseRecipe(updated));
@@ -143,19 +161,23 @@ router.post('/:id/add-to-list', authMiddleware, async (req, res) => {
     if (!recipe) return res.status(404).json({ error: 'Recipe not found' });
 
     const { list_id, group_id, multiplier = 1 } = req.body;
-    if (!list_id || !group_id) return res.status(400).json({ error: 'list_id and group_id required' });
+    if (!list_id || !group_id)
+      return res.status(400).json({ error: 'list_id and group_id required' });
 
-    const member = await db.get(
-      'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-      [group_id, req.user.id]
-    );
+    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
+      group_id,
+      req.user.id,
+    ]);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
-    const list = await db.get('SELECT * FROM shopping_lists WHERE id = ? AND group_id = ?', [list_id, group_id]);
+    const list = await db.get('SELECT * FROM shopping_lists WHERE id = ? AND group_id = ?', [
+      list_id,
+      group_id,
+    ]);
     if (!list) return res.status(404).json({ error: 'List not found' });
 
     const ingredients = JSON.parse(recipe.ingredients || '[]');
-    const products    = await db.all('SELECT * FROM products WHERE is_public = 1');
+    const products = await db.all('SELECT * FROM products WHERE is_public = 1');
 
     function matchProduct(ing) {
       const ingLower = ing.toLowerCase();
@@ -172,11 +194,11 @@ router.post('/:id/add-to-list', authMiddleware, async (req, res) => {
     for (const ing of ingredients) {
       const matched = matchProduct(ing);
       const id = uuidv4();
-      const name          = matched ? matched.name : ing;
-      const product_id    = matched ? matched.id : null;
+      const name = matched ? matched.name : ing;
+      const product_id = matched ? matched.id : null;
       const store_section = matched ? matched.store_section : 'other';
-      const category      = matched ? matched.category : 'other';
-      const quantity      = mult > 1 ? `x${mult}` : '';
+      const category = matched ? matched.category : 'other';
+      const quantity = mult > 1 ? `x${mult}` : '';
 
       await db.run(
         `INSERT INTO shopping_list_items
@@ -214,7 +236,7 @@ function parseDuration(iso) {
   if (!iso || typeof iso !== 'string') return null;
   const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!m) return null;
-  return (parseInt(m[1] || 0) * 60) + parseInt(m[2] || 0) + Math.round(parseInt(m[3] || 0) / 60);
+  return parseInt(m[1] || 0) * 60 + parseInt(m[2] || 0) + Math.round(parseInt(m[3] || 0) / 60);
 }
 
 // Extract image URL from schema.org image field (string | array | {url})
@@ -223,7 +245,7 @@ function extractImage(img) {
   if (typeof img === 'string') return img;
   if (Array.isArray(img)) {
     const first = img[0];
-    return typeof first === 'string' ? first : (first?.url || '');
+    return typeof first === 'string' ? first : first?.url || '';
   }
   return img.url || '';
 }
@@ -257,8 +279,9 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
       },
     });
@@ -277,7 +300,9 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     html = await response.text();
   } catch (err) {
     if (err.name === 'AbortError') {
-      return res.status(400).json({ error: 'The site took too long to respond (timeout after 10 s).' });
+      return res
+        .status(400)
+        .json({ error: 'The site took too long to respond (timeout after 10 s).' });
     }
     return res.status(400).json({
       error: "We couldn't read that page. Try copying the recipe manually.",
@@ -294,7 +319,9 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     try {
       const json = JSON.parse($(el).html());
       recipeNode = findRecipeNode(json);
-    } catch { /* malformed JSON-LD — skip */ }
+    } catch {
+      /* malformed JSON-LD — skip */
+    }
   });
 
   // ── 4. Build response from JSON-LD ─────────────────────────────────────────
@@ -309,7 +336,7 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     const instr = recipeNode.recipeInstructions;
     if (Array.isArray(instr)) {
       steps = instr
-        .map(s => (typeof s === 'string' ? s : (s.text || s.name || '')).trim())
+        .map(s => (typeof s === 'string' ? s : s.text || s.name || '').trim())
         .filter(Boolean);
     } else if (typeof instr === 'string' && instr.trim()) {
       steps = [instr.trim()];
@@ -327,64 +354,68 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     const rawTags = [];
     if (recipeNode.recipeCategory) {
       const cats = Array.isArray(recipeNode.recipeCategory)
-        ? recipeNode.recipeCategory : [recipeNode.recipeCategory];
+        ? recipeNode.recipeCategory
+        : [recipeNode.recipeCategory];
       rawTags.push(...cats);
     }
     if (recipeNode.keywords) {
-      const kws = typeof recipeNode.keywords === 'string'
-        ? recipeNode.keywords.split(',')
-        : Array.isArray(recipeNode.keywords) ? recipeNode.keywords : [];
+      const kws =
+        typeof recipeNode.keywords === 'string'
+          ? recipeNode.keywords.split(',')
+          : Array.isArray(recipeNode.keywords)
+            ? recipeNode.keywords
+            : [];
       rawTags.push(...kws);
     }
     const tags = [...new Set(rawTags.map(t => t.trim().toLowerCase()).filter(Boolean))].slice(0, 6);
 
     return res.json({
-      title:       recipeNode.name || 'Untitled Recipe',
+      title: recipeNode.name || 'Untitled Recipe',
       description: recipeNode.description || '',
       ingredients,
       steps,
       servings,
-      prepTime:    parseDuration(recipeNode.prepTime),
-      cookTime:    parseDuration(recipeNode.cookTime),
-      imageUrl:    extractImage(recipeNode.image),
+      prepTime: parseDuration(recipeNode.prepTime),
+      cookTime: parseDuration(recipeNode.cookTime),
+      imageUrl: extractImage(recipeNode.image),
       tags,
-      skill_tags:  [],
-      sides:       '',
-      is_public:   false,
-      source_url:  url,
+      skill_tags: [],
+      sides: '',
+      is_public: false,
+      source_url: url,
     });
   }
 
   // ── 5. OG fallback — return partial data rather than nothing ───────────────
-  const ogTitle = $('meta[property="og:title"]').attr('content')
-    || $('title').text()
-    || '';
+  const ogTitle = $('meta[property="og:title"]').attr('content') || $('title').text() || '';
   const ogImage = $('meta[property="og:image"]').attr('content') || '';
-  const ogDesc  = $('meta[property="og:description"]').attr('content')
-    || $('meta[name="description"]').attr('content')
-    || '';
+  const ogDesc =
+    $('meta[property="og:description"]').attr('content') ||
+    $('meta[name="description"]').attr('content') ||
+    '';
 
   if (ogTitle) {
     return res.json({
-      title:       ogTitle.trim(),
+      title: ogTitle.trim(),
       description: ogDesc.trim(),
       ingredients: [],
-      steps:       [],
-      servings:    '1',
-      prepTime:    null,
-      cookTime:    null,
-      imageUrl:    ogImage,
-      tags:        [],
-      skill_tags:  [],
-      sides:       '',
-      is_public:   false,
-      source_url:  url,
-      _partial:    true, // signal to client that fields need manual fill-in
+      steps: [],
+      servings: '1',
+      prepTime: null,
+      cookTime: null,
+      imageUrl: ogImage,
+      tags: [],
+      skill_tags: [],
+      sides: '',
+      is_public: false,
+      source_url: url,
+      _partial: true, // signal to client that fields need manual fill-in
     });
   }
 
   return res.status(400).json({
-    error: "We couldn't find recipe data on that page. Try a different URL or copy the recipe manually.",
+    error:
+      "We couldn't find recipe data on that page. Try a different URL or copy the recipe manually.",
   });
 });
 

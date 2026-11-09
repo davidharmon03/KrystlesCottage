@@ -2,7 +2,20 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import { Chart, registerables } from 'chart.js'
-import { DollarSign, Plus, Upload, ArrowRight, TrendingUp, TrendingDown, Minus, Trash2, X, Mail, Loader, BarChart2 } from 'lucide-react'
+import {
+  DollarSign,
+  Plus,
+  Upload,
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Trash2,
+  X,
+  Mail,
+  Loader,
+  BarChart2,
+} from 'lucide-react'
 
 Chart.register(...registerables)
 
@@ -56,13 +69,15 @@ export default function Corner() {
       api.get(`/corner/${gid}/equalizer`),
       api.get(`/corner/${gid}/meal-credits`),
       api.get(`/corner/${gid}/stats`),
-    ]).then(([r, e, c, s]) => {
-      setReceipts(r.data)
-      setEqualizer(e.data)
-      setCredits(c.data)
-      setStats(s.data)
-    }).catch(() => {})
-    .finally(() => setLoading(false))
+    ])
+      .then(([r, e, c, s]) => {
+        setReceipts(r.data)
+        setEqualizer(e.data)
+        setCredits(c.data)
+        setStats(s.data)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }
 
   useEffect(loadAll, [gid])
@@ -74,18 +89,23 @@ export default function Corner() {
     const timer = setTimeout(() => {
       // ── Bar chart: monthly spend ──
       if (barRef.current) {
-        if (barChartInst.current) { barChartInst.current.destroy(); barChartInst.current = null }
+        if (barChartInst.current) {
+          barChartInst.current.destroy()
+          barChartInst.current = null
+        }
         barChartInst.current = new Chart(barRef.current, {
           type: 'bar',
           data: {
             labels: stats.monthlySpend.map(m => m.month),
-            datasets: [{
-              label: 'Total Spent',
-              data: stats.monthlySpend.map(m => m.total),
-              backgroundColor: '#6B7C5C',
-              borderRadius: 6,
-              borderSkipped: false,
-            }],
+            datasets: [
+              {
+                label: 'Total Spent',
+                data: stats.monthlySpend.map(m => m.total),
+                backgroundColor: '#6B7C5C',
+                borderRadius: 6,
+                borderSkipped: false,
+              },
+            ],
           },
           options: {
             responsive: true,
@@ -110,18 +130,23 @@ export default function Corner() {
 
       // ── Doughnut chart: spend by member ──
       if (doughnutRef.current) {
-        if (doughnutChartInst.current) { doughnutChartInst.current.destroy(); doughnutChartInst.current = null }
+        if (doughnutChartInst.current) {
+          doughnutChartInst.current.destroy()
+          doughnutChartInst.current = null
+        }
         doughnutChartInst.current = new Chart(doughnutRef.current, {
           type: 'doughnut',
           data: {
             labels: stats.spendByMember.map(m => m.name),
-            datasets: [{
-              data: stats.spendByMember.map(m => m.total),
-              backgroundColor: BRAND_COLORS.slice(0, stats.spendByMember.length),
-              borderWidth: 3,
-              borderColor: '#ffffff',
-              hoverOffset: 6,
-            }],
+            datasets: [
+              {
+                data: stats.spendByMember.map(m => m.total),
+                backgroundColor: BRAND_COLORS.slice(0, stats.spendByMember.length),
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 6,
+              },
+            ],
           },
           options: {
             responsive: true,
@@ -141,27 +166,40 @@ export default function Corner() {
 
     return () => {
       clearTimeout(timer)
-      if (barChartInst.current) { barChartInst.current.destroy(); barChartInst.current = null }
-      if (doughnutChartInst.current) { doughnutChartInst.current.destroy(); doughnutChartInst.current = null }
+      if (barChartInst.current) {
+        barChartInst.current.destroy()
+        barChartInst.current = null
+      }
+      if (doughnutChartInst.current) {
+        doughnutChartInst.current.destroy()
+        doughnutChartInst.current = null
+      }
     }
   }, [tab, stats])
 
   const submitReceipt = async e => {
     e.preventDefault()
     setRError('')
-    if (!rForm.amount) { setRError('Amount is required'); return }
+    if (!rForm.amount) {
+      setRError('Amount is required')
+      return
+    }
     setRLoading(true)
     try {
       const fd = new FormData()
       fd.append('amount', rForm.amount)
       fd.append('description', rForm.description)
       if (rForm.image) fd.append('image', rForm.image)
-      await api.post(`/corner/${gid}/receipts`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await api.post(`/corner/${gid}/receipts`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       setRForm({ amount: '', description: '', image: null })
       loadAll()
     } catch (err) {
       setRError(err.response?.data?.error || 'Failed to add receipt')
-    } finally { setRLoading(false) }
+    } finally {
+      setRLoading(false)
+    }
   }
 
   const deleteReceipt = async id => {
@@ -177,7 +215,10 @@ export default function Corner() {
       await api.post(`/corner/${gid}/meal-credits`, cForm)
       setCForm({ credits: '', note: '' })
       loadAll()
-    } catch { } finally { setCLoading(false) }
+    } catch {
+    } finally {
+      setCLoading(false)
+    }
   }
 
   const sendDigest = async () => {
@@ -191,24 +232,24 @@ export default function Corner() {
       setTimeout(() => setDigestMsg(''), 5000)
     } catch (err) {
       setDigestMsg(err.response?.data?.error || 'Failed to send digest')
-    } finally { setDigestSending(false) }
+    } finally {
+      setDigestSending(false)
+    }
   }
 
   if (!activeGroup) return <NoGroup />
 
   const tabs = [
     { id: 'equalizer', label: 'The Equalizer' },
-    { id: 'receipts',  label: 'Receipts' },
-    { id: 'credits',   label: 'Meal Credits' },
-    { id: 'charts',    label: 'Spending' },
+    { id: 'receipts', label: 'Receipts' },
+    { id: 'credits', label: 'Meal Credits' },
+    { id: 'charts', label: 'Spending' },
   ]
 
   const fmt = n => `$${Number(n).toFixed(2)}`
 
-  const hasSpendData = stats && (
-    stats.monthlySpend.some(m => m.total > 0) ||
-    stats.spendByMember.length > 0
-  )
+  const hasSpendData =
+    stats && (stats.monthlySpend.some(m => m.total > 0) || stats.spendByMember.length > 0)
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -238,14 +279,21 @@ export default function Corner() {
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6">
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.id ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.id ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
             {t.label}
           </button>
         ))}
       </div>
 
-      {loading && <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-moss-200 border-t-moss-600 rounded-full animate-spin" /></div>}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-4 border-moss-200 border-t-moss-600 rounded-full animate-spin" />
+        </div>
+      )}
 
       {/* ── Equalizer ── */}
       {!loading && tab === 'equalizer' && equalizer && (
@@ -258,7 +306,9 @@ export default function Corner() {
             </div>
             <div className="card text-center">
               <p className="text-xs text-slate-500 mb-1">Fair Share</p>
-              <p className="text-2xl font-serif font-semibold text-moss-700">{fmt(equalizer.fair_share)}</p>
+              <p className="text-2xl font-serif font-semibold text-moss-700">
+                {fmt(equalizer.fair_share)}
+              </p>
             </div>
             <div className="card text-center">
               <p className="text-xs text-slate-500 mb-1">Members</p>
@@ -281,12 +331,24 @@ export default function Corner() {
                       <span className="text-slate-500">Paid {fmt(b.paid)}</span>
                     </div>
                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${b.balance >= 0 ? 'bg-moss-400' : 'bg-terra-400'}`}
-                        style={{ width: `${Math.min(100, equalizer.total > 0 ? (b.paid / equalizer.total) * 100 : 0)}%` }} />
+                      <div
+                        className={`h-full rounded-full ${b.balance >= 0 ? 'bg-moss-400' : 'bg-terra-400'}`}
+                        style={{
+                          width: `${Math.min(100, equalizer.total > 0 ? (b.paid / equalizer.total) * 100 : 0)}%`,
+                        }}
+                      />
                     </div>
                   </div>
-                  <div className={`flex items-center gap-1 text-sm font-semibold flex-shrink-0 ${b.balance > 0.01 ? 'text-moss-600' : b.balance < -0.01 ? 'text-terra-600' : 'text-slate-400'}`}>
-                    {b.balance > 0.01 ? <TrendingUp size={14} /> : b.balance < -0.01 ? <TrendingDown size={14} /> : <Minus size={14} />}
+                  <div
+                    className={`flex items-center gap-1 text-sm font-semibold flex-shrink-0 ${b.balance > 0.01 ? 'text-moss-600' : b.balance < -0.01 ? 'text-terra-600' : 'text-slate-400'}`}
+                  >
+                    {b.balance > 0.01 ? (
+                      <TrendingUp size={14} />
+                    ) : b.balance < -0.01 ? (
+                      <TrendingDown size={14} />
+                    ) : (
+                      <Minus size={14} />
+                    )}
                     {fmt(Math.abs(b.balance))}
                   </div>
                 </div>
@@ -330,13 +392,24 @@ export default function Corner() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label">Amount ($)</label>
-                  <input type="number" step="0.01" min="0" className="input" placeholder="0.00"
-                    value={rForm.amount} onChange={e => setRForm(f => ({ ...f, amount: e.target.value }))} />
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="input"
+                    placeholder="0.00"
+                    value={rForm.amount}
+                    onChange={e => setRForm(f => ({ ...f, amount: e.target.value }))}
+                  />
                 </div>
                 <div>
                   <label className="label">Description</label>
-                  <input className="input" placeholder="e.g. Whole Foods run"
-                    value={rForm.description} onChange={e => setRForm(f => ({ ...f, description: e.target.value }))} />
+                  <input
+                    className="input"
+                    placeholder="e.g. Whole Foods run"
+                    value={rForm.description}
+                    onChange={e => setRForm(f => ({ ...f, description: e.target.value }))}
+                  />
                 </div>
               </div>
               <div>
@@ -345,13 +418,25 @@ export default function Corner() {
                   <label className="flex items-center gap-2 btn-ghost cursor-pointer text-sm">
                     <Upload size={15} />
                     {rForm.image ? rForm.image.name : 'Upload image'}
-                    <input type="file" accept="image/*" className="hidden"
-                      onChange={e => setRForm(f => ({ ...f, image: e.target.files[0] || null }))} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => setRForm(f => ({ ...f, image: e.target.files[0] || null }))}
+                    />
                   </label>
-                  {rForm.image && <button type="button" onClick={() => setRForm(f => ({ ...f, image: null }))}><X size={14} className="text-slate-400" /></button>}
+                  {rForm.image && (
+                    <button type="button" onClick={() => setRForm(f => ({ ...f, image: null }))}>
+                      <X size={14} className="text-slate-400" />
+                    </button>
+                  )}
                 </div>
               </div>
-              <button type="submit" disabled={rLoading} className="btn-primary flex items-center gap-2">
+              <button
+                type="submit"
+                disabled={rLoading}
+                className="btn-primary flex items-center gap-2"
+              >
                 <Plus size={15} /> {rLoading ? 'Adding…' : 'Add Receipt'}
               </button>
             </form>
@@ -361,30 +446,43 @@ export default function Corner() {
           <div className="space-y-2">
             {receipts.length === 0 ? (
               <div className="text-center py-8 text-slate-400 text-sm">No receipts yet</div>
-            ) : receipts.map(r => (
-              <div key={r.id} className="card flex items-center gap-3">
-                {r.image_path ? (
-                  <img src={r.image_path} alt="receipt" className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-slate-200" />
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                    <DollarSign size={18} className="text-slate-400" />
+            ) : (
+              receipts.map(r => (
+                <div key={r.id} className="card flex items-center gap-3">
+                  {r.image_path ? (
+                    <img
+                      src={r.image_path}
+                      alt="receipt"
+                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-slate-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                      <DollarSign size={18} className="text-slate-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-ink text-sm">
+                        ${Number(r.amount).toFixed(2)}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 truncate">{r.description || '—'}</p>
+                    <p className="text-xs text-moss-600 font-medium">{r.user_name}</p>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-ink text-sm">${Number(r.amount).toFixed(2)}</span>
-                    <span className="text-xs text-slate-400">{new Date(r.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 truncate">{r.description || '—'}</p>
-                  <p className="text-xs text-moss-600 font-medium">{r.user_name}</p>
+                  {r.user_id === user?.id && (
+                    <button
+                      onClick={() => deleteReceipt(r.id)}
+                      className="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </div>
-                {r.user_id === user?.id && (
-                  <button onClick={() => deleteReceipt(r.id)} className="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0">
-                    <Trash2 size={15} />
-                  </button>
-                )}
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -398,10 +496,16 @@ export default function Corner() {
               <h3 className="font-semibold text-ink mb-3 font-serif">Credit Balances</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {credits.balances.map(b => (
-                  <div key={b.user_id} className={`rounded-xl p-3 text-center ${b.total_credits >= 0 ? 'bg-moss-50' : 'bg-terra-50'}`}>
+                  <div
+                    key={b.user_id}
+                    className={`rounded-xl p-3 text-center ${b.total_credits >= 0 ? 'bg-moss-50' : 'bg-terra-50'}`}
+                  >
                     <p className="text-xs text-slate-500 mb-0.5">{b.name}</p>
-                    <p className={`text-lg font-serif font-bold ${b.total_credits >= 0 ? 'text-moss-700' : 'text-terra-700'}`}>
-                      {b.total_credits > 0 ? '+' : ''}{Number(b.total_credits).toFixed(1)}
+                    <p
+                      className={`text-lg font-serif font-bold ${b.total_credits >= 0 ? 'text-moss-700' : 'text-terra-700'}`}
+                    >
+                      {b.total_credits > 0 ? '+' : ''}
+                      {Number(b.total_credits).toFixed(1)}
                     </p>
                     <p className="text-xs text-slate-400">meals</p>
                   </div>
@@ -417,16 +521,30 @@ export default function Corner() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label">Credits (+/-)</label>
-                  <input type="number" step="0.5" className="input" placeholder="e.g. 1 or -1"
-                    value={cForm.credits} onChange={e => setCForm(f => ({ ...f, credits: e.target.value }))} />
+                  <input
+                    type="number"
+                    step="0.5"
+                    className="input"
+                    placeholder="e.g. 1 or -1"
+                    value={cForm.credits}
+                    onChange={e => setCForm(f => ({ ...f, credits: e.target.value }))}
+                  />
                 </div>
                 <div>
                   <label className="label">Note</label>
-                  <input className="input" placeholder="e.g. Banked a meal"
-                    value={cForm.note} onChange={e => setCForm(f => ({ ...f, note: e.target.value }))} />
+                  <input
+                    className="input"
+                    placeholder="e.g. Banked a meal"
+                    value={cForm.note}
+                    onChange={e => setCForm(f => ({ ...f, note: e.target.value }))}
+                  />
                 </div>
               </div>
-              <button type="submit" disabled={cLoading} className="btn-primary flex items-center gap-2">
+              <button
+                type="submit"
+                disabled={cLoading}
+                className="btn-primary flex items-center gap-2"
+              >
                 <Plus size={15} /> {cLoading ? '…' : 'Log Credit'}
               </button>
             </form>
@@ -436,23 +554,36 @@ export default function Corner() {
           <div className="space-y-2">
             {credits.transactions.length === 0 ? (
               <div className="text-center py-8 text-slate-400 text-sm">No transactions yet</div>
-            ) : credits.transactions.map(t => (
-              <div key={t.id} className="card flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${t.credits >= 0 ? 'bg-moss-100' : 'bg-terra-100'}`}>
-                  {t.credits >= 0 ? <TrendingUp size={16} className="text-moss-600" /> : <TrendingDown size={16} className="text-terra-600" />}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-ink">{t.user_name}</span>
-                    <span className={`text-sm font-bold ${t.credits >= 0 ? 'text-moss-600' : 'text-terra-600'}`}>
-                      {t.credits > 0 ? '+' : ''}{t.credits} meal{Math.abs(t.credits) !== 1 ? 's' : ''}
-                    </span>
+            ) : (
+              credits.transactions.map(t => (
+                <div key={t.id} className="card flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${t.credits >= 0 ? 'bg-moss-100' : 'bg-terra-100'}`}
+                  >
+                    {t.credits >= 0 ? (
+                      <TrendingUp size={16} className="text-moss-600" />
+                    ) : (
+                      <TrendingDown size={16} className="text-terra-600" />
+                    )}
                   </div>
-                  {t.note && <p className="text-xs text-slate-500">{t.note}</p>}
-                  <p className="text-xs text-slate-400">{new Date(t.created_at).toLocaleDateString()}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-ink">{t.user_name}</span>
+                      <span
+                        className={`text-sm font-bold ${t.credits >= 0 ? 'text-moss-600' : 'text-terra-600'}`}
+                      >
+                        {t.credits > 0 ? '+' : ''}
+                        {t.credits} meal{Math.abs(t.credits) !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {t.note && <p className="text-xs text-slate-500">{t.note}</p>}
+                    <p className="text-xs text-slate-400">
+                      {new Date(t.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -489,9 +620,14 @@ export default function Corner() {
                   <div className="mt-4 grid grid-cols-2 gap-2">
                     {stats.spendByMember.map((m, i) => (
                       <div key={m.name} className="flex items-center gap-2 text-sm">
-                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: BRAND_COLORS[i % BRAND_COLORS.length] }} />
+                        <span
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: BRAND_COLORS[i % BRAND_COLORS.length] }}
+                        />
                         <span className="text-slate-600 truncate">{m.name}</span>
-                        <span className="ml-auto font-semibold text-ink flex-shrink-0">${Number(m.total).toFixed(2)}</span>
+                        <span className="ml-auto font-semibold text-ink flex-shrink-0">
+                          ${Number(m.total).toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>

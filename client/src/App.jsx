@@ -42,14 +42,15 @@ import VerifyEmail from './pages/VerifyEmail'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return (
-    <div className="min-h-screen bg-cream flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-10 h-10 border-4 border-moss-300 border-t-moss-600 rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-moss-700 font-serif italic">Loading the cottage…</p>
+  if (loading)
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-moss-300 border-t-moss-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-moss-700 font-serif italic">Loading the cottage…</p>
+        </div>
       </div>
-    </div>
-  )
+    )
   return user ? children : <Navigate to="/login" replace />
 }
 
@@ -66,13 +67,21 @@ function AdminRoute({ children }) {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    if (!user || !['admin', 'superadmin'].includes(user.role)) { setChecking(false); return }
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      setChecking(false)
+      return
+    }
     // Check if there's already a valid 2FA session
     const token = twoFa.getToken('login')
-    if (token) { setVerified(true); setChecking(false); return }
+    if (token) {
+      setVerified(true)
+      setChecking(false)
+      return
+    }
     // No valid session — stop the loading state so modal can show, then request 2FA
     setChecking(false)
-    twoFa.request('login')
+    twoFa
+      .request('login')
       .then(() => setVerified(true))
       .catch(() => {})
   }, [user])
@@ -90,7 +99,10 @@ function AdminRoute({ children }) {
         error={twoFa.error}
         purpose="login"
         onSubmit={twoFa.submit}
-        onCancel={() => { twoFa.cancel(); window.history.back() }}
+        onCancel={() => {
+          twoFa.cancel()
+          window.history.back()
+        }}
       />
       {verified ? children : null}
     </>
@@ -101,56 +113,100 @@ export default function App() {
   return (
     <AuthProvider>
       <SyncProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login"            element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register"         element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/forgot-password"  element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-          <Route path="/welcome"          element={<ProtectedRoute><Welcome /></ProtectedRoute>} />
-          <Route path="/reset-password"   element={<ResetPassword />} />
-          <Route path="/accept-invite"    element={<AcceptInvite />} />
-          <Route path="/verify-email"    element={<VerifyEmail />} />
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-            <Route index          element={<AdminDashboard />} />
-            <Route path="users"   element={<AdminUsers />} />
-            <Route path="groups"  element={<AdminGroups />} />
-          </Route>
-
-          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index               element={<Dashboard />} />
-            <Route path="kitchen"      element={<Kitchen />} />
-            <Route path="corner"       element={<Corner />} />
-            <Route path="pantry"       element={<Navigate to="/storage/pantry" replace />} />
-            <Route path="storage/pantry"        element={<Pantry locationFilter="pantry" />} />
-            <Route path="storage/refrigerator"  element={<Pantry locationFilter="refrigerator" />} />
-            <Route path="storage/freezer"       element={<Pantry locationFilter="freezer" />} />
-            <Route path="storage/shopping"      element={<Pantry defaultTab="Shopping" />} />
-            <Route path="storage/bulk-buy"      element={<Pantry defaultTab="Bulk Buy" />} />
-            <Route path="garden" element={<GardenLayout />}>
-              <Route index element={<Navigate to="plots" replace />} />
-              <Route path="plots"    element={<Plots />} />
-              <Route path="plants"   element={<Plants />} />
-              <Route path="harvest"  element={<HarvestLog />} />
-              <Route path="calendar" element={<GardenCalendar />} />
-              <Route path="guides"   element={<GrowingGuides />} />
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPassword />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/welcome"
+              element={
+                <ProtectedRoute>
+                  <Welcome />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/accept-invite" element={<AcceptInvite />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="groups" element={<AdminGroups />} />
             </Route>
-            <Route path="equipment"    element={<Equipment />} />
-            <Route path="labels"       element={<Labels />} />
-            <Route path="calendar"     element={<GroupCalendar />} />
-            <Route path="gallery"      element={<Gallery />} />
-            <Route path="profile"      element={<Profile />} />
-            <Route path="swap"         element={<MealSwap />} />
-            <Route path="suggestions"  element={<Suggestions />} />
-            <Route path="orders"       element={<Orders />} />
-            <Route path="chat"         element={<Chat />} />
-            <Route path="billing"      element={<Billing />} />
-            <Route path="help"         element={<Help />} />
-            <Route path="cottage-laws" element={<CottageLaws />} />
-            <Route path="create-group" element={<CreateGroup />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="kitchen" element={<Kitchen />} />
+              <Route path="corner" element={<Corner />} />
+              <Route path="pantry" element={<Navigate to="/storage/pantry" replace />} />
+              <Route path="storage/pantry" element={<Pantry locationFilter="pantry" />} />
+              <Route
+                path="storage/refrigerator"
+                element={<Pantry locationFilter="refrigerator" />}
+              />
+              <Route path="storage/freezer" element={<Pantry locationFilter="freezer" />} />
+              <Route path="storage/shopping" element={<Pantry defaultTab="Shopping" />} />
+              <Route path="storage/bulk-buy" element={<Pantry defaultTab="Bulk Buy" />} />
+              <Route path="garden" element={<GardenLayout />}>
+                <Route index element={<Navigate to="plots" replace />} />
+                <Route path="plots" element={<Plots />} />
+                <Route path="plants" element={<Plants />} />
+                <Route path="harvest" element={<HarvestLog />} />
+                <Route path="calendar" element={<GardenCalendar />} />
+                <Route path="guides" element={<GrowingGuides />} />
+              </Route>
+              <Route path="equipment" element={<Equipment />} />
+              <Route path="labels" element={<Labels />} />
+              <Route path="calendar" element={<GroupCalendar />} />
+              <Route path="gallery" element={<Gallery />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="swap" element={<MealSwap />} />
+              <Route path="suggestions" element={<Suggestions />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="chat" element={<Chat />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="help" element={<Help />} />
+              <Route path="cottage-laws" element={<CottageLaws />} />
+              <Route path="create-group" element={<CreateGroup />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </SyncProvider>
     </AuthProvider>
   )
