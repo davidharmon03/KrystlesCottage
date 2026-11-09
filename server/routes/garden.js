@@ -216,6 +216,33 @@ async function getUserGroupId(userId) {
   return member?.group_id;
 }
 
+// A plot, but only if it belongs to a group this user is in. Plot ids are plain
+// counting numbers, so every route that takes one must check this.
+async function getMemberPlot(plotId, userId) {
+  const db = await getDb();
+  return db.get(`
+    SELECT p.* FROM garden_plots p
+    JOIN group_members gm ON gm.group_id = p.group_id AND gm.user_id = ?
+    WHERE p.id = ?
+  `, [userId, plotId]);
+}
+
+const PLOT_TYPES = ['raised_bed', 'bucket', 'row'];
+const MAX_CELLS = 2500;
+
+function plotFieldsError(body) {
+  const { name, type } = body;
+  if (typeof name !== 'string' || !name.trim() || name.length > 100) return 'Plot name is required (up to 100 characters)';
+  if (type !== undefined && type !== null && !PLOT_TYPES.includes(type)) return 'Unknown plot type';
+  for (const k of ['width', 'length', 'bucket_count']) {
+    const v = body[k];
+    if (v !== undefined && v !== null && v !== '' && !(Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= 1000))
+      return `${k} must be a number from 0 to 1000`;
+  }
+  if (body.notes != null && String(body.notes).length > 2000) return 'Notes are too long';
+  return null;
+}
+
 // GET /api/garden/plots
 router.get('/plots', authMiddleware, async (req, res) => {
   try {
@@ -227,7 +254,7 @@ router.get('/plots', authMiddleware, async (req, res) => {
       [groupId]
     );
     res.json(plots);
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 // POST /api/garden/plots
@@ -235,6 +262,8 @@ router.post('/plots', authMiddleware, async (req, res) => {
   try {
     const groupId = await getUserGroupId(req.user.id);
     if (!groupId) return res.status(403).json({ error: 'No group' });
+    const invalid = plotFieldsError(req.body);
+    if (invalid) return res.status(400).json({ error: invalid });
     const { name, type, width, length, bucket_size, bucket_count, notes } = req.body;
     const db = await getDb();
     const result = await db.run(
@@ -243,12 +272,16 @@ router.post('/plots', authMiddleware, async (req, res) => {
     );
     const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [result.lastID]);
     res.status(201).json(plot);
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 // PATCH /api/garden/plots/:id
 router.patch('/plots/:id', authMiddleware, async (req, res) => {
   try {
+    if (!await getMemberPlot(req.params.id, req.user.id))
+      return res.status(404).json({ error: 'Plot not found' });
+    const invalid = plotFieldsError(req.body);
+    if (invalid) return res.status(400).json({ error: invalid });
     const db = await getDb();
     const { name, type, width, length, bucket_size, bucket_count, notes } = req.body;
     await db.run(
@@ -257,44 +290,62 @@ router.patch('/plots/:id', authMiddleware, async (req, res) => {
     );
     const plot = await db.get('SELECT * FROM garden_plots WHERE id = ?', [req.params.id]);
     res.json(plot);
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 // DELETE /api/garden/plots/:id
 router.delete('/plots/:id', authMiddleware, async (req, res) => {
   try {
+    if (!await getMemberPlot(req.params.id, req.user.id))
+      return res.status(404).json({ error: 'Plot not found' });
     const db = await getDb();
     await db.run('DELETE FROM garden_plots WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 // GET /api/garden/plots/:id/cells
 router.get('/plots/:id/cells', authMiddleware, async (req, res) => {
   try {
+    if (!await getMemberPlot(req.params.id, req.user.id))
+      return res.status(404).json({ error: 'Plot not found' });
     const db = await getDb();
     const cells = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
     res.json(cells);
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 // PUT /api/garden/plots/:id/cells — replace entire grid
 router.put('/plots/:id/cells', authMiddleware, async (req, res) => {
   try {
-    const db = await getDb();
+    if (!await getMemberPlot(req.params.id, req.user.id))
+      return res.status(404).json({ error: 'Plot not found' });
     const { cells } = req.body;
-    await db.run('DELETE FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
-    for (const cell of cells) {
-      if (cell.label || cell.color) {
-        await db.run(
-          'INSERT INTO garden_plot_cells (plot_id, cell_x, cell_y, label, color) VALUES (?,?,?,?,?)',
-          [req.params.id, cell.cell_x, cell.cell_y, cell.label || null, cell.color || null]
-        );
-      }
+    if (!Array.isArray(cells) || cells.length > MAX_CELLS)
+      return res.status(400).json({ error: `cells must be a list of up to ${MAX_CELLS}` });
+    for (const c of cells) {
+      if (!c || !Number.isInteger(c.cell_x) || !Number.isInteger(c.cell_y) || c.cell_x < 0 || c.cell_y < 0
+          || (c.label != null && String(c.label).length > 50) || (c.color != null && String(c.color).length > 30))
+        return res.status(400).json({ error: 'Each cell needs whole-number cell_x and cell_y, a short label and color' });
     }
+    const db = await getDb();
+    // Replace the grid in one transaction so a failure can't leave it half-saved.
+    await db.run('BEGIN');
+    try {
+      await db.run('DELETE FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
+      for (const cell of cells) {
+        if (cell.label || cell.color) {
+          await db.run(
+            'INSERT INTO garden_plot_cells (plot_id, cell_x, cell_y, label, color) VALUES (?,?,?,?,?)',
+            [req.params.id, cell.cell_x, cell.cell_y, cell.label || null, cell.color || null]
+          );
+        }
+      }
+      await db.run('COMMIT');
+    } catch (e) { await db.run('ROLLBACK'); throw e; }
     const saved = await db.all('SELECT * FROM garden_plot_cells WHERE plot_id = ?', [req.params.id]);
     res.json(saved);
-  } catch (err) { console.error(err); res.status(500).json({ error: err.message }); }
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 
 module.exports = router;

@@ -60,7 +60,7 @@ function SyncBadge({ onLinkClick }) {
   )
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = '' // uploads are served from the same address as the site
 
 function AvatarCircle({ user, size = 'md' }) {
   const sizes = {

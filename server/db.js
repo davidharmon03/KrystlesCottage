@@ -784,6 +784,9 @@ async function _init() {
 }
 
 async function _seed(db) {
+  // Sample accounts share the password 'password123' — local development only,
+  // never on the live site.
+  if (process.env.NODE_ENV === 'production') return;
   const existing = await db.get('SELECT id FROM users LIMIT 1');
   if (existing) return;
 
@@ -1428,15 +1431,11 @@ async function _seedSuperadmin(db) {
   const ADMIN_EMAIL = 'davidharmon03@gmail.com';
   const existing = await db.get('SELECT id, role, account_tier FROM users WHERE email = ?', [ADMIN_EMAIL]);
 
-  if (!existing) {
-    const hash = await bcrypt.hash('KrystleAdmin2026!', 10);
-    await db.run(
-      `INSERT INTO users (id, name, email, password, role, must_change_password, account_tier, email_verified)
-       VALUES (?, ?, ?, ?, 'superadmin', 0, 'paid', 1)`,
-      [uuidv4(), 'David', ADMIN_EMAIL, hash]
-    );
-    console.log('Superadmin seeded: davidharmon03@gmail.com');
-  } else if (existing.role !== 'superadmin' || existing.account_tier !== 'paid') {
+  // Never create this account with a password written in the code: the repo is
+  // public. On a fresh database, register normally, then run
+  // scripts/make-superadmin.js. This only promotes an account that already exists.
+  if (!existing) return;
+  if (existing.role !== 'superadmin' || existing.account_tier !== 'paid') {
     await db.run(
       `UPDATE users SET role = 'superadmin', must_change_password = 0, account_tier = 'paid', email_verified = 1 WHERE email = ?`,
       [ADMIN_EMAIL]

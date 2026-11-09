@@ -29,7 +29,7 @@ function StatusBadge({ status }) {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = '' // uploads are served from the same address as the site
 
 function recipeImage(item) {
   if (!item.image_path) return null

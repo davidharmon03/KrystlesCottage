@@ -1,9 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Camera, Upload, X, Loader, ImageOff } from 'lucide-react'
 
-const API_BASE = typeof window !== 'undefined' && window.__VITE_API_BASE__
-  ? window.__VITE_API_BASE__
-  : 'http://localhost:3001'
+const API_BASE = '' // uploads are served from the same address as the site
 
 /** Resolve a server image_path (e.g. "uploads/meals/foo.jpg") → full URL */
 export function photoUrl(path) {

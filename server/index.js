@@ -10,17 +10,23 @@ const { getDb } = require('./db');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
-// Trust Render's proxy so express-rate-limit can identify real client IPs
-app.set('trust proxy', 1);
+// The app runs on a home PC behind a Cloudflare Tunnel. cloudflared connects from
+// this same machine, so trust only loopback; express then reads the visitor's real
+// address from X-Forwarded-For (used by express-rate-limit).
+app.set('trust proxy', 'loopback');
 
-// Security headers
-app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    imgSrc:     ["'self'", "data:", "https:"],
-    scriptSrc:  ["'self'"],
-    styleSrc:   ["'self'", "'unsafe-inline'"],
+// Security headers. This server also serves the website itself, so the policy
+// has to allow what index.html loads: Google Fonts and jsQR from jsDelivr.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc:     ["'self'", "data:", "blob:", "https:"],
+      scriptSrc:  ["'self'", "https://cdn.jsdelivr.net"],
+      styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:    ["'self'", "https://fonts.gstatic.com"],
+      mediaSrc:   ["'self'", "blob:"],
+    }
   }
 }));
 
@@ -40,9 +46,14 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, 'http://localhost:5173']
-  : ['http://localhost:5173']
+// FRONTEND_URL is the main address (used in email links). ALLOWED_ORIGINS adds
+// any others, comma-separated, e.g. the bare domain alongside www.
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  ...(process.env.ALLOWED_ORIGINS || '').split(','),
+  'http://localhost:5173',
+  `http://localhost:${PORT}`,
+].map(o => (o || '').trim()).filter(Boolean)
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -89,6 +100,18 @@ app.use('/api/admin', require('./routes/admin'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', name: "Krystle\'s Cottage" }));
 
+// Unknown API paths get a JSON 404 instead of falling through to the website.
+app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
+
+// The website: the built client from client/dist, with every other path
+// answered by index.html so links straight to a page (e.g. /garden/plots) work.
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientDist));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/uploads/')) return next();
+  res.sendFile(path.join(clientDist, 'index.html'), err => { if (err) next(err); });
+});
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
@@ -126,7 +149,9 @@ function startCron() {
 async function start() {
   try {
     await getDb();
-    app.listen(PORT, () => {
+    // Listen on this PC only. The public reaches it through the Cloudflare Tunnel,
+    // never directly over the home network.
+    app.listen(PORT, '127.0.0.1', () => {
       console.log('Server running on http://localhost:' + PORT);
       startCron();
     });

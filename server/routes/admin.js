@@ -195,21 +195,8 @@ router.put('/users/:id/plan', async (req, res) => {
   }
 });
 
-// PUT /api/admin/users/:id/role — change user role (legacy)
-router.put('/users/:id/role', async (req, res) => {
-  try {
-    const db = await getDb();
-    const { role } = req.body;
-    if (!['member', 'admin', 'superadmin'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' });
-    }
-    await db.run("UPDATE users SET role = ? WHERE id = ?", [role, req.params.id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update role' });
-  }
-});
+// (The old PUT /users/:id/role was removed 2026-11-09: it skipped every check
+// below, so any admin could make themselves superadmin.)
 
 // PATCH /api/admin/users/:id/role — change user role
 router.patch('/users/:id/role', async (req, res) => {
@@ -219,12 +206,24 @@ router.patch('/users/:id/role', async (req, res) => {
     if (!['member', 'admin', 'superadmin'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
+    // Check the caller's role in the database, not the sign-in token, which can be
+    // up to 15 minutes out of date.
+    const caller = await db.get("SELECT role FROM users WHERE id = ?", [req.user.id]);
+    const callerIsSuperadmin = caller?.role === 'superadmin';
     // Only superadmins may assign the superadmin role
-    if (role === 'superadmin' && req.user.role !== 'superadmin') {
+    if (role === 'superadmin' && !callerIsSuperadmin) {
       return res.status(403).json({ error: 'Only superadmins can assign the superadmin role' });
     }
     const user = await db.get("SELECT role FROM users WHERE id = ?", [req.params.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
+    // ...or change anything about an existing superadmin
+    if (user.role === 'superadmin' && !callerIsSuperadmin) {
+      return res.status(403).json({ error: "Only superadmins can change a superadmin's role" });
+    }
+    // Admins can't change their own role either way
+    if (req.params.id === req.user.id && !callerIsSuperadmin) {
+      return res.status(403).json({ error: 'You cannot change your own role' });
+    }
     // Promote admins/superadmins to paid tier automatically
     const account_tier = ['admin', 'superadmin'].includes(role) ? 'paid' : undefined;
     if (account_tier) {

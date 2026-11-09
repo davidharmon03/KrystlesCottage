@@ -17,8 +17,12 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
+// The server serves both the website and the API from one address, so '/api' works
+// everywhere: locally (vite proxies it) and in production (same origin).
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://krystlescottage-server.onrender.com/api',
+  baseURL: API_BASE,
 })
 
 // Request interceptor — attach access token
@@ -58,7 +62,7 @@ api.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const res = await axios.post((import.meta.env.VITE_API_URL || '/api') + '/auth/refresh', { refreshToken })
+      const res = await axios.post(API_BASE + '/auth/refresh', { refreshToken })
       const newToken = res.data.token
       localStorage.setItem('kbh_token', newToken)
       processQueue(null, newToken)

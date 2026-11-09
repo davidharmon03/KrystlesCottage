@@ -42,7 +42,7 @@ function Spinner() {
 
 function ProductThumb({ product, size = 40 }) {
   if (!product) return null
-  const base = (typeof window !== 'undefined' && window.__VITE_API_BASE__) || 'http://localhost:3001'
+  const base = '' // uploads are served from the same address as the site
   const src = product.image_path
     ? `${base}/${product.image_path}`
     : product.product_image_path

@@ -17,7 +17,7 @@ const STATUS_CONFIG = {
 const STATUS_ORDER = ['assigned', 'in_progress', 'ready', 'swapped']
 const NEXT_STATUS  = { assigned: 'in_progress', in_progress: 'ready', ready: 'swapped', swapped: null }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = '' // uploads are served from the same address as the site
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function daysUntil(dateStr) {

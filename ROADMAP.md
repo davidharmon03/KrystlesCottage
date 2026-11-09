@@ -59,7 +59,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 
 ## 🚨 Infrastructure
 
-- 🔴 **Render Persistent Disk** — SQLite DB resets on every redeploy, losing all groups and user data. Fix: add $1/month Render disk, point DB path to mount. **Until this is done, data loss on every deploy is expected.**
+- 🟡 **Hosting moved to David's PC (2026-11-09)** — Render removed. One server now serves the site and the API; the database is a real file on this PC, so the old "resets on redeploy" problem is gone. krystlescottage.com is live through a Cloudflare Tunnel. Still to do: start the app and tunnel automatically when the PC boots, and real email (the email code is a placeholder).
 
 ---
 

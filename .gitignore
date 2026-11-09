@@ -33,3 +33,6 @@ npm-debug.log*
 # ── PWA generated files (built at deploy time) ────────────────
 client/public/sw.js
 client/public/workbox-*.js
+
+# ── Database backups ──────────────────────────────────────────
+server/backups/

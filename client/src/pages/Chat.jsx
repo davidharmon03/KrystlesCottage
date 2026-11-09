@@ -4,7 +4,7 @@ import { AvatarCircle } from '../components/Layout'
 import api from '../api'
 import { MessageSquare, Send, ChevronUp, Loader2 } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = '' // uploads are served from the same address as the site
 const POLL_MS  = 10_000
 
 // ── helpers ────────────────────────────────────────────────────────────────
