@@ -14,6 +14,7 @@ const { getDb } = require('../db');
 const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
 const { compressImage } = require('../utils/compressImage');
 const { sendVerificationEmail } = require('../utils/email');
+const { groupHasRoom } = require('../utils/groups');
 
 // Canonical default notification preferences — all on by default.
 // Exported so notifications.js and digest.js can reference them.
@@ -53,13 +54,13 @@ function makeTransport() {
 
 // Validation chains
 const registerValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  body('email').trim().isEmail().toLowerCase().withMessage('Valid email required'),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
   body('name').trim().notEmpty().withMessage('Name is required'),
 ];
 
 const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  body('email').trim().isEmail().toLowerCase().withMessage('Valid email required'),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
@@ -87,8 +88,7 @@ router.post('/register', registerValidation, async (req, res) => {
         [invite_token]
       );
       if (inv && inv.email.toLowerCase() === email.toLowerCase()) {
-        const count = await db.get('SELECT COUNT(*) AS c FROM group_members WHERE group_id = ?', [inv.group_id]);
-        if (count.c < 5) {
+        if (await groupHasRoom(db, inv.group_id)) {
           await db.run('INSERT OR IGNORE INTO group_members (id, group_id, user_id) VALUES (?,?,?)',
             [uuidv4(), inv.group_id, id]);
           await db.run("UPDATE group_invitations SET status = 'accepted' WHERE token = ?", [invite_token]);
@@ -100,8 +100,7 @@ router.post('/register', registerValidation, async (req, res) => {
         [email.toLowerCase()]
       );
       if (inv) {
-        const count = await db.get('SELECT COUNT(*) AS c FROM group_members WHERE group_id = ?', [inv.group_id]);
-        if (count.c < 5) {
+        if (await groupHasRoom(db, inv.group_id)) {
           await db.run('INSERT OR IGNORE INTO group_members (id, group_id, user_id) VALUES (?,?,?)',
             [uuidv4(), inv.group_id, id]);
           await db.run("UPDATE group_invitations SET status = 'accepted' WHERE id = ?", [inv.id]);
@@ -271,7 +270,7 @@ router.post('/2fa/verify', authMiddleware, async (req, res) => {
 
     const db = await getDb();
     const record = await db.get(
-      "SELECT * FROM two_fa_codes WHERE user_id = ? AND purpose = ? AND used = 0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1",
+      "SELECT * FROM two_fa_codes WHERE user_id = ? AND purpose = ? AND used = 0 AND datetime(expires_at) > datetime('now') ORDER BY created_at DESC LIMIT 1",
       [req.user.id, purpose]
     );
 
@@ -304,7 +303,7 @@ router.get('/2fa/check', authMiddleware, async (req, res) => {
     if (!token) return res.json({ valid: false });
     const db = await getDb();
     const session = await db.get(
-      "SELECT * FROM two_fa_sessions WHERE token = ? AND user_id = ? AND expires_at > datetime('now')",
+      "SELECT * FROM two_fa_sessions WHERE token = ? AND user_id = ? AND datetime(expires_at) > datetime('now')",
       [token, req.user.id]
     );
     res.json({ valid: !!session });
@@ -315,7 +314,7 @@ router.get('/2fa/check', authMiddleware, async (req, res) => {
 
 // POST /api/auth/forgot-password
 router.post('/forgot-password', [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  body('email').trim().isEmail().toLowerCase().withMessage('Valid email required'),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -542,7 +541,7 @@ router.post('/send-verification', authMiddleware, async (req, res) => {
     );
 
     await sendVerificationEmail(user.email, token);
-    res.json({ message: 'Verification email sent', token });
+    res.json({ message: 'Verification email sent' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -557,7 +556,7 @@ router.get('/verify-email', async (req, res) => {
 
     const db = await getDb();
     const user = await db.get(
-      "SELECT id FROM users WHERE email_verification_token = ? AND email_verification_expires > datetime('now')",
+      "SELECT id FROM users WHERE email_verification_token = ? AND datetime(email_verification_expires) > datetime('now')",
       [token]
     );
     if (!user) return res.status(400).json({ error: 'Invalid or expired verification token' });
@@ -601,7 +600,7 @@ router.put('/email', authMiddleware, async (req, res) => {
     );
 
     await sendVerificationEmail(normalized, token);
-    res.json({ message: 'Email updated, verification sent', token });
+    res.json({ message: 'Email updated, verification sent' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

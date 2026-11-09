@@ -7,7 +7,6 @@ import {
   Camera, Loader, ChefHat, Package, Layers, X, Plus,
   Trash2, Pencil, Check
 } from 'lucide-react'
-import { firstName } from '../utils/userName'
 
 const STAGE_LABELS = { plated: 'Plated', stored: 'Stored', prep: 'Prep' }
 const STAGE_COLORS = {
@@ -196,7 +195,6 @@ function PhotoCard({ photo, userId, onDelete, onCaptionSave }) {
 
 export default function Gallery() {
   const { user }  = useAuth()
-  const fn        = firstName(user)
   const activeGroup = user?.groups?.[0]
   const gid       = activeGroup?.id
 

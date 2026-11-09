@@ -68,8 +68,8 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - 🔲 **Stripe Payment Integration** — wire Stripe into the existing freemium gate and group slot expansion (placeholders already in place)
 - 🔲 **Real Email Provider** — swap placeholder in `server/utils/email.js` with SendGrid or Resend for production email delivery
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
-- 🔲 **Manual File Deletions** — remove `ProductCard.jsx`, `rename_kitchen_to_cottage.bat`, `git-fix-commit.bat`, and any `.fuse_hidden` files from the repo
-- 🔲 **Garden Subpages (implementation)** — Plants, Harvest Log, Calendar, Growing Guides are scaffolded only; need full implementation
+- 🔲 **Garden Subpages (implementation)** — Plants, Harvest Log, Calendar, Growing Guides are scaffolded only; need full implementation. The old single-page `client/src/pages/Garden.jsx` is no longer routed but still has working plant and harvest screens — port from it, then delete it.
+- 🔲 **Weekly digest: expiring items** — `server/routes/digest.js` looks up items about to expire but never puts them in the email.
 - 🔲 **Garden Map View** — A top-down visual layout of the entire garden space showing all plots (raised beds, buckets, rows) arranged spatially like a blueprint/map. Users can drag and position plots on a canvas to represent where they physically are in the yard. Shows at-a-glance what's planted where across all plots. Connects to the existing Plots and Plants data.
 
 ---

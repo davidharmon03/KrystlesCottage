@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import {
-  Leaf, Plus, Trash2, Calendar, Sprout, X, BookOpen,
-  Sun, CloudSun, Cloud, Droplets, Ruler, ExternalLink,
-  Search, ChevronDown, ChevronUp, Loader
-} from 'lucide-react'
+import { Leaf, Plus, Trash2, Calendar, Sprout, X, BookOpen, Sun, CloudSun, Cloud, Ruler, ExternalLink, Search, Loader } from 'lucide-react'
 
 const STATUSES = ['growing', 'flowering', 'harvesting', 'harvested', 'dormant']
 const STATUS_STYLES = {

@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import {
-  ShoppingBag, ChefHat, Plus, X, Check, Clock, Truck, Ban,
-  Eye, EyeOff, Pencil, Trash2, Package, Star
-} from 'lucide-react'
+import { ShoppingBag, ChefHat, Plus, X, Eye, EyeOff, Pencil, Trash2, Package } from 'lucide-react'
 
 // ── Status config ──────────────────────────────────────────────────────────
 

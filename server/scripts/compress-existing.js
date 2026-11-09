@@ -64,7 +64,6 @@ async function updateDbPaths(db) {
   for (const u of users) {
     const ext = path.extname(u.avatar_path);
     const newPath = u.avatar_path.replace(ext, '.webp');
-    const absPath = path.join(uploadsRoot, '..', newPath.replace(/^\//, ''));
     if (fs.existsSync(path.join(uploadsRoot, newPath))) {
       await db.run('UPDATE users SET avatar_path = ? WHERE id = ?', [newPath, u.id]);
       console.log(`  users.avatar_path: ${u.avatar_path} → ${newPath}`);

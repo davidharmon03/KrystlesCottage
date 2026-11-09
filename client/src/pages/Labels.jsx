@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useState, useEffect } from 'react'
 import { Printer, Plus, Trash2, Link, Tag, CalendarDays, ShoppingCart, UtensilsCrossed } from 'lucide-react'
 import QRCode from 'qrcode'
 
@@ -479,8 +478,6 @@ function MealCards() {
 export default function Labels() {
   const [printType, setPrintType] = useState('labels')
 
-  const active = PRINT_TYPES.find(t => t.id === printType)
-  const ActiveIcon = active?.icon || Tag
 
   return (
     <div className="max-w-5xl mx-auto">

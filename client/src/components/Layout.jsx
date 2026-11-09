@@ -1,13 +1,8 @@
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSync } from '../contexts/SyncContext'
-import {
-  ChefHat, DollarSign, Package, Leaf, LayoutDashboard,
-  LogOut, Menu, X, Wrench, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare,
-  RefreshCw, WifiOff, Clock, ShieldCheck, FileText, Printer,
-  ChevronDown, ChevronRight, ShoppingCart, Users, Snowflake, Thermometer, Layers
-} from 'lucide-react'
+import { ChefHat, DollarSign, Package, Leaf, LayoutDashboard, LogOut, Menu, X, Wrench, Camera, ArrowLeftRight, HelpCircle, Lightbulb, ShoppingBag, MessageSquare, RefreshCw, WifiOff, Clock, FileText, Printer, ChevronDown, ChevronRight, ShoppingCart, Users, Snowflake, Thermometer, Layers } from 'lucide-react'
 import { firstName } from '../utils/userName'
 import NotificationBell from './NotificationBell'
 import InstallPrompt from './InstallPrompt'
@@ -172,10 +167,6 @@ export default function Layout() {
   }
 
   const closeDrawer = () => setDrawerOpen(false)
-
-  const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-      isActive ? 'bg-moss-50 text-moss-700' : 'text-slate-600 hover:bg-slate-50'}`
 
   const GroupHeader = ({ groupKey, label }) => (
     <button

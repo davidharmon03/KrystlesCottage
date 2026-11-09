@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import {
-  Users, Search, X, Mail, CheckCircle, ArrowRight,
-  ArrowLeft, Plus, Loader, Copy, Check
-} from 'lucide-react'
+import { Users, Search, X, Mail, ArrowRight, ArrowLeft, Plus, Loader, Copy, Check } from 'lucide-react'
 
 const STEPS = ['Name your group', 'Add members', 'Send invites']
 

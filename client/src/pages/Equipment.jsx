@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
-import {
-  Wrench, Package, ShoppingBag, Plus, ExternalLink,
-  Star, Pencil, Trash2, X, Loader, ChevronDown, ChevronUp,
-  Users, RefreshCw, Archive
-} from 'lucide-react'
+import { Wrench, Package, Plus, ExternalLink, Star, Pencil, Trash2, X, Loader, ChevronDown, ChevronUp, Users, Archive } from 'lucide-react'
 
 const TABS = ['Catalog', "My Group's Gear", 'Standard Supplies']
 

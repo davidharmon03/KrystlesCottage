@@ -1,13 +1,21 @@
 import axios from 'axios'
 
-// In-memory refresh token store — survives re-renders, cleared on page refresh (intentional)
-let refreshToken = null
+// The refresh token is what keeps people signed in for 7 days. It is kept beside
+// the access token in localStorage; held only in memory, it was lost on every
+// reload, and members were signed out 15 minutes after reopening the app.
+const REFRESH_KEY = 'kbh_refresh'
 let isRefreshing = false
 let failedQueue = []
 
-export const setRefreshToken = (token) => { refreshToken = token }
-export const clearRefreshToken = () => { refreshToken = null }
-export const getRefreshToken = () => refreshToken
+const storage = {
+  get: key => { try { return localStorage.getItem(key) } catch { return null } },
+  set: (key, value) => { try { localStorage.setItem(key, value) } catch {} },
+  remove: key => { try { localStorage.removeItem(key) } catch {} },
+}
+
+export const setRefreshToken = (token) => { if (token) storage.set(REFRESH_KEY, token) }
+export const clearRefreshToken = () => { storage.remove(REFRESH_KEY) }
+export const getRefreshToken = () => storage.get(REFRESH_KEY)
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -62,6 +70,8 @@ api.interceptors.response.use(
     isRefreshing = true
 
     try {
+      const refreshToken = getRefreshToken()
+      if (!refreshToken) throw new Error('No saved sign-in')
       const res = await axios.post(API_BASE + '/auth/refresh', { refreshToken })
       const newToken = res.data.token
       localStorage.setItem('kbh_token', newToken)

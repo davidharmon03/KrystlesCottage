@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { Camera, Upload, X, Loader, ImageOff } from 'lucide-react'
+import { Camera, Upload, X, Loader } from 'lucide-react'
 
 const API_BASE = '' // uploads are served from the same address as the site
 

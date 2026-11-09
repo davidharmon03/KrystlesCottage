@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Check, CheckCheck, Package, Leaf, ShoppingCart, Users, Calendar, ChefHat, X } from 'lucide-react'
+import { Bell, CheckCheck, Package, Leaf, ShoppingCart, Users, Calendar, X } from 'lucide-react'
 import api from '../api'
 
 const TYPE_META = {

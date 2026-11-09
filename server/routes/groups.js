@@ -6,8 +6,9 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
-const { createNotification, notifyGroupMembers } = require('./notifications');
+const { createNotification } = require('./notifications');
 const { sendGroupInviteEmail } = require('../utils/email');
+const { groupHasRoom } = require('../utils/groups');
 
 const MAX_MEMBERS = 5;
 
@@ -152,8 +153,7 @@ router.post('/join', authMiddleware, async (req, res) => {
       [group.id, req.user.id]);
     if (already) return res.status(409).json({ error: 'Already a member' });
 
-    const count = await db.get('SELECT COUNT(*) AS c FROM group_members WHERE group_id = ?', [group.id]);
-    if (count.c >= (group.max_members || 5)) return res.status(400).json({ error: 'group_full' });
+    if (!await groupHasRoom(db, group.id)) return res.status(400).json({ error: 'group_full' });
 
     await db.run('INSERT INTO group_members (id, group_id, user_id) VALUES (?,?,?)',
       [uuidv4(), group.id, req.user.id]);
@@ -262,8 +262,7 @@ router.get('/accept-invite/:token', async (req, res) => {
 
     const user = await db.get('SELECT id FROM users WHERE email = ?', [inv.email]);
     if (user) {
-      const count = await db.get('SELECT COUNT(*) AS c FROM group_members WHERE group_id = ?', [inv.group_id]);
-      if (count.c < 5) {
+      if (await groupHasRoom(db, inv.group_id)) {
         await db.run('INSERT OR IGNORE INTO group_members (id, group_id, user_id) VALUES (?,?,?)',
           [uuidv4(), inv.group_id, user.id]);
       }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import api from '../api'
 import { CreditCard, CheckCircle, XCircle, Loader, ArrowLeft, Star, Zap } from 'lucide-react'
 
@@ -13,7 +12,6 @@ const PRO_FEATURES = [
 ]
 
 export default function Billing() {
-  const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const success  = searchParams.get('success') === 'true'
   const canceled = searchParams.get('canceled') === 'true'

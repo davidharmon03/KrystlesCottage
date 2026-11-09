@@ -3,7 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
-const { notifyGroupMembers, createNotification } = require('./notifications');
+const { notifyGroupMembers } = require('./notifications');
 
 async function requireMember(groupId, userId) {
   const db = await getDb();

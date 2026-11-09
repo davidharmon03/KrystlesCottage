@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react'
-import { useAuth } from '../contexts/AuthContext'
 import {
   HelpCircle, ChefHat, DollarSign, Package, Leaf, Wrench, Tag,
   Calendar, Camera, ArrowLeftRight, Bell, User, Mail,
@@ -66,7 +65,6 @@ function Tip({ children }) {
 }
 
 export default function Help() {
-  const { user } = useAuth()
   const navRef = useRef(null)
 
   const scroll = id => {

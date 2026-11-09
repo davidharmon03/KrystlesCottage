@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'krystles-brand-hub-secret-2024';
+// The live site must have its own secret in server/.env. The fallback is only
+// for local development; refusing to start beats running on a public value.
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET is not set — add it to server/.env');
+}
+const JWT_SECRET = process.env.JWT_SECRET || 'local-dev-only-secret';
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -42,8 +47,9 @@ async function twoFaMiddleware(req, res, next) {
     const { getDb } = require('../db');
     const db = await getDb();
     const session = await db.get(
-      "SELECT * FROM two_fa_sessions WHERE token = ? AND expires_at > datetime('now')",
-      [token]
+      // The session must belong to the signed-in user, not just exist.
+      "SELECT * FROM two_fa_sessions WHERE token = ? AND user_id = ? AND datetime(expires_at) > datetime('now')",
+      [token, req.user?.id]
     );
     if (!session) return res.status(403).json({ error: '2FA session expired', code: '2FA_REQUIRED' });
     next();

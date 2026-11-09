@@ -10,8 +10,6 @@ import {
 } from 'lucide-react'
 
 const CATEGORIES     = ['protein', 'produce', 'staple', 'dairy', 'grain', 'condiment', 'other']
-const STORAGE_TYPES  = ['vacuum sealed', 'frozen', 'fresh', 'canned', 'dry storage']
-const LOCATIONS      = ['pantry', 'refrigerator', 'freezer']
 const PREP_METHODS   = [
   { value: 'none',          label: 'None / Raw' },
   { value: 'vacuum_sealed', label: 'Vacuum Sealed' },

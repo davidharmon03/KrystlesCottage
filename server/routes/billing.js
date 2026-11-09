@@ -84,6 +84,10 @@ router.post('/portal', authMiddleware, async (req, res) => {
   }
 })
 
+// Group creation is gated on users.account_tier, so every plan change must move it
+// too. Admins and superadmins always stay 'paid'. Takes the plan as a parameter.
+const TIER_FOR_PLAN = "CASE WHEN role IN ('admin', 'superadmin') OR ? = 'pro' THEN 'paid' ELSE 'free' END"
+
 // ── Webhook handler (exported separately — needs raw body, mounted before express.json()) ──
 async function webhookHandler(req, res) {
   const sig = req.headers['stripe-signature']
@@ -109,7 +113,7 @@ async function webhookHandler(req, res) {
       const customerId     = session.customer
       const subscriptionId = session.subscription
       await db.run(
-        'UPDATE users SET plan = ?, stripe_subscription_id = ? WHERE stripe_customer_id = ?',
+        "UPDATE users SET plan = ?, account_tier = 'paid', stripe_subscription_id = ? WHERE stripe_customer_id = ?",
         ['pro', subscriptionId, customerId]
       )
       console.log('[billing] Upgraded to pro:', customerId)
@@ -118,8 +122,8 @@ async function webhookHandler(req, res) {
     if (event.type === 'customer.subscription.deleted') {
       const sub = event.data.object
       await db.run(
-        'UPDATE users SET plan = ?, stripe_subscription_id = NULL WHERE stripe_customer_id = ?',
-        ['free', sub.customer]
+        "UPDATE users SET plan = ?, account_tier = " + TIER_FOR_PLAN + ", stripe_subscription_id = NULL WHERE stripe_customer_id = ?",
+        ['free', 'free', sub.customer]
       )
       console.log('[billing] Subscription cancelled:', sub.customer)
     }
@@ -128,8 +132,8 @@ async function webhookHandler(req, res) {
       const sub  = event.data.object
       const plan = sub.status === 'active' ? 'pro' : 'free'
       await db.run(
-        'UPDATE users SET plan = ? WHERE stripe_customer_id = ?',
-        [plan, sub.customer]
+        "UPDATE users SET plan = ?, account_tier = " + TIER_FOR_PLAN + " WHERE stripe_customer_id = ?",
+        [plan, plan, sub.customer]
       )
       console.log('[billing] Subscription updated:', sub.customer, '->', plan)
     }

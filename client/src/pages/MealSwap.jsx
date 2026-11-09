@@ -85,7 +85,6 @@ export default function MealSwap() {
   const [updateEntreeModal, setUpdateEntreeModal] = useState(null)   // entree object
   const [createModal,   setCreateModal]   = useState(false)
   const [ratingModal,   setRatingModal]   = useState(null)   // { entree, weekId }
-  const [ratings,       setRatings]       = useState({})     // entree.id => { stars, comment }
 
   const load = useCallback(async () => {
     if (!groupId) return
