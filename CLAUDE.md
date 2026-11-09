@@ -8,9 +8,14 @@ or routines apply here.
 
 | Part | What |
 |---|---|
-| `client/` | React + Vite + Tailwind. Pages in `client/src/pages/`, one per section |
+| `client/` | React + Vite + Tailwind. Pages in `client/src/pages/`, one per section; big sections get a folder (`garden/`, `pantry/` — one file per tab) |
 | `server/` | Node + Express. Routes in `server/routes/`, one per feature area |
-| Database | SQLite — `server/data.db`, schema in `server/db.js` |
+| Database | SQLite — `server/data.db`. Each section's tables in `server/schema/<section>.js`, starter data in `server/seeds/`; `server/db.js` just runs them in order |
+| Permissions | `server/utils/access.js` — `isGroupMember`, `isGroupOwner`. Every route uses these; never write a membership query by hand |
+
+**Working in sections.** A change to one section should touch only that section's
+route, schema file and page(s). Shared files — `db.js`'s section list, `App.jsx`
+routes, `Layout.jsx` menu, `utils/access.js` — change only when adding a section.
 | Hosting | David's own PC. One Express process serves the API **and** the built website (`client/dist`), on `127.0.0.1:3001` only |
 | Address | krystlescottage.com and www — Cloudflare Tunnel `krystlescottage` (id `6c535744-…`) to `127.0.0.1:3001`. Config: `%USERPROFILE%\.cloudflared\krystlescottage.yml`. Live since 2026-11-09 |
 
