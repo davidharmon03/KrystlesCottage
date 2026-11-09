@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { compressImage } = require('../utils/compressImage');
 
@@ -30,10 +31,7 @@ router.get('/', authMiddleware, async (req, res) => {
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
 
     const db = await getDb();
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      group_id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(group_id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
     let where = 'p.group_id = ?';
@@ -83,10 +81,7 @@ router.post('/', authMiddleware, upload.single('photo'), async (req, res) => {
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
 
     const db = await getDb();
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      group_id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(group_id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
     const id = uuidv4();

@@ -2,15 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
-
-async function requireMember(groupId, userId) {
-  const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-}
 
 // GET /api/equipment/catalog
 router.get('/catalog', authMiddleware, async (req, res) => {
@@ -67,7 +60,7 @@ router.post('/catalog', authMiddleware, async (req, res) => {
 // GET /api/equipment/:groupId/gear
 router.get('/:groupId/gear', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
@@ -94,7 +87,7 @@ router.get('/:groupId/gear', authMiddleware, async (req, res) => {
 // POST /api/equipment/:groupId/gear
 router.post('/:groupId/gear', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { catalog_item_id, custom_name, quantity, owner_user_id, condition, notes } = req.body;
     if (!catalog_item_id && !custom_name)
@@ -134,7 +127,7 @@ router.post('/:groupId/gear', authMiddleware, async (req, res) => {
 // PUT /api/equipment/:groupId/gear/:id
 router.put('/:groupId/gear/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const item = await db.get('SELECT * FROM group_equipment WHERE id = ? AND group_id = ?', [
@@ -173,7 +166,7 @@ router.put('/:groupId/gear/:id', authMiddleware, async (req, res) => {
 // DELETE /api/equipment/:groupId/gear/:id
 router.delete('/:groupId/gear/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     await db.run('DELETE FROM group_equipment WHERE id = ? AND group_id = ?', [
@@ -190,7 +183,7 @@ router.delete('/:groupId/gear/:id', authMiddleware, async (req, res) => {
 // GET /api/equipment/:groupId/containers
 router.get('/:groupId/containers', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const { type } = req.query;
@@ -216,7 +209,7 @@ router.get('/:groupId/containers', authMiddleware, async (req, res) => {
 // POST /api/equipment/:groupId/containers
 router.post('/:groupId/containers', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { container_type, size_capacity, material, description, purchase_url, supply_type } =
       req.body;
@@ -247,7 +240,7 @@ router.post('/:groupId/containers', authMiddleware, async (req, res) => {
 // PUT /api/equipment/:groupId/containers/:id
 router.put('/:groupId/containers/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const c = await db.get('SELECT * FROM container_fleet WHERE id = ? AND group_id = ?', [
@@ -280,7 +273,7 @@ router.put('/:groupId/containers/:id', authMiddleware, async (req, res) => {
 // DELETE /api/equipment/:groupId/containers/:id
 router.delete('/:groupId/containers/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     await db.run('DELETE FROM container_fleet WHERE id = ? AND group_id = ?', [

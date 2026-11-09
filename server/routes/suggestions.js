@@ -1,28 +1,13 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember, isGroupOwner } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 
 const suggestionsRouter = express.Router();
 const featureRouter = express.Router();
 
 // ── helpers ────────────────────────────────────────────────────────────────
-
-async function isMember(db, groupId, userId) {
-  const row = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-  return !!row;
-}
-
-async function isGroupOwner(db, groupId, userId) {
-  const row = await db.get('SELECT id FROM groups WHERE id = ? AND owner_id = ?', [
-    groupId,
-    userId,
-  ]);
-  return !!row;
-}
 
 async function isAnyGroupOwner(db, userId) {
   const row = await db.get('SELECT id FROM groups WHERE owner_id = ?', [userId]);
@@ -38,7 +23,7 @@ suggestionsRouter.get('/', authMiddleware, async (req, res) => {
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
 
     const db = await getDb();
-    if (!(await isMember(db, group_id, req.user.id)))
+    if (!(await isGroupMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a member of this group' });
 
     let whereClause = 'WHERE ms.group_id = ?';
@@ -96,7 +81,7 @@ suggestionsRouter.post('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'group_id and meal_name are required' });
 
     const db = await getDb();
-    if (!(await isMember(db, group_id, req.user.id)))
+    if (!(await isGroupMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a member of this group' });
 
     const id = uuidv4();
@@ -135,7 +120,7 @@ suggestionsRouter.post('/:id/vote', authMiddleware, async (req, res) => {
     const suggestion = await db.get('SELECT * FROM meal_suggestions WHERE id = ?', [req.params.id]);
     if (!suggestion) return res.status(404).json({ error: 'Suggestion not found' });
 
-    if (!(await isMember(db, suggestion.group_id, req.user.id)))
+    if (!(await isGroupMember(suggestion.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a member of this group' });
 
     const existing = await db.get(
@@ -178,7 +163,7 @@ suggestionsRouter.put('/:id/status', authMiddleware, async (req, res) => {
     const suggestion = await db.get('SELECT * FROM meal_suggestions WHERE id = ?', [req.params.id]);
     if (!suggestion) return res.status(404).json({ error: 'Suggestion not found' });
 
-    if (!(await isGroupOwner(db, suggestion.group_id, req.user.id)))
+    if (!(await isGroupOwner(suggestion.group_id, req.user.id)))
       return res.status(403).json({ error: 'Only the group owner can update suggestion status' });
 
     await db.run('UPDATE meal_suggestions SET status = ? WHERE id = ?', [status, req.params.id]);

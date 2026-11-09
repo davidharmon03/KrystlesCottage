@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { DEFAULT_NOTIFICATION_PREFS } = require('./auth');
 
@@ -304,10 +305,7 @@ router.get('/preview', authMiddleware, async (req, res) => {
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
 
     const db = await getDb();
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      group_id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(group_id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
     const data = await buildDigestData(group_id);
@@ -328,10 +326,7 @@ router.post('/send', authMiddleware, async (req, res) => {
 
     const db = await getDb();
     // Only group owner/members can send
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      group_id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(group_id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
     const data = await buildDigestData(group_id);

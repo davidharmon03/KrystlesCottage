@@ -2,21 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { notifyGroupMembers } = require('./notifications');
-
-async function requireMember(groupId, userId) {
-  const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-}
 
 // GET /:groupId/plants
 router.get('/:groupId/plants', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
@@ -40,7 +33,7 @@ router.get('/:groupId/plants', authMiddleware, async (req, res) => {
 // POST /:groupId/plants
 router.post('/:groupId/plants', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { plant_name, date_planted, expected_harvest, status, notes, plant_guide_id } = req.body;
     if (!plant_name || !date_planted)
@@ -78,7 +71,7 @@ router.post('/:groupId/plants', authMiddleware, async (req, res) => {
 // PUT /:groupId/plants/:id
 router.put('/:groupId/plants/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const plant = await db.get('SELECT * FROM garden_plants WHERE id = ? AND group_id = ?', [
@@ -116,7 +109,7 @@ router.put('/:groupId/plants/:id', authMiddleware, async (req, res) => {
 // DELETE /:groupId/plants/:id
 router.delete('/:groupId/plants/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     await db.run('DELETE FROM garden_plants WHERE id = ? AND group_id = ?', [
@@ -133,7 +126,7 @@ router.delete('/:groupId/plants/:id', authMiddleware, async (req, res) => {
 // GET /:groupId/harvests
 router.get('/:groupId/harvests', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
@@ -155,7 +148,7 @@ router.get('/:groupId/harvests', authMiddleware, async (req, res) => {
 // POST /:groupId/harvests
 router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const {
       plant_id,
@@ -228,7 +221,7 @@ router.post('/:groupId/harvests', authMiddleware, async (req, res) => {
 //   { "May 2026": [{plant_name, status, expected_harvest}, ...], ... }
 router.get('/:groupId/calendar', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
@@ -262,7 +255,7 @@ router.get('/:groupId/calendar', authMiddleware, async (req, res) => {
 // POST /:groupId/calendar
 router.post('/:groupId/calendar', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { title, event_type, start_date, end_date, description } = req.body;
     if (!title || !event_type || !start_date)
@@ -296,7 +289,7 @@ router.post('/:groupId/calendar', authMiddleware, async (req, res) => {
 // DELETE /:groupId/calendar/:id
 router.delete('/:groupId/calendar/:id', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     await db.run('DELETE FROM seasonal_calendar WHERE id = ? AND group_id = ?', [

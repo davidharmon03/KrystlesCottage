@@ -1,18 +1,9 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { withGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const requireAuth = authMiddleware;
-
-async function requireMember(req, res, groupId, next) {
-  const db = await getDb();
-  const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    req.user.id,
-  ]);
-  if (!member) return res.status(403).json({ error: 'Not a member of this group' });
-  return next();
-}
 
 const router = express.Router();
 
@@ -20,7 +11,7 @@ const router = express.Router();
 router.get('/', requireAuth, async (req, res) => {
   const { group_id } = req.query;
   if (!group_id) return res.status(400).json({ error: 'group_id required' });
-  await requireMember(req, res, group_id, async () => {
+  await withGroupMember(req, res, group_id, async () => {
     const db = await getDb();
     const lists = await db.all(
       `SELECT sl.*,
@@ -39,7 +30,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.post('/', requireAuth, async (req, res) => {
   const { group_id, name } = req.body;
   if (!group_id) return res.status(400).json({ error: 'group_id required' });
-  await requireMember(req, res, group_id, async () => {
+  await withGroupMember(req, res, group_id, async () => {
     const db = await getDb();
     const id = uuidv4();
     await db.run('INSERT INTO shopping_lists (id, group_id, name) VALUES (?, ?, ?)', [
@@ -58,7 +49,7 @@ router.get('/:id/items', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     const items = await db.all(
       `SELECT sli.*,
          p.name as product_name, p.brand as product_brand,
@@ -82,7 +73,7 @@ router.post('/:id/items', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     const { name, product_id, quantity, unit, store_section, category } = req.body;
     if (!name && !product_id) return res.status(400).json({ error: 'name or product_id required' });
 
@@ -137,7 +128,7 @@ router.put('/:id/items/:itemId', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     const { is_checked, quantity, unit, name, store_section } = req.body;
     const updates = [];
     const vals = [];
@@ -183,7 +174,7 @@ router.delete('/:id/items/:itemId', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     await db.run('DELETE FROM shopping_list_items WHERE id = ? AND list_id = ?', [
       req.params.itemId,
       req.params.id,
@@ -198,7 +189,7 @@ router.delete('/:id/items', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     await db.run('DELETE FROM shopping_list_items WHERE list_id = ? AND is_checked = 1', [
       req.params.id,
     ]);
@@ -212,7 +203,7 @@ router.put('/:id/complete', requireAuth, async (req, res) => {
   const list = await db.get('SELECT * FROM shopping_lists WHERE id = ?', [req.params.id]);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  await requireMember(req, res, list.group_id, async () => {
+  await withGroupMember(req, res, list.group_id, async () => {
     await db.run("UPDATE shopping_lists SET completed_at = datetime('now') WHERE id = ?", [
       req.params.id,
     ]);

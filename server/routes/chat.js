@@ -2,16 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 
 const PAGE_SIZE = 100;
-
-async function requireMember(db, groupId, userId) {
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-}
 
 // ── GET /api/chat/:groupId ────────────────────────────────────────────────────
 // Returns the most recent PAGE_SIZE messages, oldest-first (client reverses for display).
@@ -19,7 +13,7 @@ async function requireMember(db, groupId, userId) {
 router.get('/:groupId', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!(await requireMember(db, req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const { before } = req.query;
@@ -56,7 +50,7 @@ router.get('/:groupId', authMiddleware, async (req, res) => {
 router.get('/:groupId/since/:iso', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!(await requireMember(db, req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const rows = await db.all(
@@ -85,7 +79,7 @@ router.post('/:groupId', authMiddleware, async (req, res) => {
     if (!content?.trim()) return res.status(400).json({ error: 'content is required' });
 
     const db = await getDb();
-    if (!(await requireMember(db, req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const id = uuidv4();
@@ -118,7 +112,7 @@ router.post('/:groupId', authMiddleware, async (req, res) => {
 router.delete('/:groupId/:messageId', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!(await requireMember(db, req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const msg = await db.get('SELECT * FROM messages WHERE id = ?', [req.params.messageId]);

@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
 const { sendGroupInviteEmail } = require('../utils/email');
@@ -127,10 +128,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const group = await db.get('SELECT * FROM groups WHERE id = ?', [req.params.id]);
     if (!group) return res.status(404).json({ error: 'Group not found' });
 
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      req.params.id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(req.params.id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a member of this group' });
 
     const membersRaw = await db.all(
@@ -183,10 +181,7 @@ router.post('/join', authMiddleware, async (req, res) => {
     ]);
     if (!group) return res.status(404).json({ error: 'Invalid invite code' });
 
-    const already = await db.get(
-      'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-      [group.id, req.user.id]
-    );
+    const already = await isGroupMember(group.id, req.user.id);
     if (already) return res.status(409).json({ error: 'Already a member' });
 
     if (!(await groupHasRoom(db, group.id))) return res.status(400).json({ error: 'group_full' });
@@ -210,10 +205,7 @@ router.post('/:id/invite', authMiddleware, async (req, res) => {
     const group = await db.get('SELECT * FROM groups WHERE id = ?', [req.params.id]);
     if (!group) return res.status(404).json({ error: 'Group not found' });
 
-    const isMember = await db.get(
-      'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-      [req.params.id, req.user.id]
-    );
+    const isMember = await isGroupMember(req.params.id, req.user.id);
     if (!isMember) return res.status(403).json({ error: 'Not a group member' });
 
     const { invites } = req.body;
@@ -241,10 +233,7 @@ router.post('/:id/invite', authMiddleware, async (req, res) => {
 
       const existingUser = await db.get('SELECT id, name FROM users WHERE email = ?', [email]);
       if (existingUser) {
-        const alreadyMember = await db.get(
-          'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-          [req.params.id, existingUser.id]
-        );
+        const alreadyMember = await isGroupMember(req.params.id, existingUser.id);
         if (alreadyMember) {
           results.push({ email, status: 'already_member' });
           continue;
@@ -349,10 +338,7 @@ router.get('/accept-invite/:token', async (req, res) => {
 router.put('/:id/sync-ping', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      req.params.id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(req.params.id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
     const now = new Date().toISOString();
     await db.run('UPDATE group_members SET last_synced_at = ? WHERE group_id = ? AND user_id = ?', [

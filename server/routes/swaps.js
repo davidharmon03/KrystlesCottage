@@ -2,21 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember, isGroupOwner } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { notifyGroupMembers } = require('./notifications');
-
-async function requireMember(groupId, userId) {
-  const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-}
-
-async function requireAdmin(groupId, userId) {
-  const db = await getDb();
-  return db.get('SELECT id FROM groups WHERE id = ? AND owner_id = ?', [groupId, userId]);
-}
 
 const ENTREE_SELECT = `
   SELECT se.*, u.name AS user_name, u.avatar_path, r.title AS recipe_title
@@ -32,7 +20,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const { group_id } = req.query;
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
-    if (!(await requireMember(group_id, req.user.id)))
+    if (!(await isGroupMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const db = await getDb();
@@ -66,7 +54,7 @@ router.get('/history', authMiddleware, async (req, res) => {
   try {
     const { group_id } = req.query;
     if (!group_id) return res.status(400).json({ error: 'group_id required' });
-    if (!(await requireMember(group_id, req.user.id)))
+    if (!(await isGroupMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const db = await getDb();
@@ -104,9 +92,9 @@ router.post('/', authMiddleware, async (req, res) => {
     const { group_id, swap_day, week_label, entrees } = req.body;
     if (!group_id || !swap_day)
       return res.status(400).json({ error: 'group_id and swap_day required' });
-    if (!(await requireMember(group_id, req.user.id)))
+    if (!(await isGroupMember(group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
-    if (!(await requireAdmin(group_id, req.user.id)))
+    if (!(await isGroupOwner(group_id, req.user.id)))
       return res.status(403).json({ error: 'Admin only' });
 
     const db = await getDb();
@@ -178,7 +166,7 @@ router.put('/:weekId/entrees/:entreeId', authMiddleware, async (req, res) => {
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!(await requireMember(week.group_id, req.user.id)))
+    if (!(await isGroupMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const entree = await db.get('SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?', [
@@ -188,7 +176,7 @@ router.put('/:weekId/entrees/:entreeId', authMiddleware, async (req, res) => {
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
-    const isAdmin = await requireAdmin(week.group_id, req.user.id);
+    const isAdmin = await isGroupOwner(week.group_id, req.user.id);
     if (entree.user_id !== req.user.id && !isAdmin)
       return res.status(403).json({ error: 'You can only update your own entree' });
 
@@ -249,7 +237,7 @@ router.put('/:weekId/complete', authMiddleware, async (req, res) => {
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!(await requireAdmin(week.group_id, req.user.id)))
+    if (!(await isGroupOwner(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Admin only' });
 
     await db.run("UPDATE swap_weeks SET status = 'completed' WHERE id = ?", [req.params.weekId]);
@@ -279,7 +267,7 @@ router.post('/:weekId/entrees/:entreeId/rate', authMiddleware, async (req, res) 
       [req.params.entreeId]
     );
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
-    if (!(await requireMember(entree.group_id, req.user.id)))
+    if (!(await isGroupMember(entree.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     // Check if week is completed (can only rate completed entrees)
@@ -351,7 +339,7 @@ router.get('/:weekId/entrees/:entreeId/sides', authMiddleware, async (req, res) 
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!(await requireMember(week.group_id, req.user.id)))
+    if (!(await isGroupMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const sides = await db.all(
@@ -377,7 +365,7 @@ router.post('/:weekId/entrees/:entreeId/sides', authMiddleware, async (req, res)
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!(await requireMember(week.group_id, req.user.id)))
+    if (!(await isGroupMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const entree = await db.get('SELECT * FROM swap_entrees WHERE id = ? AND week_id = ?', [
@@ -387,7 +375,7 @@ router.post('/:weekId/entrees/:entreeId/sides', authMiddleware, async (req, res)
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
-    const isAdmin = await requireAdmin(week.group_id, req.user.id);
+    const isAdmin = await isGroupOwner(week.group_id, req.user.id);
     if (entree.user_id !== req.user.id && !isAdmin)
       return res.status(403).json({ error: 'You can only update your own entree' });
 
@@ -424,7 +412,7 @@ router.delete('/:weekId/entrees/:entreeId/sides/:sideId', authMiddleware, async 
     const db = await getDb();
     const week = await db.get('SELECT * FROM swap_weeks WHERE id = ?', [req.params.weekId]);
     if (!week) return res.status(404).json({ error: 'Swap week not found' });
-    if (!(await requireMember(week.group_id, req.user.id)))
+    if (!(await isGroupMember(week.group_id, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
 
     const side = await db.get('SELECT * FROM entree_sides WHERE id = ?', [req.params.sideId]);
@@ -434,7 +422,7 @@ router.delete('/:weekId/entrees/:entreeId/sides/:sideId', authMiddleware, async 
     if (!entree) return res.status(404).json({ error: 'Entree not found' });
 
     // Only the assigned member (or group admin) can update
-    const isAdmin = await requireAdmin(week.group_id, req.user.id);
+    const isAdmin = await isGroupOwner(week.group_id, req.user.id);
     if (entree.user_id !== req.user.id && !isAdmin)
       return res.status(403).json({ error: 'You can only update your own entree' });
 

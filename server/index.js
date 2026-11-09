@@ -35,7 +35,7 @@ app.use(
 // Rate limiting — auth routes (strict)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: Number(process.env.AUTH_RATE_LIMIT) || 20, // tests raise this on a throwaway copy
   message: { error: 'Too many attempts, please try again in 15 minutes.' },
 });
 app.use('/api/auth', authLimiter);

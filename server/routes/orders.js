@@ -2,15 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupOwner } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
 
 // ── helpers ────────────────────────────────────────────────────────────────
-
-async function isGroupAdmin(db, groupId, userId) {
-  const group = await db.get('SELECT owner_id FROM groups WHERE id = ?', [groupId]);
-  return !!(group && group.owner_id === userId);
-}
 
 const MENU_RECIPE_COLS = `
   mi.id, mi.recipe_id, mi.group_id, mi.available, mi.price, mi.note, mi.created_at,
@@ -45,7 +41,7 @@ router.get('/menu/:groupId', authMiddleware, async (req, res) => {
 router.get('/menu/:groupId/all', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!(await isGroupAdmin(db, req.params.groupId, req.user.id))) {
+    if (!(await isGroupOwner(req.params.groupId, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const items = await db.all(
@@ -73,7 +69,7 @@ router.post('/menu', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'recipe_id and group_id required' });
     }
     const db = await getDb();
-    if (!(await isGroupAdmin(db, group_id, req.user.id))) {
+    if (!(await isGroupOwner(group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const id = uuidv4();
@@ -103,7 +99,7 @@ router.put('/menu/:id', authMiddleware, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM menu_items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!(await isGroupAdmin(db, item.group_id, req.user.id))) {
+    if (!(await isGroupOwner(item.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const available = req.body.available !== undefined ? req.body.available : item.available;
@@ -137,7 +133,7 @@ router.delete('/menu/:id', authMiddleware, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM menu_items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!(await isGroupAdmin(db, item.group_id, req.user.id))) {
+    if (!(await isGroupOwner(item.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     await db.run('DELETE FROM menu_items WHERE id = ?', [req.params.id]);
@@ -154,7 +150,7 @@ router.delete('/menu/:id', authMiddleware, async (req, res) => {
 router.get('/requests/:groupId', authMiddleware, async (req, res) => {
   try {
     const db = await getDb();
-    if (!(await isGroupAdmin(db, req.params.groupId, req.user.id))) {
+    if (!(await isGroupOwner(req.params.groupId, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
     const rows = await db.all(
@@ -206,9 +202,9 @@ router.get('/requests/:groupId/mine', authMiddleware, async (req, res) => {
 // POST /api/orders/requests  —  any auth'd user submits a request
 router.post('/requests', authMiddleware, async (req, res) => {
   try {
-    const { menu_item_id, group_id, quantity = 1, note = '' } = req.body;
-    if (!menu_item_id || !group_id) {
-      return res.status(400).json({ error: 'menu_item_id and group_id required' });
+    const { menu_item_id, quantity = 1, note = '' } = req.body;
+    if (!menu_item_id) {
+      return res.status(400).json({ error: 'menu_item_id required' });
     }
     const db = await getDb();
 
@@ -216,6 +212,8 @@ router.post('/requests', authMiddleware, async (req, res) => {
       menu_item_id,
     ]);
     if (!menuItem) return res.status(404).json({ error: 'Menu item not available' });
+    // The request belongs to the menu item's group — never a group named by the browser.
+    const group_id = menuItem.group_id;
 
     const id = uuidv4();
     await db.run(
@@ -252,7 +250,7 @@ router.put('/requests/:id/status', authMiddleware, async (req, res) => {
     const db = await getDb();
     const request = await db.get('SELECT * FROM meal_requests WHERE id = ?', [req.params.id]);
     if (!request) return res.status(404).json({ error: 'Not found' });
-    if (!(await isGroupAdmin(db, request.group_id, req.user.id))) {
+    if (!(await isGroupOwner(request.group_id, req.user.id))) {
       return res.status(403).json({ error: 'Admin only' });
     }
 

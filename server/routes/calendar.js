@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 
 // Returns YYYY-MM-DD offset by days/months from a date string
@@ -66,10 +67,7 @@ router.get('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'group_id, month, and year are required' });
 
     const db = await getDb();
-    const isMember = await db.get(
-      'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-      [group_id, req.user.id]
-    );
+    const isMember = await isGroupMember(group_id, req.user.id);
     if (!isMember) return res.status(403).json({ error: 'Not a group member' });
 
     const m = parseInt(month);

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const cheerio = require('cheerio');
 
@@ -24,10 +25,7 @@ router.get('/', authMiddleware, async (req, res) => {
     let rows;
 
     if (groupId) {
-      const member = await db.get(
-        'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?',
-        [groupId, req.user.id]
-      );
+      const member = await isGroupMember(groupId, req.user.id);
       if (!member) return res.status(403).json({ error: 'Not a member of this group' });
 
       rows = await db.all(
@@ -164,10 +162,7 @@ router.post('/:id/add-to-list', authMiddleware, async (req, res) => {
     if (!list_id || !group_id)
       return res.status(400).json({ error: 'list_id and group_id required' });
 
-    const member = await db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-      group_id,
-      req.user.id,
-    ]);
+    const member = await isGroupMember(group_id, req.user.id);
     if (!member) return res.status(403).json({ error: 'Not a group member' });
 
     const list = await db.get('SELECT * FROM shopping_lists WHERE id = ? AND group_id = ?', [

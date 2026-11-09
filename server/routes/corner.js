@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const multer = require('multer');
 const { getDb } = require('../db');
+const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { compressImage } = require('../utils/compressImage');
 
@@ -20,18 +21,10 @@ const upload = multer({
   },
 });
 
-async function requireMember(groupId, userId) {
-  const db = await getDb();
-  return db.get('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?', [
-    groupId,
-    userId,
-  ]);
-}
-
 // GET /:groupId/receipts
 router.get('/:groupId/receipts', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
@@ -53,7 +46,7 @@ router.get('/:groupId/receipts', authMiddleware, async (req, res) => {
 // POST /:groupId/receipts
 router.post('/:groupId/receipts', authMiddleware, upload.single('image'), async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { amount, description } = req.body;
     if (!amount) return res.status(400).json({ error: 'amount is required' });
@@ -99,7 +92,7 @@ router.delete('/:groupId/receipts/:id', authMiddleware, async (req, res) => {
 // GET /:groupId/equalizer
 router.get('/:groupId/equalizer', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const members = await db.all(
@@ -166,7 +159,7 @@ router.get('/:groupId/equalizer', authMiddleware, async (req, res) => {
 // GET /:groupId/meal-credits
 router.get('/:groupId/meal-credits', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const transactions = await db.all(
@@ -197,7 +190,7 @@ router.get('/:groupId/meal-credits', authMiddleware, async (req, res) => {
 // POST /:groupId/meal-credits
 router.post('/:groupId/meal-credits', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const { user_id, credits, description } = req.body;
     if (!user_id || credits === undefined)
@@ -222,7 +215,7 @@ router.post('/:groupId/meal-credits', authMiddleware, async (req, res) => {
 // GET /:groupId/stats — spending charts data
 router.get('/:groupId/stats', authMiddleware, async (req, res) => {
   try {
-    if (!(await requireMember(req.params.groupId, req.user.id)))
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
       return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
 
