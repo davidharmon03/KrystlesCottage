@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
-const { isGroupOwner } = require('../utils/access');
+const { isGroupMember, isGroupOwner } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
 
@@ -16,9 +16,13 @@ const MENU_RECIPE_COLS = `
 
 // ── MENU ───────────────────────────────────────────────────────────────────
 
-// GET /api/orders/menu/:groupId  —  any auth'd user; returns available=1 only
+// Orders are for group members only — not outside customers (David, 2026-11-09).
+
+// GET /api/orders/menu/:groupId  —  group members; returns available=1 only
 router.get('/menu/:groupId', authMiddleware, async (req, res) => {
   try {
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
+      return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const items = await db.all(
       `
@@ -178,6 +182,8 @@ router.get('/requests/:groupId', authMiddleware, async (req, res) => {
 // GET /api/orders/requests/:groupId/mine  —  own requests for current user
 router.get('/requests/:groupId/mine', authMiddleware, async (req, res) => {
   try {
+    if (!(await isGroupMember(req.params.groupId, req.user.id)))
+      return res.status(403).json({ error: 'Not a group member' });
     const db = await getDb();
     const rows = await db.all(
       `
@@ -199,7 +205,7 @@ router.get('/requests/:groupId/mine', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/orders/requests  —  any auth'd user submits a request
+// POST /api/orders/requests  —  a member orders from their own group's menu
 router.post('/requests', authMiddleware, async (req, res) => {
   try {
     const { menu_item_id, quantity = 1, note = '' } = req.body;
@@ -214,6 +220,8 @@ router.post('/requests', authMiddleware, async (req, res) => {
     if (!menuItem) return res.status(404).json({ error: 'Menu item not available' });
     // The request belongs to the menu item's group — never a group named by the browser.
     const group_id = menuItem.group_id;
+    if (!(await isGroupMember(group_id, req.user.id)))
+      return res.status(403).json({ error: 'Not a group member' });
 
     const id = uuidv4();
     await db.run(

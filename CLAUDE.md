@@ -28,8 +28,9 @@ Render was removed (2026-11-09) — don't bring it back. Settings live in `serve
 `scripts/install-autostart.ps1` (admin) re-registers them.
 
 **To ship a change:** `npm run build` in `client/` (the site picks it up at once); for
-server changes, restart the app task from an admin window:
-`Stop-ScheduledTask KrystlesCottage-App; Start-ScheduledTask KrystlesCottage-App`.
+server changes run `pwsh -File scripts\restart-app.ps1` — no admin needed; it signals
+the app task and waits until the site answers. (Only editing `run-server.ps1` /
+`run-tunnel.ps1` themselves needs an admin restart of the scheduled task.)
 Never start a second `node index.js` on port 3001 — test on a copy of the database with
 `DB_PATH` and `PORT=3002` instead. Format with `npm run format` at the root.
 
