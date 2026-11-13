@@ -205,6 +205,9 @@ export default function App() {
               <Route path="cottage-laws" element={<CottageLaws />} />
               <Route path="create-group" element={<CreateGroup />} />
             </Route>
+
+            {/* Any address that isn't a real page goes home (sign-in when signed out) */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </SyncProvider>

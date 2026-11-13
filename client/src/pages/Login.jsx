@@ -3,6 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Eye, EyeOff } from 'lucide-react'
 
+// "Forgot your password?" and "Create an account" both depend on emails the
+// site can't send yet (see ROADMAP: Real Email Provider). Hidden until then —
+// flip this to true once real email is working. The pages themselves still
+// exist, so invite links to /register keep working.
+const EMAIL_IS_LIVE = false
+
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -48,9 +54,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="label" htmlFor="login-email">
+                Email
+              </label>
               <input
+                id="login-email"
+                name="email"
                 type="email"
+                autoComplete="username"
                 required
                 className="input"
                 placeholder="you@example.com"
@@ -59,10 +70,15 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="label">Password</label>
+              <label className="label" htmlFor="login-password">
+                Password
+              </label>
               <div className="relative">
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   required
                   className="input pr-10"
                   placeholder="••••••••"
@@ -72,7 +88,8 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -83,22 +100,26 @@ export default function Login() {
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
 
-            <div className="text-center mt-3">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                Forgot your password?
-              </Link>
-            </div>
+            {EMAIL_IS_LIVE && (
+              <div className="text-center mt-3">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-5">
-            New here?{' '}
-            <Link to="/register" className="text-moss-600 font-medium hover:text-moss-700">
-              Create an account
-            </Link>
-          </p>
+          {EMAIL_IS_LIVE && (
+            <p className="text-center text-sm text-slate-500 mt-5">
+              New here?{' '}
+              <Link to="/register" className="text-moss-600 font-medium hover:text-moss-700">
+                Create an account
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
