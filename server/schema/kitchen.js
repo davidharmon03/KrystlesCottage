@@ -26,4 +26,11 @@ module.exports = async function setup(db) {
   if (!_recipeCols.find(c => c.name === 'sides')) {
     await db.run("ALTER TABLE recipes ADD COLUMN sides TEXT DEFAULT ''");
   }
+
+  // recipes migration: servings and times (minutes), all optional
+  for (const col of ['servings', 'prep_time', 'cook_time']) {
+    if (!_recipeCols.find(c => c.name === col)) {
+      await db.run(`ALTER TABLE recipes ADD COLUMN ${col} INTEGER`);
+    }
+  }
 };

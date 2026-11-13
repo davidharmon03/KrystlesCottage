@@ -42,6 +42,14 @@ const SKILL_TAGS = [
   'dehydrate',
 ]
 
+// 90 → "1 hr 30 min", 45 → "45 min"
+function fmtMinutes(m) {
+  const h = Math.floor(m / 60)
+  const r = m % 60
+  if (!h) return `${r} min`
+  return r ? `${h} hr ${r} min` : `${h} hr`
+}
+
 function RecipeModal({ recipe, onClose, onSave, onDelete, userId, groupId }) {
   const [editing, setEditing] = useState(!recipe?.id)
   const [form, setForm] = useState(
@@ -55,6 +63,9 @@ function RecipeModal({ recipe, onClose, onSave, onDelete, userId, groupId }) {
           skill_tags: [...recipe.skill_tags],
           sides: recipe.sides || '',
           is_public: recipe.is_public,
+          servings: recipe.servings ?? '',
+          prep_time: recipe.prep_time ?? '',
+          cook_time: recipe.cook_time ?? '',
         }
       : {
           title: '',
@@ -65,6 +76,9 @@ function RecipeModal({ recipe, onClose, onSave, onDelete, userId, groupId }) {
           skill_tags: [],
           sides: '',
           is_public: false,
+          servings: '',
+          prep_time: '',
+          cook_time: '',
         }
   )
   const [loading, setLoading] = useState(false)
@@ -268,6 +282,42 @@ function RecipeModal({ recipe, onClose, onSave, onDelete, userId, groupId }) {
               {recipe.description}
             </p>
           ) : null}
+
+          {/* Servings / times (edit mode) */}
+          {editing && (
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                ['servings', 'Servings', 1, 100],
+                ['prep_time', 'Prep (min)', 0, 2880],
+                ['cook_time', 'Cook (min)', 0, 2880],
+              ].map(([key, label, min, max]) => (
+                <div key={key}>
+                  <label className="label">{label}</label>
+                  <input
+                    type="number"
+                    className="input"
+                    min={min}
+                    max={max}
+                    placeholder="—"
+                    value={form[key]}
+                    onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Prep / cook times (view mode) */}
+          {recipe?.id && !editing && (recipe.prep_time != null || recipe.cook_time != null) && (
+            <p className="text-xs text-slate-500">
+              {[
+                recipe.prep_time != null && `Prep ${fmtMinutes(recipe.prep_time)}`,
+                recipe.cook_time != null && `Cook ${fmtMinutes(recipe.cook_time)}`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          )}
 
           {/* Servings adjuster (view mode only) */}
           {recipe?.id && !editing && (

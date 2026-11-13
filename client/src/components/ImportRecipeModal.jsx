@@ -1,6 +1,22 @@
 import { useState } from 'react'
-import { X, Loader, AlertCircle, Plus, Link, Image } from 'lucide-react'
+import { X, Loader, AlertCircle, Plus, Link, Image, Camera, Upload } from 'lucide-react'
 import api from '../api'
+
+// Shrink a phone photo before upload (also turns iPhone HEIC into JPEG).
+async function shrinkPhoto(file, maxSide = 2400) {
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bmp.width * scale)
+    canvas.height = Math.round(bmp.height * scale)
+    canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9))
+    return blob || file
+  } catch {
+    return file
+  }
+}
 
 const TAGS = [
   'healthy',
@@ -24,10 +40,13 @@ const SKILL_TAGS = [
 
 export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
   const [step, setStep] = useState('input') // 'input' | 'preview'
+  const [mode, setMode] = useState('link') // 'link' | 'photo'
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [partial, setPartial] = useState(false)
+  const [fromPhoto, setFromPhoto] = useState(false)
+  const [lowConfidence, setLowConfidence] = useState(false)
   const [form, setForm] = useState(null)
 
   const handleImport = async e => {
@@ -37,24 +56,7 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
     setError('')
     try {
       const res = await api.post('/recipes/import-url', { url: url.trim() })
-      const data = res.data
-      setPartial(!!data._partial)
-      setForm({
-        title: data.title || '',
-        description: data.description || '',
-        ingredients: (data.ingredients || []).join('\n'),
-        steps: (data.steps || []).join('\n'),
-        tags: data.tags || [],
-        skill_tags: data.skill_tags || [],
-        sides: data.sides || '',
-        is_public: data.is_public || false,
-        servings: data.servings || '1',
-        imageUrl: data.imageUrl || '',
-        prepTime: data.prepTime != null ? String(data.prepTime) : '',
-        cookTime: data.cookTime != null ? String(data.cookTime) : '',
-        source_url: data.source_url || url.trim(),
-      })
-      setStep('preview')
+      fillForm(res.data, url.trim())
     } catch (err) {
       setError(
         err.response?.data?.error || "We couldn't read that page. Try copying the recipe manually."
@@ -64,12 +66,57 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
     }
   }
 
+  const handlePhoto = async e => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setLoading(true)
+    setError('')
+    try {
+      const body = new FormData()
+      body.append('image', await shrinkPhoto(file), 'recipe.jpg')
+      const res = await api.post('/recipes/import-photo', body, { timeout: 120000 })
+      fillForm(res.data, '')
+    } catch (err) {
+      setError(err.response?.data?.error || "We couldn't read that photo. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fillForm = (data, sourceUrl) => {
+    setPartial(!!data._partial)
+    setFromPhoto(!!data._photo)
+    setLowConfidence(!!data._lowConfidence)
+    setForm({
+      title: data.title || '',
+      description: data.description || '',
+      ingredients: (data.ingredients || []).join('\n'),
+      steps: (data.steps || []).join('\n'),
+      tags: data.tags || [],
+      skill_tags: data.skill_tags || [],
+      sides: data.sides || '',
+      is_public: data.is_public || false,
+      servings: data.servings || '',
+      imageUrl: data.imageUrl || '',
+      prepTime: data.prepTime != null ? String(data.prepTime) : '',
+      cookTime: data.cookTime != null ? String(data.cookTime) : '',
+      source_url: data.source_url || sourceUrl,
+      source_note: '',
+    })
+    setStep('preview')
+  }
+
   const handleSave = async () => {
     setLoading(true)
     setError('')
     try {
       // Append source credit to description / notes
-      const sourceNote = form.source_url ? `\n\nImported from: ${form.source_url}` : ''
+      const sourceNote = form.source_url
+        ? `\n\nImported from: ${form.source_url}`
+        : form.source_note.trim()
+          ? `\n\nFrom: ${form.source_note.trim()}`
+          : ''
       const payload = {
         title: form.title,
         description: (form.description + sourceNote).trim(),
@@ -85,6 +132,9 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
         skill_tags: form.skill_tags,
         sides: form.sides.trim(),
         is_public: form.is_public,
+        servings: form.servings,
+        prep_time: form.prepTime,
+        cook_time: form.cookTime,
       }
       await onSave(payload)
       handleClose()
@@ -97,10 +147,13 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
 
   const handleClose = () => {
     setStep('input')
+    setMode('link')
     setUrl('')
     setForm(null)
     setError('')
     setPartial(false)
+    setFromPhoto(false)
+    setLowConfidence(false)
     onClose()
   }
 
@@ -127,8 +180,12 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h2 className="text-xl font-serif font-semibold text-ink flex items-center gap-2">
-            <Link size={17} className="text-moss-500" />
-            {step === 'input' ? 'Import Recipe from URL' : 'Review Imported Recipe'}
+            {(step === 'input' ? mode === 'photo' : fromPhoto) ? (
+              <Camera size={17} className="text-moss-500" />
+            ) : (
+              <Link size={17} className="text-moss-500" />
+            )}
+            {step === 'input' ? 'Import a Recipe' : 'Review Imported Recipe'}
           </h2>
           <button onClick={handleClose} className="text-slate-400 hover:text-slate-600">
             <X size={18} />
@@ -144,8 +201,71 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
             </div>
           )}
 
-          {/* ── Step 1: URL input ─────────────────────────────────── */}
+          {/* ── Step 1: choose link or photo ─────────────────────── */}
           {step === 'input' && (
+            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-lg">
+              {[
+                ['link', 'From a link', Link],
+                ['photo', 'From a photo', Camera],
+              ].map(([m, label, Icon]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    setMode(m)
+                    setError('')
+                  }}
+                  disabled={loading}
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-medium transition-colors ${
+                    mode === m ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-ink'
+                  }`}
+                >
+                  <Icon size={14} /> {label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── Step 1b: photo ────────────────────────────────────── */}
+          {step === 'input' && mode === 'photo' && (
+            <div className="space-y-4">
+              {loading ? (
+                <div className="flex flex-col items-center gap-2 py-8 text-slate-500">
+                  <Loader size={22} className="animate-spin text-moss-500" />
+                  <p className="text-sm">Reading your photo… this can take up to a minute.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="btn-primary flex items-center justify-center gap-2 cursor-pointer">
+                    <Camera size={14} /> Take a photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handlePhoto}
+                    />
+                  </label>
+                  <label className="btn-ghost flex items-center justify-center gap-2 cursor-pointer border border-slate-200">
+                    <Upload size={14} /> Choose a photo
+                    <input type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+                  </label>
+                </div>
+              )}
+              <ul className="text-xs text-slate-500 space-y-1 list-disc pl-4">
+                <li>Works with printed recipes — cookbooks, magazines, printouts.</li>
+                <li>Lay the page flat, use good light, and take the photo straight on.</li>
+                <li>One recipe per photo. You'll check everything before it's saved.</li>
+                <li>Handwritten cards don't read well yet.</li>
+              </ul>
+              <button type="button" onClick={handleClose} className="btn-ghost w-full">
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* ── Step 1a: URL input ────────────────────────────────── */}
+          {step === 'input' && mode === 'link' && (
             <form onSubmit={handleImport} className="space-y-4">
               <div>
                 <label className="label">Recipe URL</label>
@@ -190,8 +310,23 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
           {/* ── Step 2: Preview & edit ────────────────────────────── */}
           {step === 'preview' && form && (
             <div className="space-y-4">
-              {/* Partial data warning */}
-              {partial && (
+              {/* Photo: always check */}
+              {fromPhoto && (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle size={15} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700">
+                    {lowConfidence
+                      ? 'That photo was hard to read, so expect mistakes. '
+                      : 'Read from your photo. '}
+                    Check every line before saving, especially amounts and numbers.
+                    {partial &&
+                      " We couldn't tell the ingredients from the steps — move lines where they belong."}
+                  </p>
+                </div>
+              )}
+
+              {/* Partial data warning (link) */}
+              {partial && !fromPhoto && (
                 <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                   <AlertCircle size={15} className="text-amber-500 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-700">
@@ -243,11 +378,13 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                 <div>
                   <label className="label">Servings</label>
                   <input
-                    type="text"
+                    type="number"
                     className="input"
                     value={form.servings}
                     onChange={e => setForm(f => ({ ...f, servings: e.target.value }))}
-                    placeholder="4"
+                    placeholder="—"
+                    min={1}
+                    max={100}
                   />
                 </div>
                 <div>
@@ -299,6 +436,23 @@ export default function ImportRecipeModal({ isOpen, onClose, onSave }) {
                 />
                 <p className="text-xs text-slate-400 mt-1">One per line</p>
               </div>
+
+              {/* Where it came from (photo) */}
+              {fromPhoto && (
+                <div>
+                  <label className="label">Where's it from?</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={form.source_note}
+                    onChange={e => setForm(f => ({ ...f, source_note: e.target.value }))}
+                    placeholder="e.g. Joy of Cooking, page 212"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">
+                    Optional — saved with the description
+                  </p>
+                </div>
+              )}
 
               {/* Suggested Sides */}
               <div>

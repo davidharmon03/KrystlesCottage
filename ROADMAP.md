@@ -7,6 +7,8 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 ## ✅ Completed
 
 - ✅ **Recipe URL Import** — cheerio-based JSON-LD parser, OG fallback, two-step ImportRecipeModal
+- ✅ **Recipe Photo Import** (2026-11-13) — "From a photo" in the same Import window. Tesseract.js reads the text on this PC (English data bundled via `@tesseract.js-data/eng`, no download, no cloud); `server/utils/recipeFromText.js` sorts it into title / ingredients / steps; user reviews before saving. Printed pages only — handwritten cards wait for the AI upgrade. Test copy setup: `cottage-test-api` + `cottage-test-web` in `.claude/launch.json` (ports 3002 / 5174)
+- ✅ **Recipe servings & times saved** (2026-11-13) — `servings`, `prep_time`, `cook_time` columns on recipes; set in the recipe form and both imports; view shows "Prep · Cook" and the servings adjuster scales from the real number. Before this they were shown on the import screen but thrown away on save. Unknown servings now stay blank instead of defaulting to 1
 - ✅ **Entrée Refactor** — recipe auto-scaling (inline servings adjuster, real-time ingredient math), ingredient parser, `sides` column added, all "meal" UI text → "entrée"
 - ✅ **Spending Charts** — bar + doughnut via Chart.js in Corner.jsx, backend stats endpoint
 - ✅ **Kitchen Orders Page** — Orders.jsx with menu manager + meal requests, separate admin and client views, status flow + notifications
@@ -66,7 +68,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 ## 🔧 Next Up
 
 - 🔲 **Stripe Payment Integration** — wire Stripe into the existing freemium gate and group slot expansion (placeholders already in place)
-- 🔲 **Real Email Provider** — swap placeholder in `server/utils/email.js` with SendGrid or Resend for production email delivery
+- 🔲 **Real Email Provider** — swap placeholder in `server/utils/email.js` with SendGrid or Resend for production email delivery. When it works, set `EMAIL_IS_LIVE = true` in `client/src/pages/Login.jsx` to bring back the "Forgot your password?" and "Create an account" links (hidden 2026-11-12 because both promise emails that can't be sent yet)
 - 🔲 **Cross-device Responsive Testing** — manual (PC, Android, iPhone, Z Fold, iPad, Mac)
 - 🔲 **Garden Subpages (implementation)** — Plants, Harvest Log, Calendar, Growing Guides are scaffolded only; need full implementation. The old single-page `client/src/pages/Garden.jsx` is no longer routed but still has working plant and harvest screens — port from it, then delete it.
 - 🔲 **Weekly digest: expiring items** — `server/routes/digest.js` looks up items about to expire but never puts them in the email.
@@ -87,6 +89,7 @@ Full-stack group kitchen app (React + Node/Express + SQLite) deployed on Render.
 - 🔲 **Meal Planning / Weekly Menu Builder** — Plan meals Monday–Sunday, assign recipes per day, auto-generate shopping list from planned meals. May overlap with or replace current Menus & Orders page — evaluate when building.
 - 🔲 **Photo Uploads** — Image upload support for Meal Gallery (meal photos), Garden (plot/plant photos), and Recipes. Needs file storage solution (Cloudinary or similar).
 - 🔲 **Cottage Laws — Legal Reference by Location** — The Cottage Laws page is a reference database of actual cottage food laws by state, county, and city. Admins should be able to add/update legal entries. Members can look up their jurisdiction's rules. Consider searchable by state/county.
+- 🔲 **AI Upgrade (later, after the app is built out)** — an AI helper as a future upgrade (e.g. reading handwritten recipe cards). Prefer free and run on David's own PC; anything cloud or paid needs his OK first. Idea only, nothing decided. Raised 2026-11-13.
 
 ---
 

@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cottage",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "server", "start"],
+      "port": 3001
+    },
+    {
+      "name": "cottage-test-api",
+      "runtimeExecutable": "pwsh",
+      "runtimeArgs": ["-NoProfile", "-Command", "$env:PORT='3002'; $env:JWT_SECRET='test-copy-only-secret'; $env:ALLOWED_ORIGINS='http://localhost:5174'; $env:DB_PATH='C:/Projects/KrystlesCottage/server/backups/test-copy-servings.db'; Set-Location server; node index.js"],
+      "port": 3002
+    },
+    {
+      "name": "cottage-test-web",
+      "runtimeExecutable": "pwsh",
+      "runtimeArgs": ["-NoProfile", "-Command", "$env:API_TARGET='http://localhost:3002'; Set-Location client; npx vite --port 5174 --strictPort"],
+      "port": 5174
+    }
+  ]
+}

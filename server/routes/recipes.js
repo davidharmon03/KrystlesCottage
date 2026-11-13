@@ -5,6 +5,12 @@ const { getDb } = require('../db');
 const { isGroupMember } = require('../utils/access');
 const { authMiddleware } = require('../middleware/auth');
 const cheerio = require('cheerio');
+const path = require('path');
+const multer = require('multer');
+const sharp = require('sharp');
+const rateLimit = require('express-rate-limit');
+const { createWorker } = require('tesseract.js');
+const { recipeFromText } = require('../utils/recipeFromText');
 
 function parseRecipe(r) {
   return {
@@ -16,6 +22,16 @@ function parseRecipe(r) {
     sides: r.sides || '',
   };
 }
+
+// Whole number in range, or null for blank / nonsense. Servings 1–100;
+// times 0–2880 minutes (two days, for long ferments and smokes).
+function optInt(v, min, max) {
+  if (v === undefined || v === null || v === '') return null;
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
+}
+const optServings = v => optInt(v, 1, 100);
+const optMinutes = v => optInt(v, 0, 2880);
 
 // GET /api/recipes
 router.get('/', authMiddleware, async (req, res) => {
@@ -81,8 +97,20 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // POST /api/recipes
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { title, description, ingredients, steps, tags, skill_tags, group_id, is_public, sides } =
-      req.body;
+    const {
+      title,
+      description,
+      ingredients,
+      steps,
+      tags,
+      skill_tags,
+      group_id,
+      is_public,
+      sides,
+      servings,
+      prep_time,
+      cook_time,
+    } = req.body;
     if (!title || !ingredients || !steps)
       return res.status(400).json({ error: 'title, ingredients, and steps are required' });
 
@@ -90,8 +118,8 @@ router.post('/', authMiddleware, async (req, res) => {
     const id = uuidv4();
     await db.run(
       `
-      INSERT INTO recipes (id, title, description, ingredients, steps, tags, skill_tags, author_id, group_id, is_public, sides)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?)
+      INSERT INTO recipes (id, title, description, ingredients, steps, tags, skill_tags, author_id, group_id, is_public, sides, servings, prep_time, cook_time)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `,
       [
         id,
@@ -105,6 +133,9 @@ router.post('/', authMiddleware, async (req, res) => {
         group_id || null,
         is_public ? 1 : 0,
         sides || '',
+        optServings(servings),
+        optMinutes(prep_time),
+        optMinutes(cook_time),
       ]
     );
 
@@ -124,10 +155,22 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (!recipe) return res.status(404).json({ error: 'Recipe not found' });
     if (recipe.author_id !== req.user.id) return res.status(403).json({ error: 'Not your recipe' });
 
-    const { title, description, ingredients, steps, tags, skill_tags, is_public, sides } = req.body;
+    const {
+      title,
+      description,
+      ingredients,
+      steps,
+      tags,
+      skill_tags,
+      is_public,
+      sides,
+      servings,
+      prep_time,
+      cook_time,
+    } = req.body;
     await db.run(
       `
-      UPDATE recipes SET title=?, description=?, ingredients=?, steps=?, tags=?, skill_tags=?, is_public=?, sides=?
+      UPDATE recipes SET title=?, description=?, ingredients=?, steps=?, tags=?, skill_tags=?, is_public=?, sides=?, servings=?, prep_time=?, cook_time=?
       WHERE id=?
     `,
       [
@@ -139,6 +182,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
         JSON.stringify(skill_tags ?? JSON.parse(recipe.skill_tags)),
         is_public !== undefined ? (is_public ? 1 : 0) : recipe.is_public,
         sides !== undefined ? sides : recipe.sides || '',
+        servings !== undefined ? optServings(servings) : recipe.servings,
+        prep_time !== undefined ? optMinutes(prep_time) : recipe.prep_time,
+        cook_time !== undefined ? optMinutes(cook_time) : recipe.cook_time,
         req.params.id,
       ]
     );
@@ -338,11 +384,11 @@ router.post('/import-url', authMiddleware, async (req, res) => {
     }
 
     // Servings
-    let servings = '1';
+    let servings = '';
     const yld = recipeNode.recipeYield;
     if (yld) {
       const raw = Array.isArray(yld) ? String(yld[0]) : String(yld);
-      servings = raw.replace(/[^0-9]/g, '') || '1';
+      servings = (raw.match(/\d+/) || [''])[0]; // "Serves 4-6" → 4
     }
 
     // Tags — recipeCategory + keywords
@@ -395,7 +441,7 @@ router.post('/import-url', authMiddleware, async (req, res) => {
       description: ogDesc.trim(),
       ingredients: [],
       steps: [],
-      servings: '1',
+      servings: '',
       prepTime: null,
       cookTime: null,
       imageUrl: ogImage,
@@ -411,6 +457,93 @@ router.post('/import-url', authMiddleware, async (req, res) => {
   return res.status(400).json({
     error:
       "We couldn't find recipe data on that page. Try a different URL or copy the recipe manually.",
+  });
+});
+
+// POST /api/recipes/import-photo
+// Read the text off a photo of a printed recipe (free, on this PC — no cloud),
+// best-guess it into fields, return for user preview (does NOT save).
+const photoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many photos at once — please wait a few minutes and try again.' },
+});
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Please use a JPG, PNG or WebP photo.'), false);
+  },
+}).single('image');
+
+// One photo at a time — reading text is heavy work for the PC
+let ocrBusy = Promise.resolve();
+
+async function readText(buffer) {
+  const img = await sharp(buffer)
+    .rotate() // honour phone orientation
+    .resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true })
+    .grayscale()
+    .normalize()
+    .sharpen()
+    .png()
+    .toBuffer();
+  const worker = await createWorker('eng', 1, {
+    langPath: path.join(path.dirname(require.resolve('@tesseract.js-data/eng')), '4.0.0_best_int'),
+    gzip: true,
+    cacheMethod: 'none',
+  });
+  try {
+    const { data } = await worker.recognize(img);
+    return { text: data.text || '', confidence: data.confidence || 0 };
+  } finally {
+    await worker.terminate();
+  }
+}
+
+router.post('/import-photo', photoLimiter, authMiddleware, (req, res) => {
+  photoUpload(req, res, async uploadErr => {
+    if (uploadErr) {
+      const msg =
+        uploadErr.code === 'LIMIT_FILE_SIZE'
+          ? 'That photo is too large (10 MB max).'
+          : uploadErr.message || 'Upload failed';
+      return res.status(400).json({ error: msg });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Please choose a photo.' });
+
+    try {
+      const job = ocrBusy.then(() => readText(req.file.buffer));
+      ocrBusy = job.catch(() => {});
+      const { text, confidence } = await job;
+
+      if (text.replace(/[^a-z]/gi, '').length < 20) {
+        return res.status(400).json({
+          error:
+            "We couldn't read any words in that photo. Try again with the page flat, in good light, taken straight on.",
+        });
+      }
+
+      const r = recipeFromText(text);
+      res.json({
+        ...r,
+        title: r.title || 'Untitled Recipe',
+        imageUrl: '',
+        tags: [],
+        skill_tags: [],
+        sides: '',
+        is_public: false,
+        source_url: '',
+        _photo: true,
+        _lowConfidence: confidence < 60,
+        _partial: r.ingredients.length === 0 || r.steps.length === 0,
+      });
+    } catch (err) {
+      console.error('import-photo:', err);
+      res.status(500).json({ error: 'Something went wrong reading that photo. Please try again.' });
+    }
   });
 });
 
